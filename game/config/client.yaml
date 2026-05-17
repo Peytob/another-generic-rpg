@@ -1,0 +1,7 @@
+log:
+  enabled: true
+  level: info
+
+window:
+  width: 800
+  height: 600

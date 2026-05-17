@@ -1,0 +1,117 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0">
+  <diagram name="Страница — 1" id="rBZntOf9m_7t8YmPOvVL">
+    <mxGraphModel dx="2004" dy="1187" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-1" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" value="Modules layer" vertex="1">
+          <mxGeometry height="550" width="1170" x="997" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-2" parent="VAwQXg_UtV7DAtHIXKJ7-1" style="swimlane;whiteSpace=wrap;html=1;" value="Network" vertex="1">
+          <mxGeometry height="230" width="270" x="880" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-3" parent="VAwQXg_UtV7DAtHIXKJ7-2" style="rounded=1;whiteSpace=wrap;html=1;glass=0;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#dae8fc;" value="Http server" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-4" parent="VAwQXg_UtV7DAtHIXKJ7-1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;glass=0;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="HID" vertex="1">
+          <mxGeometry height="230" width="270" x="320" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-5" parent="VAwQXg_UtV7DAtHIXKJ7-4" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;glass=0;" value="Keyboard Input" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-6" parent="VAwQXg_UtV7DAtHIXKJ7-4" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;glass=0;" value="Mouse input" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-7" edge="1" parent="VAwQXg_UtV7DAtHIXKJ7-1" source="VAwQXg_UtV7DAtHIXKJ7-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="VAwQXg_UtV7DAtHIXKJ7-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-8" edge="1" parent="VAwQXg_UtV7DAtHIXKJ7-1" source="VAwQXg_UtV7DAtHIXKJ7-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="VAwQXg_UtV7DAtHIXKJ7-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="175" y="250" />
+              <mxPoint x="455" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-9" parent="VAwQXg_UtV7DAtHIXKJ7-1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="Window" vertex="1">
+          <mxGeometry height="230" width="270" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-10" parent="VAwQXg_UtV7DAtHIXKJ7-9" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="&lt;div&gt;Window&lt;/div&gt;&lt;div&gt;[go-gl/glfw]&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-11" parent="VAwQXg_UtV7DAtHIXKJ7-1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="Graphics" vertex="1">
+          <mxGeometry height="230" width="270" x="40" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-12" parent="VAwQXg_UtV7DAtHIXKJ7-11" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="Meshes" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-13" parent="VAwQXg_UtV7DAtHIXKJ7-1" style="swimlane;whiteSpace=wrap;html=1;rounded=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="Audio" vertex="1">
+          <mxGeometry height="230" width="270" x="600" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-14" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" value="Management layer" vertex="1">
+          <mxGeometry height="150" width="1170" x="997" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-15" parent="VAwQXg_UtV7DAtHIXKJ7-14" style="rounded=1;whiteSpace=wrap;html=1;" value="Resource manager" vertex="1">
+          <mxGeometry height="40" width="360" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-16" parent="VAwQXg_UtV7DAtHIXKJ7-14" style="rounded=1;whiteSpace=wrap;html=1;" value="Scene graph" vertex="1">
+          <mxGeometry height="40" width="360" x="40" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-17" parent="VAwQXg_UtV7DAtHIXKJ7-14" style="rounded=1;whiteSpace=wrap;html=1;" value="ECS" vertex="1">
+          <mxGeometry height="40" width="360" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-18" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" value="Engine layer" vertex="1">
+          <mxGeometry height="150" width="1170" x="997" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-19" parent="VAwQXg_UtV7DAtHIXKJ7-18" style="rounded=1;whiteSpace=wrap;html=1;" value="State machine" vertex="1">
+          <mxGeometry height="40" width="1110" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-20" parent="VAwQXg_UtV7DAtHIXKJ7-18" style="rounded=1;whiteSpace=wrap;html=1;" value="Configuration" vertex="1">
+          <mxGeometry height="40" width="1110" x="40" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-21" parent="1" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;" value="Gameplay layer" vertex="1">
+          <mxGeometry height="150" width="1170" x="997" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-22" parent="VAwQXg_UtV7DAtHIXKJ7-21" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#82b366;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;fillColor=#d5e8d4;" value="Camera" vertex="1">
+          <mxGeometry height="60" width="120" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-23" parent="VAwQXg_UtV7DAtHIXKJ7-21" style="rounded=1;whiteSpace=wrap;html=1;" value="Localization" vertex="1">
+          <mxGeometry height="60" width="120" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-24" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="Utilities" vertex="1">
+          <mxGeometry height="1030" width="270" x="2181" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-25" parent="VAwQXg_UtV7DAtHIXKJ7-24" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;div&gt;Math&lt;/div&gt;[go-gl/mathgl]" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-26" parent="VAwQXg_UtV7DAtHIXKJ7-24" style="rounded=1;whiteSpace=wrap;html=1;" value="STL" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-27" parent="VAwQXg_UtV7DAtHIXKJ7-24" style="rounded=1;whiteSpace=wrap;html=1;" value="FSM" vertex="1">
+          <mxGeometry height="60" width="120" x="10" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-28" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;div&gt;Точка входа. Производит инициализацию и деиниализацию игры, управляет игровым циклом, отлавливает критические ошибки.&lt;/div&gt;&lt;div&gt;Реализация сильно отличается для клиентской и серверной части.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="150" width="430" x="547" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-29" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;div&gt;Слой управления ресурсами запущенной игры. Сюда входят как статические ресурсы: текстуры, звуки, информация о предметах и мобах; так и динамические, такие как игровой мир и список игроков.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="150" width="430" x="547" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-30" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="Реализует независимые системы для реализации геймплея: коллизии, ИИ, логика смены локаций..." vertex="1">
+          <mxGeometry height="150" width="430" x="547" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-31" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;div&gt;Низкоуровневые модули для работы с конкретными низкоуровневыми системами - графикой, звуком и так далее. Производят инициализацию и деинициализацию.&lt;/div&gt;Работа одного модуля может быть связана с инициализованностью / деинициализованностью другого." vertex="1">
+          <mxGeometry height="260" width="430" x="547" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Common block" vertex="1">
+          <mxGeometry height="60" width="120" x="547" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Client-side only" vertex="1">
+          <mxGeometry height="60" width="120" x="677" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="VAwQXg_UtV7DAtHIXKJ7-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;glass=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Server-side only" vertex="1">
+          <mxGeometry height="60" width="120" x="807" y="1140" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
