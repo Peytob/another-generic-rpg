@@ -4,6 +4,7 @@ import (
 	"context"
 	"game/cmd/di"
 	"game/internal/config"
+	"game/pkg/utils/logger"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -26,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	_, err = di.LoadClientLogger(ctx, di.LoggerOpts{
+	l, err := di.ClientLogger(ctx, di.LoggerOpts{
 		Enabled: cfg.Log.Enabled,
 		Handler: slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: cfg.Log.Level,
@@ -34,5 +35,15 @@ func main() {
 	})
 	if err != nil {
 		panic("failed to initialize logger:" + err.Error())
+	}
+
+	ctx = logger.ToCtx(ctx, l)
+
+	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
+
+	engine := di.Client(di.WrapContext(ctx))
+	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
+	if err = engine.Run(ctx); err != nil {
+		panic("failed engine cycle: " + err.Error())
 	}
 }

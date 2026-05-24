@@ -11,7 +11,7 @@ type LoggerOpts struct {
 	Handler slog.Handler
 }
 
-func LoadClientLogger(_ context.Context, opts LoggerOpts) (*slog.Logger, error) {
+func ClientLogger(_ context.Context, opts LoggerOpts) (*slog.Logger, error) {
 	if !opts.Enabled {
 		return slog.New(slog.NewTextHandler(io.Discard, nil)), nil
 	}
