@@ -32,7 +32,7 @@ type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	Build() (Machine[E, I, S], error)
 
 	// ShouldBuild Build with panic on error
-	ShouldBuild() Machine[E, I, S]
+	MustBuild() Machine[E, I, S]
 }
 
 type machineBuilder[E comparable, I comparable, S State[I]] struct {
@@ -134,11 +134,11 @@ func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 	return newMachine(m)
 }
 
-func (m *machineBuilder[E, I, S]) ShouldBuild() Machine[E, I, S] {
+func (m *machineBuilder[E, I, S]) MustBuild() Machine[E, I, S] {
 	res, err := m.Build()
 
 	if err != nil {
-		panic("failed ot build machine: " + err.Error())
+		panic("failed to build machine: " + err.Error())
 	}
 
 	return res

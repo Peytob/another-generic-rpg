@@ -1,9 +1,9 @@
 package fsm
 
-// Event enumerated type to describe engine FSM events
-type Event int
+import "game/pkg/engine"
 
+// Event enumerated type to describe engine FSM events
 const (
-	NoEvent = Event(iota)
+	NoEvent = engine.Event(iota)
 	StoppedEvent
 )

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
-	"game/cmd/di"
 	"game/internal/config"
+	"game/internal/engine/client"
+	"game/internal/engine/fsm"
+	"game/pkg/engine"
 	"game/pkg/utils/logger"
 	"log/slog"
 	"os"
@@ -27,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	l, err := di.ClientLogger(ctx, di.LoggerOpts{
+	l, err := config.ClientLogger(ctx, config.LoggerOpts{
 		Enabled: cfg.Log.Enabled,
 		Handler: slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: cfg.Log.Level,
@@ -41,9 +43,24 @@ func main() {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
 
-	engine := di.Client(di.WrapContext(ctx))
+	machine := engine.NewMachineBuilder().
+		RegisterState(fsm.NewInitialState(), make(engine.Transitions)).
+		InitialState(fsm.InitialStateIdentifier).
+		RegisterState(fsm.NewStoppedState(), make(engine.Transitions)).
+		GlobalTransitions(engine.Transitions{
+			fsm.StoppedEvent: fsm.StoppedStateIdentifier,
+		}).
+		FinalStates([]engine.StateIdentifier{
+			fsm.StoppedStateIdentifier,
+		}).
+		MustBuild()
+
+	cl := client.NewBuilder().
+		Fsm(machine).
+		MustBuild()
+
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
-	if err = engine.Run(ctx); err != nil {
+	if err = cl.Run(ctx); err != nil {
 		panic("failed engine cycle: " + err.Error())
 	}
 }

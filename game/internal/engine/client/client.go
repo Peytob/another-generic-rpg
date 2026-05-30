@@ -4,20 +4,12 @@ import (
 	"context"
 	"fmt"
 	"game/internal/engine/fsm"
-	"game/internal/engine/fsm/state"
+	"game/pkg/engine"
 	"game/pkg/utils/logger"
 )
 
 type Client struct {
-	fsm fsm.Machine
-}
-
-func NewClient() *Client {
-	client := &Client{}
-
-	client.fsm = initializeClientMachine()
-
-	return client
+	fsm engine.Machine
 }
 
 func (c *Client) Run(ctx context.Context) error {
@@ -59,18 +51,4 @@ func (c *Client) Run(ctx context.Context) error {
 
 func (c *Client) Shutdown(ctx context.Context) error {
 	return nil
-}
-
-func initializeClientMachine() fsm.Machine {
-	return fsm.NewBuilder().
-		RegisterState(state.NewInitialState(), fsm.NoTransitions()).
-		InitialState(state.InitialStateIdentifier).
-		RegisterState(state.NewStoppedState(), fsm.NoTransitions()).
-		GlobalTransitions(fsm.Transitions{
-			fsm.StoppedEvent: state.StoppedStateIdentifier,
-		}).
-		FinalStates([]fsm.StateIdentifier{
-			state.StoppedStateIdentifier,
-		}).
-		ShouldBuild()
 }
