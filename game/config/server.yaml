@@ -1,0 +1,7 @@
+log:
+  enabled: true
+  level: info
+
+http:
+  port: 9501
+  host: localhost
