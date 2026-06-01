@@ -6,10 +6,12 @@ import (
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
 	"game/pkg/utils/logger"
+	"game/pkg/window"
 )
 
 type Client struct {
-	fsm engine.Machine
+	fsm    engine.Machine
+	window *window.Window
 }
 
 func (c *Client) Run(ctx context.Context) error {
@@ -20,12 +22,20 @@ func (c *Client) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			// Mark window as should close
 			logger.FromCtx(ctx).Info("root context done, closing window")
-			err = c.fsm.Event(fsm.StoppedEvent)
-			if err != nil {
-				return fmt.Errorf("failed to stop machine on context close: %w", err)
-			}
+			c.window.Close()
 		default:
 			// nothing, keep running
+		}
+
+		c.window.PoolEvents()
+
+		if c.window.ShouldClose() {
+			logger.FromCtx(ctx).Debug("stopping game machine")
+			err = c.fsm.Event(fsm.StoppedEvent)
+			if err != nil {
+				return fmt.Errorf("failed to stop machine on window close: %w", err)
+			}
+			break
 		}
 
 		event, err := c.fsm.State().Update(ctx)
@@ -50,5 +60,7 @@ func (c *Client) Run(ctx context.Context) error {
 }
 
 func (c *Client) Shutdown(ctx context.Context) error {
+	logger.FromCtx(ctx).Info("shutting down client")
+	c.window.Terminate()
 	return nil
 }

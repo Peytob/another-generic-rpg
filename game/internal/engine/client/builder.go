@@ -3,10 +3,12 @@ package client
 import (
 	"errors"
 	"game/pkg/engine"
+	"game/pkg/window"
 )
 
 type Builder struct {
-	fsm engine.Machine
+	fsm    engine.Machine
+	window *window.Window
 }
 
 func NewBuilder() Builder {
@@ -18,6 +20,11 @@ func (b Builder) Fsm(machine engine.Machine) Builder {
 	return b
 }
 
+func (b Builder) Window(window *window.Window) Builder {
+	b.window = window
+	return b
+}
+
 func (b Builder) Build() (*Client, error) {
 	client := &Client{}
 
@@ -25,6 +32,11 @@ func (b Builder) Build() (*Client, error) {
 		return nil, errors.New("fsm is nil")
 	}
 	client.fsm = b.fsm
+
+	if b.window == nil {
+		return nil, errors.New("fsm is nil")
+	}
+	client.window = b.window
 
 	return client, nil
 }

@@ -7,6 +7,7 @@ import (
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
 	"game/pkg/utils/logger"
+	"game/pkg/window"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -36,12 +37,23 @@ func main() {
 		}),
 	})
 	if err != nil {
-		panic("failed to initialize logger:" + err.Error())
+		panic("failed to initialize logger: " + err.Error())
 	}
 
 	ctx = logger.ToCtx(ctx, l)
 
 	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
+
+	/* Modules */
+
+	w, err := window.Init(window.Opts{
+		Width:  800,
+		Height: 600,
+		Title:  "another-rpg",
+	})
+	if err != nil {
+		panic("failed to initialize window: " + err.Error())
+	}
 
 	machine := engine.NewMachineBuilder().
 		RegisterState(fsm.NewInitialState(), make(engine.Transitions)).
@@ -57,10 +69,15 @@ func main() {
 
 	cl := client.NewBuilder().
 		Fsm(machine).
+		Window(w).
 		MustBuild()
 
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
 	if err = cl.Run(ctx); err != nil {
 		panic("failed engine cycle: " + err.Error())
+	}
+
+	if err = cl.Shutdown(ctx); err != nil {
+		panic("failed to stop client gracefully: " + err.Error())
 	}
 }
