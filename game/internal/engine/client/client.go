@@ -5,16 +5,21 @@ import (
 	"fmt"
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
+	"game/pkg/graphic"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
+	"log/slog"
 )
 
 type Client struct {
-	fsm    engine.Machine
-	window *window.Window
+	fsm     engine.Machine
+	window  *window.Window
+	graphic graphic.Graphic
 }
 
 func (c *Client) Run(ctx context.Context) error {
+	c.dumpRunningInfo(ctx)
+
 	for {
 		var err error
 
@@ -61,6 +66,15 @@ func (c *Client) Run(ctx context.Context) error {
 
 func (c *Client) Shutdown(ctx context.Context) error {
 	logger.FromCtx(ctx).Info("shutting down client")
-	c.window.Terminate()
+	c.window.Terminate(ctx)
+	c.graphic.Terminate(ctx)
 	return nil
+}
+
+func (c *Client) dumpRunningInfo(ctx context.Context) {
+	graphicApiInfo := c.graphic.Api()
+	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "running with graphic",
+		slog.String("name", graphicApiInfo.Name),
+		slog.String("version", graphicApiInfo.Version),
+		slog.String("renderer", graphicApiInfo.Renderer))
 }

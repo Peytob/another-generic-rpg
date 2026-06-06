@@ -6,6 +6,7 @@ import (
 	"game/internal/engine/client"
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
+	"game/pkg/graphic/backend/opengl33"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
 	"log/slog"
@@ -13,6 +14,9 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+
+	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 func init() {
@@ -44,6 +48,18 @@ func main() {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
 
+	/* Compability init */
+
+	err = glfw.Init()
+	if err != nil {
+		panic("failed to initialize GLFW: " + err.Error())
+	}
+
+	err = gl.Init()
+	if err != nil {
+		panic("failed to initialize OpenGl: " + err.Error())
+	}
+
 	/* Modules */
 
 	w, err := window.Init(window.Opts{
@@ -52,8 +68,15 @@ func main() {
 		Title:  "another-rpg",
 	})
 	if err != nil {
-		panic("failed to initialize window: " + err.Error())
+		panic("failed to initialize window module: " + err.Error())
 	}
+
+	graphic, err := opengl33.NewGraphic()
+	if err != nil {
+		panic("failed to initialize graphic module: " + err.Error())
+	}
+
+	/* Client */
 
 	machine := engine.NewMachineBuilder().
 		RegisterState(fsm.NewInitialState(), make(engine.Transitions)).
@@ -70,6 +93,7 @@ func main() {
 	cl := client.NewBuilder().
 		Fsm(machine).
 		Window(w).
+		Graphic(graphic).
 		MustBuild()
 
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")

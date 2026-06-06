@@ -1,6 +1,7 @@
 package window
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -21,11 +22,6 @@ func Init(opts Opts) (*Window, error) {
 	var err error
 	w := &Window{}
 
-	err = glfw.Init()
-	if err != nil {
-		return w, fmt.Errorf("failed to initialize GLFW: %w", err)
-	}
-
 	glfw.DefaultWindowHints()
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 3)
@@ -40,7 +36,7 @@ func Init(opts Opts) (*Window, error) {
 	return w, nil
 }
 
-func (w Window) Terminate() {
+func (w Window) Terminate(_ context.Context) {
 	w.window.Destroy()
 }
 
