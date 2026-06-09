@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -56,4 +57,12 @@ func (w Window) OnClose(callback func(Window)) {
 	w.window.SetCloseCallback(func(_ *glfw.Window) {
 		callback(w)
 	})
+}
+
+func (w Window) Clear() {
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+}
+
+func (w Window) Show() {
+	w.window.Show()
 }

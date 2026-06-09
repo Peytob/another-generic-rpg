@@ -6,6 +6,8 @@ import (
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
 	"game/pkg/graphic"
+	"game/pkg/graphic/resource"
+	"game/pkg/math/shape"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
 	"log/slog"
@@ -55,6 +57,22 @@ func (c *Client) Run(ctx context.Context) error {
 			}
 		}
 
+		/* test */
+
+		sprite := resource.NewSprite(shape.NewRect(0.2, 0.2), shape.NewRect(0, 0))
+		canvas := c.graphic.NewCanvas()
+
+		canvas.Draw(sprite, graphic.DefaultCanvasOpts())
+		err = c.graphic.Renderer().Render(ctx, canvas, graphic.RenderOpts{})
+		if err != nil {
+			return fmt.Errorf("failed to render: %w", err)
+		}
+
+		/* end test */
+
+		c.window.Clear()
+		c.window.Show()
+
 		if !c.fsm.IsRunning() {
 			logger.FromCtx(ctx).Info("game FSM is completed, closing window")
 			break
@@ -72,7 +90,7 @@ func (c *Client) Shutdown(ctx context.Context) error {
 }
 
 func (c *Client) dumpRunningInfo(ctx context.Context) {
-	graphicApiInfo := c.graphic.Api()
+	graphicApiInfo := c.graphic.Telemetry()
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "running with graphic",
 		slog.String("name", graphicApiInfo.Name),
 		slog.String("version", graphicApiInfo.Version),
