@@ -14,8 +14,8 @@ type Sprite struct {
 	vertices []Vertex
 }
 
-func NewSprite(rect shape.Rect, textureRect shape.Rect) Sprite {
-	return Sprite{
+func NewSprite(rect shape.Rect, textureRect shape.Rect) *Sprite {
+	return &Sprite{
 		transformation: math.NewTransformation(),
 		rect:           rect,
 		textureRect:    textureRect,
@@ -23,19 +23,19 @@ func NewSprite(rect shape.Rect, textureRect shape.Rect) Sprite {
 	}
 }
 
-func (s Sprite) Transformation() *math.Transformation {
+func (s *Sprite) Transformation() *math.Transformation {
 	return &s.transformation
 }
 
-func (s Sprite) GetLocalRect() shape.Rect {
+func (s *Sprite) GetLocalRect() shape.Rect {
 	return s.rect
 }
 
-func (s Sprite) TextureRect() shape.Rect {
+func (s *Sprite) TextureRect() shape.Rect {
 	return s.textureRect
 }
 
-func (s Sprite) GetVertexes() []Vertex {
+func (s *Sprite) GetVertexes() []Vertex {
 	if len(s.vertices) == 0 {
 		s.updateVertices()
 	}
@@ -43,7 +43,7 @@ func (s Sprite) GetVertexes() []Vertex {
 	return s.vertices
 }
 
-func (s Sprite) updateVertices() {
+func (s *Sprite) updateVertices() {
 	s.vertices = make([]Vertex, 6)
 	transform := s.transformation.Transform()
 

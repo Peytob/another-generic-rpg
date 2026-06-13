@@ -1,6 +1,8 @@
 package resource
 
-import "github.com/go-gl/mathgl/mgl32"
+import (
+	"github.com/go-gl/mathgl/mgl32"
+)
 
 type Vertex struct {
 	Position           mgl32.Vec2

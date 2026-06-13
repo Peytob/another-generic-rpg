@@ -16,11 +16,51 @@ import (
 type Client struct {
 	fsm     engine.Machine
 	window  *window.Window
-	graphic graphic.Graphic
+	graphic *graphic.Graphic
 }
 
 func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
+
+	sprite := resource.NewSprite(shape.NewRect(0.2, 0.2), shape.NewRect(0, 0))
+	vertex, err := graphic.BuildShader(ctx, `
+#version 330 core
+layout (location = 0) in vec3 aPos;
+
+void main()
+{
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+`, graphic.VertexShader)
+	if err != nil {
+		return err
+	}
+
+	fragment, err := graphic.BuildShader(ctx, `
+#version 330 core
+out vec4 FragColor;
+
+void main()
+{
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+}
+`, graphic.FragmentShader)
+	if err != nil {
+		return err
+	}
+
+	spb := graphic.ShaderProgramBuilder{
+		Vertex:   vertex,
+		Fragment: fragment,
+	}
+
+	program, err := graphic.BuildShaderProgram(ctx, spb)
+	if err != nil {
+		return err
+	}
+
+	vertex.Delete()
+	fragment.Delete()
 
 	for {
 		var err error
@@ -59,11 +99,12 @@ func (c *Client) Run(ctx context.Context) error {
 
 		/* test */
 
-		sprite := resource.NewSprite(shape.NewRect(0.2, 0.2), shape.NewRect(0, 0))
-		canvas := c.graphic.NewCanvas()
+		canvas := graphic.NewCanvas()
 
 		canvas.Draw(sprite, graphic.DefaultCanvasOpts())
-		err = c.graphic.Renderer().Render(ctx, canvas, graphic.RenderOpts{})
+		err = c.graphic.Renderer().Render(ctx, canvas, graphic.RenderOpts{
+			Shader: program,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)
 		}

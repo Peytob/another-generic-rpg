@@ -1,25 +1,10 @@
 package graphic
 
-import "context"
+import (
+	"context"
 
-// Graphic describes graphic backend. Graphic will provide all methods to interaction with graphical backend, includes
-// factory methods for shaders, view points and other graphical stuff
-type Graphic interface {
-	// NewCanvas creates new empty canvas. Canvas will be compatible with graphical backend
-	NewCanvas() Canvas
-
-	// Renderer returns configured and ready renderer
-	Renderer() Renderer
-
-	// Factory used for creating backend-compatible graphic resources
-	Factory() Factory
-
-	// Telemetry returns information about graphical backend
-	Telemetry() Telemetry
-
-	// Terminate terminates graphics instance
-	Terminate(ctx context.Context)
-}
+	"github.com/go-gl/gl/v3.3-core/gl"
+)
 
 type Telemetry struct {
 	// Graphic backend provider (Vulkan / OGL / etc)
@@ -30,4 +15,30 @@ type Telemetry struct {
 
 	// Usually backend hardware name (or other renderer data)
 	Renderer string
+}
+
+type Graphic struct {
+	renderer *Renderer
+}
+
+func NewGraphic() (*Graphic, error) {
+	return &Graphic{
+		renderer: NewRenderer(),
+	}, nil
+}
+
+// Renderer returns configured and ready renderer object. It can be used to render
+func (g *Graphic) Renderer() *Renderer {
+	return g.renderer
+}
+
+func (g *Graphic) Telemetry() Telemetry {
+	return Telemetry{
+		Name:     gl.GoStr(gl.GetString(gl.VENDOR)),
+		Version:  gl.GoStr(gl.GetString(gl.VERSION)),
+		Renderer: gl.GoStr(gl.GetString(gl.RENDERER)),
+	}
+}
+
+func (g *Graphic) Terminate(_ context.Context) {
 }

@@ -2,15 +2,19 @@ package graphic
 
 import (
 	"context"
-	"game/pkg/graphic/resource"
+
+	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 // RenderOpts optional options for renderer
 type RenderOpts struct {
-	View   View
-	Shader resource.Shader
+	// View contains camera data
+	View View
 
-	// RenderTarget target to render. Renderer should use default target if nil
+	// Shader used to render shader. Required
+	Shader ShaderProgram
+
+	// RenderTarget target to render.
 	RenderTarget RenderTarget
 }
 
@@ -19,10 +23,31 @@ type View struct {
 }
 
 // RenderTarget describes render target
-type RenderTarget interface {
+type RenderTarget struct {
+	RenderBufferId int32
 }
 
-// Renderer Used to render canvas to
-type Renderer interface {
-	Render(ctx context.Context, canvas Canvas, opts RenderOpts) error
+// Renderer low-level canvas rendering objects
+type Renderer struct {
+}
+
+func NewRenderer() *Renderer {
+	return &Renderer{}
+}
+
+func (r *Renderer) Render(ctx context.Context, canvas *Canvas, opts RenderOpts) error {
+	// todo buffers reusing
+
+	if canvas.Empty() {
+		return nil
+	}
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(canvas.positions)*4, gl.Ptr(canvas.positions), gl.STATIC_DRAW)
+
+	gl.DeleteBuffers(1, &vbo)
+
+	return nil
 }

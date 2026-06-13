@@ -6,7 +6,7 @@ import (
 	"game/internal/engine/client"
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
-	"game/pkg/graphic/backend/opengl33"
+	"game/pkg/graphic"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
 	"log/slog"
@@ -71,7 +71,7 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
-	graphic, err := opengl33.NewGraphic()
+	g, err := graphic.NewGraphic()
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
@@ -93,7 +93,7 @@ func main() {
 	cl := client.NewBuilder().
 		Fsm(machine).
 		Window(w).
-		Graphic(graphic).
+		Graphic(g).
 		MustBuild()
 
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
