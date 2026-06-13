@@ -2,6 +2,9 @@ package graphic
 
 import (
 	"context"
+	"fmt"
+	"game/pkg/graphic/renderer"
+	gresource "game/pkg/graphic/resource"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -18,18 +21,29 @@ type Telemetry struct {
 }
 
 type Graphic struct {
-	renderer *Renderer
+	renderer *renderer.Renderer
+	shaders  *gresource.Shaders
 }
 
-func NewGraphic() (*Graphic, error) {
+func NewGraphic(ctx context.Context) (*Graphic, error) {
+	shaders, err := LoadShaders(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load shaders: %w", err)
+	}
+
 	return &Graphic{
-		renderer: NewRenderer(),
+		renderer: renderer.NewRenderer(),
+		shaders:  shaders,
 	}, nil
 }
 
 // Renderer returns configured and ready renderer object. It can be used to render
-func (g *Graphic) Renderer() *Renderer {
+func (g *Graphic) Renderer() *renderer.Renderer {
 	return g.renderer
+}
+
+func (g *Graphic) Shaders() *gresource.Shaders {
+	return g.shaders
 }
 
 func (g *Graphic) Telemetry() Telemetry {
@@ -40,5 +54,6 @@ func (g *Graphic) Telemetry() Telemetry {
 	}
 }
 
-func (g *Graphic) Terminate(_ context.Context) {
+func (g *Graphic) Terminate(ctx context.Context) {
+	g.shaders.Terminate(ctx)
 }

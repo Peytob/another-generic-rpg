@@ -1,7 +1,8 @@
-package graphic
+package renderer
 
 import (
 	"context"
+	"game/pkg/graphic/resource"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -12,7 +13,7 @@ type RenderOpts struct {
 	View View
 
 	// Shader used to render shader. Required
-	Shader ShaderProgram
+	Shader resource.ShaderProgram
 
 	// RenderTarget target to render.
 	RenderTarget RenderTarget

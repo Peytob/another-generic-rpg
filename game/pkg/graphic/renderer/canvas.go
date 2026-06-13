@@ -1,4 +1,4 @@
-package graphic
+package renderer
 
 import (
 	gres "game/pkg/graphic/resource"

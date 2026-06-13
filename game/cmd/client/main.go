@@ -71,7 +71,7 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
-	g, err := graphic.NewGraphic()
+	g, err := graphic.NewGraphic(ctx)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
