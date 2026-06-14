@@ -7,7 +7,7 @@ import (
 
 // Sprite just textured rect with transformation
 type Sprite struct {
-	transformation math.Transformation
+	transformation *math.Transformation
 	rect           shape.Rect
 	textureRect    shape.Rect
 
@@ -24,7 +24,7 @@ func NewSprite(rect shape.Rect, textureRect shape.Rect) *Sprite {
 }
 
 func (s *Sprite) Transformation() *math.Transformation {
-	return &s.transformation
+	return s.transformation
 }
 
 func (s *Sprite) GetLocalRect() shape.Rect {
@@ -35,12 +35,18 @@ func (s *Sprite) TextureRect() shape.Rect {
 	return s.textureRect
 }
 
-func (s *Sprite) GetVertexes() []Vertex {
+func (s *Sprite) GetVertexes() IndexesVertices {
 	if len(s.vertices) == 0 {
 		s.updateVertices()
 	}
 
-	return s.vertices
+	return IndexesVertices{
+		Vertexes: s.vertices,
+		Indexes: []uint32{
+			0, 1, 2,
+			3, 4, 5,
+		},
+	}
 }
 
 func (s *Sprite) updateVertices() {

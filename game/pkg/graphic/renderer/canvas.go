@@ -3,21 +3,31 @@ package renderer
 import (
 	gres "game/pkg/graphic/resource"
 	"game/pkg/math"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Drawable interface {
-	GetVertexes() []gres.Vertex
+	GetVertexes() gres.IndexesVertices
 }
 
 type CanvasOpts struct {
-	Transformation math.Transform
+	Transform math.Transform
 }
 
 // Canvas base low-level type to accumulate renderable objects into one buffer
 type Canvas struct {
-	vertices           uint32
-	positions          []float32
-	textureCoordinates []float32
+	// vertices count
+	vertices uint32
+
+	// elements EBO data (just 1,2,3,4,5 ... for now)
+	elements []uint32
+
+	// positions vertex position data (canvas local coordinates, ie after model and canvas transformations)
+	positions []mgl32.Vec2
+
+	// textureCoordinates local texture coordinates (normalized coordinates in target texture)
+	textureCoordinates []mgl32.Vec2
 }
 
 func NewCanvas() *Canvas {
@@ -27,14 +37,15 @@ func NewCanvas() *Canvas {
 func NewCanvasCustomBuffer(bufferSizeVertexes int64) *Canvas {
 	return &Canvas{
 		vertices:           0,
-		positions:          make([]float32, 0, bufferSizeVertexes*2*4), // 2 float 4 bytes each
-		textureCoordinates: make([]float32, 0, bufferSizeVertexes*2*4), // 2 float 4 bytes each
+		elements:           make([]uint32, 0, bufferSizeVertexes*3),
+		positions:          make([]mgl32.Vec2, 0, bufferSizeVertexes),
+		textureCoordinates: make([]mgl32.Vec2, 0, bufferSizeVertexes),
 	}
 }
 
 func DefaultCanvasOpts() *CanvasOpts {
 	return &CanvasOpts{
-		Transformation: math.NoTransform(),
+		Transform: math.NoTransform(),
 	}
 }
 
@@ -43,12 +54,19 @@ func (c *Canvas) Empty() bool {
 }
 
 func (c *Canvas) Draw(drawable Drawable, opts *CanvasOpts) {
-	vertexes := drawable.GetVertexes()
+	d := drawable.GetVertexes()
 
-	for _, vertex := range vertexes {
+	for _, vertex := range d.Vertexes {
 		// todo append transformation
 		c.vertices++
-		c.positions = append(c.positions, vertex.Position.X(), vertex.Position.Y())
-		c.textureCoordinates = append(c.textureCoordinates, vertex.TextureCoordinates.X(), vertex.TextureCoordinates.Y())
+
+		transformedPosition := opts.Transform.TransformPoint(vertex.Position)
+		c.positions = append(c.positions, transformedPosition)
+		c.textureCoordinates = append(c.textureCoordinates, vertex.TextureCoordinates)
+	}
+
+	startIndex := uint32(len(c.elements))
+	for _, index := range d.Indexes {
+		c.elements = append(c.elements, startIndex+index)
 	}
 }

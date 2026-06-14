@@ -64,5 +64,5 @@ func (w Window) Clear() {
 }
 
 func (w Window) Show() {
-	w.window.Show()
+	w.window.SwapBuffers()
 }

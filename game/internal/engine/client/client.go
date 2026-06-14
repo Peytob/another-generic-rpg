@@ -8,6 +8,7 @@ import (
 	"game/pkg/graphic"
 	"game/pkg/graphic/renderer"
 	"game/pkg/graphic/resource"
+	"game/pkg/math"
 	"game/pkg/math/shape"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
@@ -24,7 +25,8 @@ func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
 
 	// test
-	sprite := resource.NewSprite(shape.NewRect(0.2, 0.2), shape.NewRect(0, 0))
+	sprite := resource.NewSprite(shape.NewRect(1, 1), shape.NewRect(0, 0))
+	sprite.Transformation().Translate(-0.5, 0.35)
 
 	for {
 		var err error
@@ -61,11 +63,15 @@ func (c *Client) Run(ctx context.Context) error {
 			}
 		}
 
+		c.window.Clear()
+
 		/* test */
 
 		canvas := renderer.NewCanvas()
 
-		canvas.Draw(sprite, renderer.DefaultCanvasOpts())
+		canvas.Draw(sprite, &renderer.CanvasOpts{
+			Transform: math.NewTransformation().Rotate(45).Transform(),
+		})
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
 			Shader: c.graphic.Shaders().World,
 		})
@@ -75,7 +81,6 @@ func (c *Client) Run(ctx context.Context) error {
 
 		/* end test */
 
-		c.window.Clear()
 		c.window.Show()
 
 		if !c.fsm.IsRunning() {
