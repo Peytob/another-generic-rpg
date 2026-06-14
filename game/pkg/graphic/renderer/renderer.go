@@ -3,24 +3,22 @@ package renderer
 import (
 	"context"
 	"game/pkg/graphic/resource"
+	"game/pkg/math"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // RenderOpts optional options for renderer
 type RenderOpts struct {
-	// View contains camera data
-	View View
+	// View contains View x Proj matrix multiplication result. Or in other words: camera
+	ViewProj mgl32.Mat4
+	Model    math.Transform
 
 	// Shader used to render shader. Required
 	Shader resource.ShaderProgram
-
 	// RenderTarget target to render.
 	RenderTarget RenderTarget
-}
-
-// View contains data to compute ViewProj matrix
-type View struct {
 }
 
 // RenderTarget describes render target
@@ -64,7 +62,22 @@ func (r *Renderer) Render(ctx context.Context, canvas *Canvas, opts RenderOpts) 
 		gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
 		gl.EnableVertexAttribArray(0)
 	}
+
 	gl.UseProgram(opts.Shader.Id())
+
+	modelLoc := gl.GetUniformLocation(opts.Shader.Id(), gl.Str("model\x00"))
+	if modelLoc == -1 {
+		//return fmt.Errorf("model uniform not found")
+	}
+	model := mgl32.Mat4(opts.Model)
+	gl.UniformMatrix4fv(modelLoc, 1, false, &model[0])
+
+	viewProjLoc := gl.GetUniformLocation(opts.Shader.Id(), gl.Str("viewProj\x00"))
+	if viewProjLoc == -1 {
+		//return fmt.Errorf("model uniform not found")
+	}
+	gl.UniformMatrix4fv(viewProjLoc, 1, false, &opts.ViewProj[0])
+
 	gl.BindVertexArray(vao)
 	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)

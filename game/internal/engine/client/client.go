@@ -13,6 +13,8 @@ import (
 	"game/pkg/utils/logger"
 	"game/pkg/window"
 	"log/slog"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Client struct {
@@ -25,8 +27,12 @@ func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
 
 	// test
-	sprite := resource.NewSprite(shape.NewRect(1, 1), shape.NewRect(0, 0))
-	sprite.Transformation().Translate(-0.5, 0.35)
+	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
+	sprite.Transformation().Translate(100, 100)
+
+	w, h := c.window.Size()
+	proj := mgl32.Ortho2D(0, float32(w), float32(h), 0)
+	rotationTest := 0.0
 
 	for {
 		var err error
@@ -69,11 +75,16 @@ func (c *Client) Run(ctx context.Context) error {
 
 		canvas := renderer.NewCanvas()
 
+		rotationTest += 0.001
+
 		canvas.Draw(sprite, &renderer.CanvasOpts{
-			Transform: math.NewTransformation().Rotate(45).Transform(),
+			//Transform: math.NoTransform(),
+			Transform: math.NewTransformation().Rotate(float32(rotationTest * 0.3)).Transform(),
 		})
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
-			Shader: c.graphic.Shaders().World,
+			ViewProj: proj.Mul4(mgl32.Translate3D(250, 250, 0)),
+			Model:    math.NewTransformation().Rotate(float32(rotationTest)).Transform(),
+			Shader:   c.graphic.Shaders().World,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)

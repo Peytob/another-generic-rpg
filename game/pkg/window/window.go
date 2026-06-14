@@ -66,3 +66,7 @@ func (w Window) Clear() {
 func (w Window) Show() {
 	w.window.SwapBuffers()
 }
+
+func (w Window) Size() (int, int) {
+	return w.window.GetSize()
+}
