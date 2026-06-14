@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"game/pkg/graphic/resource"
 	"game/pkg/math"
+	"game/pkg/utils/logger"
+	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
@@ -32,11 +34,22 @@ type RenderTarget struct {
 // Renderer low-level canvas rendering objects
 type Renderer struct {
 	proj mgl32.Mat4
+
+	vao resource.VertexArray // default for now
 }
 
-func NewRenderer() *Renderer {
+func NewRenderer(ctx context.Context) *Renderer {
+	var tilemapVao uint32
+	gl.GenVertexArrays(1, &tilemapVao)
+	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(tilemapVao)))
+
+	gl.BindVertexArray(tilemapVao)
+	gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
+	gl.EnableVertexAttribArray(0)
+
 	return &Renderer{
 		proj: mgl32.Ident4(),
+		vao:  resource.VertexArray(tilemapVao),
 	}
 }
 
@@ -51,9 +64,7 @@ func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) er
 		return nil
 	}
 
-	var vbo, vao, ebo uint32
-	gl.GenVertexArrays(1, &vao)
-	defer gl.DeleteVertexArrays(1, &vao)
+	var vbo, ebo uint32
 
 	gl.GenBuffers(1, &vbo)
 	defer gl.DeleteBuffers(1, &vbo)
@@ -61,7 +72,7 @@ func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) er
 	gl.GenBuffers(1, &ebo)
 	defer gl.DeleteBuffers(1, &ebo)
 
-	gl.BindVertexArray(vao)
+	gl.BindVertexArray(r.vao.Id())
 	{
 		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 		gl.BufferData(gl.ARRAY_BUFFER, len(canvas.positions)*4*2, gl.Ptr(canvas.positions), gl.STATIC_DRAW)
@@ -87,9 +98,14 @@ func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) er
 		return fmt.Errorf("failed to set view uniform: %w", err)
 	}
 
-	gl.BindVertexArray(vao)
+	gl.BindVertexArray(r.vao.Id())
 	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)
 
 	return nil
+}
+
+func (r *Renderer) Terminate(ctx context.Context) {
+	logger.FromCtx(ctx).Info("deleting vertex array", slog.Int64("id", int64(r.vao)))
+	r.vao.Delete()
 }

@@ -32,7 +32,7 @@ func NewGraphic(ctx context.Context) (*Graphic, error) {
 	}
 
 	return &Graphic{
-		renderer: renderer.NewRenderer(),
+		renderer: renderer.NewRenderer(ctx),
 		shaders:  shaders,
 	}, nil
 }
@@ -56,4 +56,5 @@ func (g *Graphic) Telemetry() Telemetry {
 
 func (g *Graphic) Terminate(ctx context.Context) {
 	g.shaders.Terminate(ctx)
+	g.renderer.Terminate(ctx)
 }
