@@ -30,9 +30,8 @@ func (c *Client) Run(ctx context.Context) error {
 	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
 	sprite.Transformation().Translate(100, 100)
 
-	w, h := c.window.Size()
-	proj := mgl32.Ortho2D(0, float32(w), float32(h), 0)
-	rotationTest := 0.0
+	c.window.OnSizeChanged(c.onWindowSizeChanged)
+	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
 
 	for {
 		var err error
@@ -74,17 +73,12 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := renderer.NewCanvas()
+		canvas.Draw(sprite, renderer.DefaultCanvasOpts())
 
-		rotationTest += 0.001
-
-		canvas.Draw(sprite, &renderer.CanvasOpts{
-			//Transform: math.NoTransform(),
-			Transform: math.NewTransformation().Rotate(float32(rotationTest * 0.3)).Transform(),
-		})
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
-			ViewProj: proj.Mul4(mgl32.Translate3D(250, 250, 0)),
-			Model:    math.NewTransformation().Rotate(float32(rotationTest)).Transform(),
-			Shader:   c.graphic.Shaders().World,
+			View:   mgl32.Ident4(), // todo camera
+			Model:  math.NoTransform(),
+			Shader: c.graphic.Shaders().World,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)
@@ -116,4 +110,9 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 		slog.String("name", graphicApiInfo.Name),
 		slog.String("version", graphicApiInfo.Version),
 		slog.String("renderer", graphicApiInfo.Renderer))
+}
+
+func (c *Client) onWindowSizeChanged(width int, height int) {
+	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
+	c.graphic.Renderer().UpdateProjection(proj)
 }

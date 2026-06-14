@@ -3,8 +3,11 @@ package resource
 import (
 	"context"
 	"fmt"
+	"game/pkg/math"
+	"strings"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type ShaderProgram uint32
@@ -15,6 +18,27 @@ func (sp ShaderProgram) Id() uint32 {
 
 func (sp ShaderProgram) Delete() {
 	gl.DeleteShader(sp.Id())
+}
+
+func (sp ShaderProgram) UniformMat4(variable string, mat mgl32.Mat4) error {
+	location := sp.getUniformLocation(variable)
+	if location == -1 {
+		return fmt.Errorf("uniform %s not found", variable)
+	}
+
+	gl.UniformMatrix4fv(location, 1, false, &mat[0])
+	return nil
+}
+
+func (sp ShaderProgram) UniformTransform(variable string, transform math.Transform) error {
+	return sp.UniformMat4(variable, mgl32.Mat4(transform))
+}
+
+func (sp ShaderProgram) getUniformLocation(variable string) int32 {
+	if !strings.HasSuffix(variable, "\x00") {
+		variable = variable + "\x00"
+	}
+	return gl.GetUniformLocation(sp.Id(), gl.Str(variable))
 }
 
 type ShaderProgramBuilder struct {

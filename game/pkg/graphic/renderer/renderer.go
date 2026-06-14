@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"context"
+	"fmt"
 	"game/pkg/graphic/resource"
 	"game/pkg/math"
 
@@ -11,9 +12,11 @@ import (
 
 // RenderOpts optional options for renderer
 type RenderOpts struct {
-	// View contains View x Proj matrix multiplication result. Or in other words: camera
-	ViewProj mgl32.Mat4
-	Model    math.Transform
+	// View matrix used to make ViewProjection matrix. Or in other words: camera
+	View mgl32.Mat4
+
+	// Model matrix used to compute rendering model transformations
+	Model math.Transform
 
 	// Shader used to render shader. Required
 	Shader resource.ShaderProgram
@@ -28,13 +31,20 @@ type RenderTarget struct {
 
 // Renderer low-level canvas rendering objects
 type Renderer struct {
+	proj mgl32.Mat4
 }
 
 func NewRenderer() *Renderer {
-	return &Renderer{}
+	return &Renderer{
+		proj: mgl32.Ident4(),
+	}
 }
 
-func (r *Renderer) Render(ctx context.Context, canvas *Canvas, opts RenderOpts) error {
+func (r *Renderer) UpdateProjection(proj mgl32.Mat4) {
+	r.proj = proj
+}
+
+func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) error {
 	// todo buffers reusing
 
 	if canvas.Empty() {
@@ -65,18 +75,17 @@ func (r *Renderer) Render(ctx context.Context, canvas *Canvas, opts RenderOpts) 
 
 	gl.UseProgram(opts.Shader.Id())
 
-	modelLoc := gl.GetUniformLocation(opts.Shader.Id(), gl.Str("model\x00"))
-	if modelLoc == -1 {
-		//return fmt.Errorf("model uniform not found")
+	if err := opts.Shader.UniformTransform("model\x00", opts.Model); err != nil {
+		return fmt.Errorf("failed to set model uniform: %w", err)
 	}
-	model := mgl32.Mat4(opts.Model)
-	gl.UniformMatrix4fv(modelLoc, 1, false, &model[0])
 
-	viewProjLoc := gl.GetUniformLocation(opts.Shader.Id(), gl.Str("viewProj\x00"))
-	if viewProjLoc == -1 {
-		//return fmt.Errorf("model uniform not found")
+	if err := opts.Shader.UniformMat4("view\x00", opts.View); err != nil {
+		return fmt.Errorf("failed to set projection uniform: %w", err)
 	}
-	gl.UniformMatrix4fv(viewProjLoc, 1, false, &opts.ViewProj[0])
+
+	if err := opts.Shader.UniformMat4("proj\x00", r.proj); err != nil {
+		return fmt.Errorf("failed to set view uniform: %w", err)
+	}
 
 	gl.BindVertexArray(vao)
 	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
