@@ -27,11 +27,14 @@ func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
 
 	// test
+	//w, h := c.window.Size()
 	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
-	sprite.Transformation().Translate(100, 100)
+	sprite.Transformation().Translate(-50, 50)
 
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
+
+	rotate := float32(0.0)
 
 	for {
 		var err error
@@ -73,11 +76,18 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := renderer.NewCanvas()
-		canvas.Draw(sprite, renderer.DefaultCanvasOpts())
+		canvas.Draw(sprite, &renderer.CanvasOpts{
+			Transform: sprite.Transformation().Transform(),
+		})
+		sprite.Transformation().Rotate(rotate)
+		rotate += 0.0002
 
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
-			View:   mgl32.Ident4(), // todo camera
-			Model:  math.NoTransform(),
+			View: mgl32.Ident4(), // todo camera
+			Model: math.NewTransformation().
+				//Translate(float32(w)/2, float32(h)/2).
+				//Rotate(rotate).
+				Transform(),
 			Shader: c.graphic.Shaders().World,
 		})
 		if err != nil {

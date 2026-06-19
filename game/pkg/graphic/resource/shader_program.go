@@ -17,7 +17,7 @@ func (sp ShaderProgram) Id() uint32 {
 }
 
 func (sp ShaderProgram) Delete() {
-	gl.DeleteShader(sp.Id())
+	gl.DeleteProgram(sp.Id())
 }
 
 func (sp ShaderProgram) UniformMat4(variable string, mat mgl32.Mat4) error {

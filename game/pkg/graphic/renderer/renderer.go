@@ -78,7 +78,7 @@ func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) er
 		gl.BufferData(gl.ARRAY_BUFFER, len(canvas.positions)*4*2, gl.Ptr(canvas.positions), gl.STATIC_DRAW)
 
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(canvas.elements)*4*2, gl.Ptr(canvas.elements), gl.STATIC_DRAW)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(canvas.elements)*4, gl.Ptr(canvas.elements), gl.STATIC_DRAW)
 
 		gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
 		gl.EnableVertexAttribArray(0)
@@ -91,11 +91,11 @@ func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) er
 	}
 
 	if err := opts.Shader.UniformMat4("view\x00", opts.View); err != nil {
-		return fmt.Errorf("failed to set projection uniform: %w", err)
+		return fmt.Errorf("failed to set view uniform: %w", err)
 	}
 
 	if err := opts.Shader.UniformMat4("proj\x00", r.proj); err != nil {
-		return fmt.Errorf("failed to set view uniform: %w", err)
+		return fmt.Errorf("failed to set projection uniform: %w", err)
 	}
 
 	gl.BindVertexArray(r.vao.Id())

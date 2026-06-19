@@ -51,12 +51,11 @@ func (s *Sprite) GetVertexes() IndexesVertices {
 
 func (s *Sprite) updateVertices() {
 	s.vertices = make([]Vertex, 6)
-	transform := s.transformation.Transform()
 
 	rectPoints := s.rect.GetPoints()
 	for i := range rectPoints {
 		s.vertices[i] = Vertex{
-			Position:           transform.TransformPoint(rectPoints[i]),
+			Position:           rectPoints[i],
 			TextureCoordinates: rectPoints[i],
 		}
 	}

@@ -3,7 +3,6 @@ package window
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -32,7 +31,7 @@ func Init(opts Opts) (*Window, error) {
 		return w, fmt.Errorf("failed to create GLFW w: %w", err)
 	}
 	w.window.MakeContextCurrent()
-	glfw.SwapInterval(int(time.Second.Milliseconds() / 60))
+	glfw.SwapInterval(1)
 
 	return w, nil
 }

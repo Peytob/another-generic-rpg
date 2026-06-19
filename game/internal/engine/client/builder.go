@@ -41,7 +41,7 @@ func (b *Builder) Build() (*Client, error) {
 	client.fsm = b.fsm
 
 	if b.window == nil {
-		return nil, errors.New("fsm is nil")
+		return nil, errors.New("window is nil")
 	}
 	client.window = b.window
 

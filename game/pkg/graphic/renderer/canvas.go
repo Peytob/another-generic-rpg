@@ -55,6 +55,7 @@ func (c *Canvas) Empty() bool {
 
 func (c *Canvas) Draw(drawable Drawable, opts *CanvasOpts) {
 	d := drawable.GetVertexes()
+	startIndex := c.vertices
 
 	for _, vertex := range d.Vertexes {
 		// todo append transformation
@@ -65,7 +66,6 @@ func (c *Canvas) Draw(drawable Drawable, opts *CanvasOpts) {
 		c.textureCoordinates = append(c.textureCoordinates, vertex.TextureCoordinates)
 	}
 
-	startIndex := uint32(len(c.elements))
 	for _, index := range d.Indexes {
 		c.elements = append(c.elements, startIndex+index)
 	}
