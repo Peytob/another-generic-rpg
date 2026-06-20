@@ -18,12 +18,12 @@ type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	// InitialState state that be used as initial on Machine. If initial state already exists it will be rewritten.
 	InitialState(state I) MachineBuilder[E, I, S]
 
-	// GlobalTransitions Add new global transactions to Machine. If global transitions already specified, then
-	// new transitions will be rewritten
+	// GlobalTransitions adds global transitions to Machine. If a transition for an event is already
+	// specified, then the old transition will be overwritten
 	GlobalTransitions(transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
 	// FinalStates states that be used as final on Machine. If not set, then machine will work indefinitely.
-	FinalStates(states []I) MachineBuilder[E, I, S]
+	FinalStates(states ...I) MachineBuilder[E, I, S]
 
 	// Build returns built machine. Possible error causes is:
 	// State used in transition but not registered
@@ -31,7 +31,7 @@ type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	// No one state is registered
 	Build() (Machine[E, I, S], error)
 
-	// ShouldBuild Build with panic on error
+	// MustBuild Build with panic on error
 	MustBuild() Machine[E, I, S]
 }
 
@@ -68,7 +68,7 @@ func (m *machineBuilder[E, I, S]) RegisterState(state S, transitions Transitions
 }
 
 func (m *machineBuilder[E, I, S]) WriteState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S] {
-	m.transitions[state.Identifier()] = transitions
+	m.transitions[state.Identifier()] = maps.Clone(transitions)
 	m.states[state.Identifier()] = state
 	return m
 }
@@ -84,27 +84,29 @@ func (m *machineBuilder[E, I, S]) GlobalTransitions(transitions Transitions[E, I
 	return m
 }
 
-func (m *machineBuilder[E, I, S]) FinalStates(states []I) MachineBuilder[E, I, S] {
+func (m *machineBuilder[E, I, S]) FinalStates(states ...I) MachineBuilder[E, I, S] {
 	for _, state := range states {
-		if !m.finalStates.Contains(state) {
-			m.finalStates.Add(state)
-		}
+		m.finalStates.Add(state)
 	}
 
 	return m
 }
 
 func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
+	if len(m.states) == 0 {
+		return nil, errors.New("no states found")
+	}
+
 	for leftState := range m.transitions {
 		if !m.containsState(leftState) {
-			return nil, errors.New("transition left finalState not found")
+			return nil, errors.New("transition left state not found")
 		}
 
 		for event := range m.transitions[leftState] {
 			rightState := m.transitions[leftState][event]
 
 			if !m.containsState(rightState) {
-				return nil, errors.New("transition right finalState not found")
+				return nil, errors.New("transition right state not found")
 			}
 		}
 	}
@@ -113,13 +115,13 @@ func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 		rightState := m.globalTransitions[event]
 
 		if !m.containsState(rightState) {
-			return nil, errors.New("transition right finalState not found")
+			return nil, errors.New("transition right state not found")
 		}
 	}
 
 	for finalState := range m.finalStates.Iter() {
 		if !m.containsState(finalState) {
-			return nil, errors.New("final finalState not found")
+			return nil, errors.New("final state not found")
 		}
 	}
 

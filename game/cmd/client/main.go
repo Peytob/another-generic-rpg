@@ -85,9 +85,7 @@ func main() {
 		GlobalTransitions(engine.Transitions{
 			fsm.StoppedEvent: fsm.StoppedStateIdentifier,
 		}).
-		FinalStates([]engine.StateIdentifier{
-			fsm.StoppedStateIdentifier,
-		}).
+		FinalStates(fsm.StoppedStateIdentifier).
 		MustBuild()
 
 	cl := client.NewBuilder().
