@@ -19,10 +19,6 @@ func (s Shader) Id() uint32 {
 	return uint32(s)
 }
 
-func (s Shader) Delete() {
-	gl.DeleteShader(s.Id())
-}
-
 func (s Shader) Type() ShaderType {
 	var t int32
 	gl.GetShaderiv(s.Id(), gl.SHADER_TYPE, &t)

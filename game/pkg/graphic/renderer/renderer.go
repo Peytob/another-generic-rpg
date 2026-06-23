@@ -2,13 +2,9 @@ package renderer
 
 import (
 	"context"
-	"fmt"
 	"game/pkg/graphic/resource"
 	"game/pkg/math"
-	"game/pkg/utils/logger"
-	"log/slog"
 
-	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -22,6 +18,7 @@ type RenderOpts struct {
 
 	// Shader used to render shader. Required
 	Shader resource.ShaderProgram
+
 	// RenderTarget target to render.
 	RenderTarget RenderTarget
 }
@@ -31,81 +28,8 @@ type RenderTarget struct {
 	RenderBufferId int32
 }
 
-// Renderer low-level canvas rendering objects
-type Renderer struct {
-	proj mgl32.Mat4
-
-	vao resource.VertexArray // default for now
-}
-
-func NewRenderer(ctx context.Context) *Renderer {
-	var tilemapVao uint32
-	gl.GenVertexArrays(1, &tilemapVao)
-	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(tilemapVao)))
-
-	gl.BindVertexArray(tilemapVao)
-	gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
-	gl.EnableVertexAttribArray(0)
-
-	return &Renderer{
-		proj: mgl32.Ident4(),
-		vao:  resource.VertexArray(tilemapVao),
-	}
-}
-
-func (r *Renderer) UpdateProjection(proj mgl32.Mat4) {
-	r.proj = proj
-}
-
-func (r *Renderer) Render(_ context.Context, canvas *Canvas, opts RenderOpts) error {
-	// todo buffers reusing
-
-	if canvas.Empty() {
-		return nil
-	}
-
-	var vbo, ebo uint32
-
-	gl.GenBuffers(1, &vbo)
-	defer gl.DeleteBuffers(1, &vbo)
-
-	gl.GenBuffers(1, &ebo)
-	defer gl.DeleteBuffers(1, &ebo)
-
-	gl.BindVertexArray(r.vao.Id())
-	{
-		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-		gl.BufferData(gl.ARRAY_BUFFER, len(canvas.positions)*4*2, gl.Ptr(canvas.positions), gl.STATIC_DRAW)
-
-		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(canvas.elements)*4, gl.Ptr(canvas.elements), gl.STATIC_DRAW)
-
-		gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
-		gl.EnableVertexAttribArray(0)
-	}
-
-	gl.UseProgram(opts.Shader.Id())
-
-	if err := opts.Shader.UniformTransform("model\x00", opts.Model); err != nil {
-		return fmt.Errorf("failed to set model uniform: %w", err)
-	}
-
-	if err := opts.Shader.UniformMat4("view\x00", opts.View); err != nil {
-		return fmt.Errorf("failed to set view uniform: %w", err)
-	}
-
-	if err := opts.Shader.UniformMat4("proj\x00", r.proj); err != nil {
-		return fmt.Errorf("failed to set projection uniform: %w", err)
-	}
-
-	gl.BindVertexArray(r.vao.Id())
-	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
-	gl.BindVertexArray(0)
-
-	return nil
-}
-
-func (r *Renderer) Terminate(ctx context.Context) {
-	logger.FromCtx(ctx).Info("deleting vertex array", slog.Int64("id", int64(r.vao)))
-	r.vao.Delete()
+type Renderer interface {
+	UpdateProjection(proj mgl32.Mat4)
+	Render(ctx context.Context, canvas Canvas, opts RenderOpts) error
+	Terminate(ctx context.Context)
 }

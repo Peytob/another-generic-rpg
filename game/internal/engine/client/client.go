@@ -20,7 +20,7 @@ import (
 type Client struct {
 	fsm     engine.Machine
 	window  *window.Window
-	graphic *graphic.Graphic
+	graphic graphic.Graphic
 }
 
 func (c *Client) Run(ctx context.Context) error {
@@ -75,7 +75,7 @@ func (c *Client) Run(ctx context.Context) error {
 
 		/* test */
 
-		canvas := renderer.NewCanvas()
+		canvas := c.graphic.NewCanvas()
 		canvas.Draw(sprite, &renderer.CanvasOpts{
 			Transform: sprite.Transformation().Transform(),
 		})

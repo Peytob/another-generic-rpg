@@ -6,7 +6,7 @@ import (
 	"game/internal/engine/client"
 	"game/internal/engine/fsm"
 	"game/pkg/engine"
-	"game/pkg/graphic"
+	gbackend "game/pkg/graphic/backend"
 	"game/pkg/utils/logger"
 	"game/pkg/window"
 	"log/slog"
@@ -71,7 +71,7 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
-	g, err := graphic.NewGraphic(ctx)
+	g, err := gbackend.NewOpenGlGraphics(ctx)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
