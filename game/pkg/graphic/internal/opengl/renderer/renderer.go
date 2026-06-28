@@ -15,12 +15,12 @@ import (
 
 // Renderer low-level canvas rendering objects
 type Renderer struct {
-	proj mgl32.Mat4
+	uniformBlocks *resource.UniformBlocks
 
 	vao resource.VertexArray // default for now
 }
 
-func NewRenderer(ctx context.Context) *Renderer {
+func NewRenderer(ctx context.Context, uniformBlocks *resource.UniformBlocks) *Renderer {
 	var tilemapVao uint32
 	gl.GenVertexArrays(1, &tilemapVao)
 	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(tilemapVao)))
@@ -30,13 +30,13 @@ func NewRenderer(ctx context.Context) *Renderer {
 	gl.EnableVertexAttribArray(0)
 
 	return &Renderer{
-		proj: mgl32.Ident4(),
-		vao:  resource.VertexArray(tilemapVao),
+		uniformBlocks: uniformBlocks,
+		vao:           resource.VertexArray(tilemapVao),
 	}
 }
 
 func (r *Renderer) UpdateProjection(proj mgl32.Mat4) {
-	r.proj = proj
+	r.uniformBlocks.Proj.SetProjectionMatrix(proj)
 }
 
 func (r *Renderer) Render(ctx context.Context, canvas renderer.Canvas, opts renderer.RenderOpts) error {
@@ -77,16 +77,12 @@ func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts renderer.Ren
 
 	gl.UseProgram(opts.Shader.Id())
 
-	if err := resource.UniformTransform(opts.Shader, "model\x00", opts.Model); err != nil {
+	if err := resource.UniformTransform(opts.Shader, "u_model\x00", opts.Model); err != nil {
 		return fmt.Errorf("failed to set model uniform: %w", err)
 	}
 
-	if err := resource.UniformMat4(opts.Shader, "view\x00", opts.View); err != nil {
+	if err := resource.UniformMat4(opts.Shader, "u_view\x00", opts.View); err != nil {
 		return fmt.Errorf("failed to set view uniform: %w", err)
-	}
-
-	if err := resource.UniformMat4(opts.Shader, "proj\x00", r.proj); err != nil {
-		return fmt.Errorf("failed to set projection uniform: %w", err)
 	}
 
 	gl.BindVertexArray(r.vao.Id())

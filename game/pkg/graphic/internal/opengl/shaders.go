@@ -18,7 +18,7 @@ var worldVertex string
 //go:embed glsl/src/world.frag
 var worldFragment string
 
-func loadShaders(ctx context.Context) (gresource.Shaders, error) {
+func loadShaders(ctx context.Context) (*gresource.Shaders, error) {
 	var err error
 
 	logger.FromCtx(ctx).Info("loading shaders")
@@ -27,19 +27,19 @@ func loadShaders(ctx context.Context) (gresource.Shaders, error) {
 
 	worldVertexShader, err := buildShader(ctx, worldVertex, resource.VertexShader)
 	if err != nil {
-		return gresource.Shaders{}, err
+		return nil, err
 	}
 	defer deleteShader(ctx, worldVertexShader)
 
 	worldFragmentShader, err := buildShader(ctx, worldFragment, resource.FragmentShader)
 	if err != nil {
-		return gresource.Shaders{}, err
+		return nil, err
 	}
 	defer deleteShader(ctx, worldFragmentShader)
 
 	/* Shader programs loading */
 
-	shaders := gresource.Shaders{}
+	shaders := &gresource.Shaders{}
 
 	shaders.World, err = buildShaderProgram(ctx, resource.ShaderProgramBuilder{
 		Vertex:   worldVertexShader,
@@ -72,7 +72,7 @@ func buildShaderProgram(ctx context.Context, builder resource.ShaderProgramBuild
 	return shaderProgram, nil
 }
 
-func terminateShaders(ctx context.Context, s gresource.Shaders) {
+func terminateShaders(ctx context.Context, s *gresource.Shaders) {
 	logger.FromCtx(ctx).Info("deleting shader program", slog.Uint64("shader_program_id", uint64(s.World.Id())))
 	gl.DeleteProgram(s.World.Id())
 }

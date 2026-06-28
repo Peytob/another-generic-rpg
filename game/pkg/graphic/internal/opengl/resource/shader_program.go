@@ -11,6 +11,8 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// TODO Optimize and make it like uniformBlocks with description in type
+
 func UniformMat4(sp gresource.ShaderProgram, variable string, mat mgl32.Mat4) error {
 	location := getUniformLocation(sp, variable)
 	if location == -1 {

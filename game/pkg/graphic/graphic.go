@@ -20,7 +20,7 @@ type Telemetry struct {
 type Graphic interface {
 	Renderer() renderer.Renderer
 	NewCanvas() renderer.Canvas
-	Shaders() resource.Shaders
+	Shaders() *resource.Shaders
 	Telemetry() Telemetry
 	Terminate(ctx context.Context)
 }
