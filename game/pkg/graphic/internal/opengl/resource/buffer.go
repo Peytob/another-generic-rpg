@@ -18,8 +18,3 @@ type Buffer uint32
 func (b Buffer) Id() uint32 {
 	return uint32(b)
 }
-
-func (b Buffer) Delete() {
-	id := b.Id()
-	gl.DeleteBuffers(1, &id)
-}

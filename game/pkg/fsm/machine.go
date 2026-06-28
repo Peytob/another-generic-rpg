@@ -24,15 +24,16 @@ const (
 	UnknownEventError = MachineError("unknown event")
 )
 
-// Machine Abstract finite state machine.
+// Machine Abstract finite state machine. Only for single-gorutine use, add mutex if you want use it from
+// many gorutines
 type Machine[E comparable, I comparable, S State[I]] interface {
 	// Event changes current machine state according to given event
 	Event(event E) error
 
-	// Result if machine on end state now - returns current state and true flag, nil and false otherwise
+	// Result if machine on final state - returns current state and true flag, zero value and false otherwise
 	Result() (state S, ok bool)
 
-	// IsRunning is machine on end state now
+	// IsRunning returns whether the machine is still running (has not reached a final state)
 	IsRunning() bool
 
 	// State returns current machine state
@@ -62,11 +63,16 @@ func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[
 		return nil, fmt.Errorf("initial state not set: %w", StateNotFoundError)
 	}
 
+	transitions := make(map[I]Transitions[E, I], len(builder.transitions))
+	for id, table := range builder.transitions {
+		transitions[id] = maps.Clone(table)
+	}
+
 	return &machine[E, I, S]{
-		transitions:       maps.Clone(builder.transitions),
+		transitions:       transitions,
 		globalTransitions: maps.Clone(builder.globalTransitions),
 
-		states:       builder.states,
+		states:       maps.Clone(builder.states),
 		finalStates:  builder.finalStates.Clone(),
 		currentState: initialState,
 		isRunning:    true,
@@ -74,14 +80,16 @@ func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[
 }
 
 func (m *machine[E, I, S]) Event(event E) error {
+	if !m.isRunning {
+		return MachineNotRunningError
+	}
+
 	currentState := m.currentState.Identifier()
 
 	if transitions, ok := m.transitions[currentState]; ok {
 		if nextI, ok := transitions[event]; ok {
 			return m.changeState(nextI)
 		}
-	} else {
-		return fmt.Errorf("current state not found in transitions table: %w", StateNotFoundError)
 	}
 
 	if nextI, ok := m.globalTransitions[event]; ok {
@@ -96,8 +104,8 @@ func (m *machine[E, I, S]) Result() (state S, ok bool) {
 		return m.currentState, true
 	}
 
-	var noop S
-	return noop, m.IsRunning()
+	var zero S
+	return zero, false
 }
 
 func (m *machine[E, I, S]) IsRunning() bool {
@@ -109,10 +117,6 @@ func (m *machine[E, I, S]) State() S {
 }
 
 func (m *machine[E, I, S]) changeState(nextState I) error {
-	if !m.isRunning {
-		return MachineNotRunningError
-	}
-
 	if state, ok := m.states[nextState]; ok {
 		m.currentState = state
 		m.isRunning = !m.finalStates.Contains(state.Identifier())

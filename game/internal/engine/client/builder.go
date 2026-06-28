@@ -10,7 +10,7 @@ import (
 type Builder struct {
 	fsm     engine.Machine
 	window  *window.Window
-	graphic *graphic.Graphic
+	graphic graphic.Graphic
 }
 
 func NewBuilder() *Builder {
@@ -27,7 +27,7 @@ func (b *Builder) Window(window *window.Window) *Builder {
 	return b
 }
 
-func (b *Builder) Graphic(g *graphic.Graphic) *Builder {
+func (b *Builder) Graphic(g graphic.Graphic) *Builder {
 	b.graphic = g
 	return b
 }

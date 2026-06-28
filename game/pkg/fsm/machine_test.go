@@ -2,6 +2,8 @@ package fsm
 
 import (
 	"testing"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 type TestState string
@@ -25,7 +27,7 @@ const (
 )
 
 func createTestMachine() Machine[string, string, TestState] {
-	m, _ := NewBuilder[string, string, TestState]().
+	m, err := NewBuilder[string, string, TestState]().
 		RegisterState(initialState, Transitions[string, string]{
 			initializedEvent: runningState.Identifier(),
 		}).
@@ -43,10 +45,30 @@ func createTestMachine() Machine[string, string, TestState] {
 			failedEvent: failedState.Identifier(),
 		}).
 		InitialState(initialState.Identifier()).
-		FinalStates([]string{failedState.Identifier(), exitedState.Identifier()}).
+		FinalStates(failedState.Identifier(), exitedState.Identifier()).
 		Build()
 
+	if err != nil {
+		panic("bad test machine: " + err.Error())
+	}
+
 	return m
+}
+
+func createMachineWithMissingStateTransitions() *machine[string, string, TestState] {
+	return &machine[string, string, TestState]{
+		transitions: map[string]Transitions[string, string]{},
+		globalTransitions: Transitions[string, string]{
+			failedEvent: failedState.Identifier(),
+		},
+		states: map[string]TestState{
+			initialState.Identifier(): initialState,
+			failedState.Identifier():  failedState,
+		},
+		finalStates:  mapset.NewThreadUnsafeSet(failedState.Identifier()),
+		currentState: initialState,
+		isRunning:    true,
+	}
 }
 
 func TestEventChanges(t *testing.T) {
@@ -94,6 +116,18 @@ func TestEventChanges(t *testing.T) {
 			t.Errorf("wrong state after failed event: %s", m.State().Identifier())
 		}
 	})
+
+	t.Run("should fall through to global transitions when current state has no transitions entry", func(t *testing.T) {
+		m := createMachineWithMissingStateTransitions()
+
+		if err := m.Event(failedEvent); err != nil {
+			t.Errorf("global transition should fire when state has no transitions entry: %v", err)
+		}
+
+		if m.State().Identifier() != failedState.Identifier() {
+			t.Errorf("wrong state after global fallthrough: %s", m.State().Identifier())
+		}
+	})
 }
 
 func TestFinalStates(t *testing.T) {
@@ -132,6 +166,20 @@ func TestFinalStates(t *testing.T) {
 
 		if !m.IsRunning() {
 			t.Error("machine is not running in non final state")
+		}
+	})
+
+	t.Run("should not return result in non final state", func(t *testing.T) {
+		m := createTestMachine()
+
+		state, ok := m.Result()
+
+		if ok {
+			t.Error("result flag is ok in non final state")
+		}
+
+		if state.Identifier() != "" {
+			t.Errorf("expected zero state in non final state, got %s", state.Identifier())
 		}
 	})
 }
