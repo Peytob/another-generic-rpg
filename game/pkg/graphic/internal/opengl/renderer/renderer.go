@@ -4,42 +4,39 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"game/pkg/graphic/internal/opengl/resource"
-	"game/pkg/graphic/renderer"
+	oglresource "game/pkg/graphic/internal/opengl/resource"
+	grenderer "game/pkg/graphic/renderer"
+	"game/pkg/graphic/service"
 	"game/pkg/utils/logger"
 	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
-// Renderer low-level canvas rendering objects
 type Renderer struct {
-	uniformBlocks *resource.UniformBlocks
-
-	vao resource.VertexArray // default for now
+	vao                 oglresource.VertexArray
+	shaderService       service.Shader
+	uniformBlockService service.UniformBlock
 }
 
-func NewRenderer(ctx context.Context, uniformBlocks *resource.UniformBlocks) *Renderer {
-	var tilemapVao uint32
-	gl.GenVertexArrays(1, &tilemapVao)
-	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(tilemapVao)))
+func NewRenderer(ctx context.Context, shaderService service.Shader) *Renderer {
+	// TODO make VAO repository and management
 
-	gl.BindVertexArray(tilemapVao)
+	var defaultVao uint32
+	gl.GenVertexArrays(1, &defaultVao)
+	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(defaultVao)))
+
+	gl.BindVertexArray(defaultVao)
 	gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
 	gl.EnableVertexAttribArray(0)
 
 	return &Renderer{
-		uniformBlocks: uniformBlocks,
-		vao:           resource.VertexArray(tilemapVao),
+		vao:           oglresource.VertexArray(defaultVao),
+		shaderService: shaderService,
 	}
 }
 
-func (r *Renderer) UpdateProjection(proj mgl32.Mat4) {
-	r.uniformBlocks.Proj.SetProjectionMatrix(proj)
-}
-
-func (r *Renderer) Render(ctx context.Context, canvas renderer.Canvas, opts renderer.RenderOpts) error {
+func (r *Renderer) Render(ctx context.Context, canvas grenderer.Canvas, opts grenderer.RenderOpts) error {
 	oglCanvas, ok := canvas.(*Canvas)
 	if !ok {
 		return errors.New("canvas is not ogl-compatible")
@@ -48,11 +45,16 @@ func (r *Renderer) Render(ctx context.Context, canvas renderer.Canvas, opts rend
 	return r.renderOgl(ctx, *oglCanvas, opts)
 }
 
-func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts renderer.RenderOpts) error {
-	// todo buffers reusing
+func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts grenderer.RenderOpts) error {
+	// todo buffers reusing and management
 
 	if canvas.Empty() {
 		return nil
+	}
+
+	shaderProgram := oglresource.ShaderProgram(opts.Shader.Id)
+	if shaderProgram <= 0 {
+		return errors.New("invalid shader program")
 	}
 
 	var vbo, ebo uint32
@@ -75,13 +77,15 @@ func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts renderer.Ren
 		gl.EnableVertexAttribArray(0)
 	}
 
-	gl.UseProgram(opts.Shader.Id())
+	gl.UseProgram(shaderProgram.Id())
 
-	if err := resource.UniformTransform(opts.Shader, "u_model\x00", opts.Model); err != nil {
+	// todo constants for uniforms
+
+	if err := r.shaderService.UniformTransform(opts.Shader, "u_model\x00", opts.Model); err != nil {
 		return fmt.Errorf("failed to set model uniform: %w", err)
 	}
 
-	if err := resource.UniformMat4(opts.Shader, "u_view\x00", opts.View); err != nil {
+	if err := r.shaderService.UniformMat4(opts.Shader, "u_view\x00", opts.View); err != nil {
 		return fmt.Errorf("failed to set view uniform: %w", err)
 	}
 

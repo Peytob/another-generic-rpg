@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"game/internal/engine/fsm"
+	cgraphic "game/internal/engine/graphic"
 	"game/pkg/engine"
 	"game/pkg/graphic"
 	"game/pkg/graphic/renderer"
@@ -82,13 +83,17 @@ func (c *Client) Run(ctx context.Context) error {
 		sprite.Transformation().Rotate(rotate)
 		rotate += 0.0002
 
+		shader, shaderFound := c.graphic.Repositories().Shader.GetByName(cgraphic.TilemapShader)
+		if !shaderFound {
+			return fmt.Errorf("no shader found in graphic repositories")
+		}
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
 			View: mgl32.Ident4(), // todo camera
 			Model: math.NewTransformation().
 				//Translate(float32(w)/2, float32(h)/2).
 				//Rotate(rotate).
 				Transform(),
-			Shader: c.graphic.Shaders().World,
+			Shader: shader,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)
@@ -124,5 +129,18 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 
 func (c *Client) onWindowSizeChanged(width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
-	c.graphic.Renderer().UpdateProjection(proj)
+
+	ub, ok := c.graphic.Repositories().Uniform.GetByName(cgraphic.ProjViewUniformBlock)
+	if !ok {
+		// todo log error via contex
+		slog.Default().Error("failed to find uniform block", "name", cgraphic.ProjViewUniformBlock)
+		return
+	}
+
+	err := c.graphic.Services().Uniform.SetUniformVariableMat4(ub, cgraphic.ProjUniform, proj)
+	if err != nil {
+		// todo log error via context
+		slog.Default().Error("failed to set uniform block variable", "name", cgraphic.ProjViewUniformBlock, "variable", cgraphic.ProjUniform)
+		return
+	}
 }
