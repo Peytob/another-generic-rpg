@@ -20,21 +20,26 @@ func NewUniformBlock(ub *grepository.UniformBlockRepository) *UniformBlock {
 	}
 }
 
-func (u *UniformBlock) CreateUniformBlock(ub *gresource.UniformBlock) error {
+func (u *UniformBlock) CreateUniformBlock(ub gresource.UniformBlock) (gresource.UniformBlock, error) {
 	totalSize := 0
 	for _, variable := range ub.Variables.All() {
-		totalSize += variable.Size
+		totalSize = max(variable.Size+variable.Offset, totalSize)
 	}
 
-	var projUbo uint32
-	gl.GenBuffers(1, &projUbo)
-	gl.BindBuffer(gl.UNIFORM_BUFFER, projUbo)
+	var ubo uint32
+	gl.GenBuffers(1, &ubo)
+	gl.BindBuffer(gl.UNIFORM_BUFFER, ubo)
 	gl.BufferData(gl.UNIFORM_BUFFER, totalSize, nil, gl.DYNAMIC_DRAW)
-	gl.BindBufferBase(gl.UNIFORM_BUFFER, ub.BindingPoint, projUbo)
+	gl.BindBufferBase(gl.UNIFORM_BUFFER, ub.BindingPoint, ubo)
 
-	ub.ID = projUbo
+	ub.ID = ubo
 
-	return nil
+	if !u.uniformBlocks.Put(ub) {
+		gl.DeleteBuffers(1, &ubo)
+		return gresource.UniformBlock{}, fmt.Errorf("uniform block %s already registered", ub.Name)
+	}
+
+	return ub, nil
 }
 
 func (u *UniformBlock) SetUniformVariableMat4(ub gresource.UniformBlock, variableName string, mat mgl32.Mat4) error {

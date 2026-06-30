@@ -114,10 +114,17 @@ func (s *shaderLoader) BuildShaderProgram(builder *gresource.ShaderBuilder, name
 		return gresource.Shader{}, fmt.Errorf("failed to link shader: %s", string(log))
 	}
 
-	return gresource.Shader{
+	program := gresource.Shader{
 		ID:   shaderProgram,
 		Name: name,
-	}, nil
+	}
+
+	if !s.shaderPrograms.Put(program) {
+		gl.DeleteProgram(shaderProgram)
+		return gresource.Shader{}, fmt.Errorf("shader program %s already registered", name)
+	}
+
+	return program, nil
 }
 
 func (s *shaderLoader) Terminate(ctx context.Context) {

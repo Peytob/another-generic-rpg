@@ -8,7 +8,7 @@ import (
 
 // UniformBlock service to interact with loaded shaders
 type UniformBlock interface {
-	CreateUniformBlock(ub *resource.UniformBlock) error
+	CreateUniformBlock(ub resource.UniformBlock) (resource.UniformBlock, error)
 	SetUniformVariableMat4(ub resource.UniformBlock, variable string, value mgl32.Mat4) error
 	BindBlocksFor(shader resource.Shader) error
 }
