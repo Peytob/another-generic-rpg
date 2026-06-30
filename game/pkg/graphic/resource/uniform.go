@@ -40,13 +40,15 @@ func (uv *UniformVariables) Lookup(name string) (UniformVariable, bool) {
 	return v, ok
 }
 
-func (uv *UniformVariables) All() []UniformVariable {
+func (uv *UniformVariables) TotalSize() int {
 	if uv == nil {
-		return nil
+		return 0
 	}
-	all := make([]UniformVariable, 0, len(uv.variables))
+
+	total := 0
 	for _, v := range uv.variables {
-		all = append(all, v)
+		total = max(v.Size+v.Offset, total)
 	}
-	return all
+
+	return total
 }

@@ -21,10 +21,7 @@ func NewUniformBlock(ub *grepository.UniformBlockRepository) *UniformBlock {
 }
 
 func (u *UniformBlock) CreateUniformBlock(ub gresource.UniformBlock) (gresource.UniformBlock, error) {
-	totalSize := 0
-	for _, variable := range ub.Variables.All() {
-		totalSize = max(variable.Size+variable.Offset, totalSize)
-	}
+	totalSize := ub.Variables.TotalSize()
 
 	var ubo uint32
 	gl.GenBuffers(1, &ubo)
