@@ -20,11 +20,10 @@ func NewUniformBlock(ub grepository.UniformBlockRepository) *UniformBlock {
 	}
 }
 
-func (u UniformBlock) CreateUniformBlock(ub gresource.UniformBlock) error {
-	// todo bad size computing...
+func (u UniformBlock) CreateUniformBlock(ub *gresource.UniformBlock) error {
 	totalSize := 0
 	for _, variable := range ub.Variables {
-		totalSize = variable.Size
+		totalSize += variable.Size
 	}
 
 	var projUbo uint32
@@ -32,6 +31,8 @@ func (u UniformBlock) CreateUniformBlock(ub gresource.UniformBlock) error {
 	gl.BindBuffer(gl.UNIFORM_BUFFER, projUbo)
 	gl.BufferData(gl.UNIFORM_BUFFER, totalSize, nil, gl.DYNAMIC_DRAW)
 	gl.BindBufferBase(gl.UNIFORM_BUFFER, ub.BindingPoint, projUbo)
+
+	ub.Id = projUbo
 
 	return nil
 }

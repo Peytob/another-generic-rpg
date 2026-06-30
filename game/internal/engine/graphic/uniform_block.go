@@ -24,7 +24,7 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 			Set(ProjUniform, 16*4, 0), // mat4 = 16 floats * 4 bytes,
 	}
 
-	err := g.Services().Uniform.CreateUniformBlock(projViewBlock)
+	err := g.Services().Uniform.CreateUniformBlock(&projViewBlock)
 	if err != nil {
 		return err
 	}

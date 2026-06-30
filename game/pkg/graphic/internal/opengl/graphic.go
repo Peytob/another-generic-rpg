@@ -8,6 +8,7 @@ import (
 	grenderer "game/pkg/graphic/renderer"
 	grepository "game/pkg/graphic/repository"
 	gservice "game/pkg/graphic/service"
+	"game/pkg/utils/logger"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -62,7 +63,21 @@ func (g Graphic) Telemetry() graphic.Telemetry {
 }
 
 func (g Graphic) Terminate(ctx context.Context) {
-	//terminateShaders(ctx, g.shaders)
-	//terminateUniformBlocks(ctx, g.uniformBlocks)
+	g.terminateShaders(ctx)
+	g.terminateUniformBlocks(ctx)
 	g.renderer.Terminate(ctx)
+}
+
+func (g Graphic) terminateShaders(ctx context.Context) {
+	for _, shader := range g.repositories.Shader.All() {
+		logger.FromCtx(ctx).Info("deleting shader program", "id", shader.Id, "name", shader.Name)
+		gl.DeleteProgram(shader.Id)
+	}
+}
+
+func (g Graphic) terminateUniformBlocks(ctx context.Context) {
+	for _, ub := range g.repositories.Uniform.All() {
+		logger.FromCtx(ctx).Info("deleting uniform block", "id", ub.Id, "name", ub.Name)
+		gl.DeleteBuffers(1, &ub.Id)
+	}
 }

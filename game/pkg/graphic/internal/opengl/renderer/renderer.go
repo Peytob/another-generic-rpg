@@ -14,9 +14,8 @@ import (
 )
 
 type Renderer struct {
-	vao                 oglresource.VertexArray
-	shaderService       service.Shader
-	uniformBlockService service.UniformBlock
+	vao           oglresource.VertexArray
+	shaderService service.Shader
 }
 
 func NewRenderer(ctx context.Context, shaderService service.Shader) *Renderer {

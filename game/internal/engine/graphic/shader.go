@@ -32,7 +32,7 @@ func loadShaders(ctx context.Context, graphic graphic.Graphic) error {
 
 	tilemapFragmentShader, err := shaderLoader.LoadGlslStageShader(tilemapFragment, gresource.FragmentStage)
 	if err != nil {
-		return fmt.Errorf("loading tilemap vertex shader: %w", err)
+		return fmt.Errorf("loading tilemap fragment shader: %w", err)
 	}
 
 	tilemapShaderDesc := gresource.NewShaderBuilder().
