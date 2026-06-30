@@ -18,17 +18,17 @@ import (
 
 type shaderLoader struct {
 	shaders        map[uint32]oglresource.Shader
-	shaderPrograms grepository.ShaderRepository
+	shaderPrograms *grepository.ShaderRepository
 }
 
-func newShaderLoader(sr grepository.ShaderRepository) *shaderLoader {
+func newShaderLoader(sr *grepository.ShaderRepository) *shaderLoader {
 	return &shaderLoader{
 		shaders:        make(map[uint32]oglresource.Shader),
 		shaderPrograms: sr,
 	}
 }
 
-func (s shaderLoader) LoadGlslStageShader(code string, stage gresource.ShaderStage) (gresource.LoadedShaderStage, error) {
+func (s *shaderLoader) LoadGlslStageShader(code string, stage gresource.ShaderStage) (gresource.LoadedShaderStage, error) {
 	shaderType := shaderStageToShaderType(stage)
 	if shaderType == 0 {
 		return gresource.LoadedShaderStage{}, fmt.Errorf("unknown or unsupported shader stage")
@@ -58,19 +58,19 @@ func (s shaderLoader) LoadGlslStageShader(code string, stage gresource.ShaderSta
 	s.shaders[shader] = oglresource.Shader(shader)
 
 	return gresource.LoadedShaderStage{
-		Id:    shader,
+		ID:    shader,
 		Stage: stage,
 	}, nil
 }
 
-func (s shaderLoader) BuildShaderProgram(builder gresource.ShaderBuilder, name string) (gresource.Shader, error) {
-	vertexId := builder.Get(gresource.VertexStage).Id
+func (s *shaderLoader) BuildShaderProgram(builder *gresource.ShaderBuilder, name string) (gresource.Shader, error) {
+	vertexID := builder.Stage(gresource.VertexStage).ID
 
-	if vertexId == 0 {
+	if vertexID == 0 {
 		return gresource.Shader{}, fmt.Errorf("vertex shader required to create shader program")
 	}
 
-	vertexShader, ok := s.shaders[vertexId]
+	vertexShader, ok := s.shaders[vertexID]
 	if !ok {
 		return gresource.Shader{}, fmt.Errorf("unknown vertex shader")
 	}
@@ -79,13 +79,13 @@ func (s shaderLoader) BuildShaderProgram(builder gresource.ShaderBuilder, name s
 		return gresource.Shader{}, fmt.Errorf("vertex shader has wrong shader type")
 	}
 
-	fragmentId := builder.Get(gresource.FragmentStage).Id
+	fragmentID := builder.Stage(gresource.FragmentStage).ID
 
-	if fragmentId == 0 {
+	if fragmentID == 0 {
 		return gresource.Shader{}, fmt.Errorf("fragment shader required to create shader program")
 	}
 
-	fragmentShader, ok := s.shaders[fragmentId]
+	fragmentShader, ok := s.shaders[fragmentID]
 	if !ok {
 		return gresource.Shader{}, fmt.Errorf("unknown fragment shader")
 	}
@@ -95,8 +95,8 @@ func (s shaderLoader) BuildShaderProgram(builder gresource.ShaderBuilder, name s
 	}
 
 	shaderProgram := gl.CreateProgram()
-	gl.AttachShader(shaderProgram, vertexShader.Id())
-	gl.AttachShader(shaderProgram, fragmentShader.Id())
+	gl.AttachShader(shaderProgram, vertexShader.ID())
+	gl.AttachShader(shaderProgram, fragmentShader.ID())
 	gl.LinkProgram(shaderProgram)
 
 	var success int32
@@ -115,30 +115,30 @@ func (s shaderLoader) BuildShaderProgram(builder gresource.ShaderBuilder, name s
 	}
 
 	return gresource.Shader{
-		Id:   shaderProgram,
+		ID:   shaderProgram,
 		Name: name,
 	}, nil
 }
 
-func (s shaderLoader) Terminate(ctx context.Context) {
+func (s *shaderLoader) Terminate(ctx context.Context) {
 	for _, v := range s.shaders {
-		logger.FromCtx(ctx).Info("deleting shader", slog.Uint64("id", uint64(v.Id())))
-		gl.DeleteShader(v.Id())
+		logger.FromCtx(ctx).Info("deleting shader", slog.Uint64("id", uint64(v.ID())))
+		gl.DeleteShader(v.ID())
 	}
 }
 
 type Shader struct {
-	shaderRepository grepository.ShaderRepository
+	shaderRepository *grepository.ShaderRepository
 }
 
-func NewShader(sr grepository.ShaderRepository) *Shader {
+func NewShader(sr *grepository.ShaderRepository) *Shader {
 	return &Shader{
 		shaderRepository: sr,
 	}
 }
 
-func (s Shader) UniformMat4(sp gresource.Shader, variable string, mat mgl32.Mat4) error {
-	location := getUniformLocation(sp.Id, variable)
+func (s *Shader) UniformMat4(sp gresource.Shader, variable string, mat mgl32.Mat4) error {
+	location := getUniformLocation(sp.ID, variable)
 	if location == -1 {
 		return fmt.Errorf("uniform %s not found", variable)
 	}
@@ -147,11 +147,11 @@ func (s Shader) UniformMat4(sp gresource.Shader, variable string, mat mgl32.Mat4
 	return nil
 }
 
-func (s Shader) UniformTransform(sp gresource.Shader, variable string, transform math.Transform) error {
+func (s *Shader) UniformTransform(sp gresource.Shader, variable string, transform math.Transform) error {
 	return s.UniformMat4(sp, variable, mgl32.Mat4(transform))
 }
 
-func (s Shader) NewShaderLoader() gservice.ShaderLoader {
+func (s *Shader) NewShaderLoader() gservice.ShaderLoader {
 	return newShaderLoader(s.shaderRepository)
 }
 

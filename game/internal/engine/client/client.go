@@ -83,7 +83,7 @@ func (c *Client) Run(ctx context.Context) error {
 		sprite.Transformation().Rotate(rotate)
 		rotate += 0.0002
 
-		shader, shaderFound := c.graphic.Repositories().Shader.GetByName(cgraphic.TilemapShader)
+		shader, shaderFound := c.graphic.Repositories().Shader.ByName(cgraphic.TilemapShader)
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")
 		}
@@ -130,7 +130,7 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 func (c *Client) onWindowSizeChanged(width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
 
-	ub, ok := c.graphic.Repositories().Uniform.GetByName(cgraphic.ProjViewUniformBlock)
+	ub, ok := c.graphic.Repositories().Uniform.ByName(cgraphic.ProjViewUniformBlock)
 	if !ok {
 		// todo log error via contex
 		slog.Default().Error("failed to find uniform block", "name", cgraphic.ProjViewUniformBlock)

@@ -1,11 +1,11 @@
 package resource
 
 type UniformBlock struct {
-	Id           uint32
+	ID           uint32
 	Name         string
 	BindingPoint uint32
 
-	Variables UniformVariables
+	Variables *UniformVariables
 }
 
 type UniformVariable struct {
@@ -14,14 +14,16 @@ type UniformVariable struct {
 	Offset int
 }
 
-type UniformVariables map[string]UniformVariable
-
-func NewUniformVariables() UniformVariables {
-	return make(map[string]UniformVariable)
+type UniformVariables struct {
+	variables map[string]UniformVariable
 }
 
-func (uv UniformVariables) Set(name string, size int, offset int) UniformVariables {
-	uv[name] = UniformVariable{
+func NewUniformVariables() *UniformVariables {
+	return &UniformVariables{variables: make(map[string]UniformVariable)}
+}
+
+func (uv *UniformVariables) Set(name string, size int, offset int) *UniformVariables {
+	uv.variables[name] = UniformVariable{
 		Name:   name,
 		Size:   size,
 		Offset: offset,
@@ -30,7 +32,21 @@ func (uv UniformVariables) Set(name string, size int, offset int) UniformVariabl
 	return uv
 }
 
-func (uv UniformVariables) Get(name string) (UniformVariable, bool) {
-	v, ok := uv[name]
+func (uv *UniformVariables) Lookup(name string) (UniformVariable, bool) {
+	if uv == nil {
+		return UniformVariable{}, false
+	}
+	v, ok := uv.variables[name]
 	return v, ok
+}
+
+func (uv *UniformVariables) All() []UniformVariable {
+	if uv == nil {
+		return nil
+	}
+	all := make([]UniformVariable, 0, len(uv.variables))
+	for _, v := range uv.variables {
+		all = append(all, v)
+	}
+	return all
 }

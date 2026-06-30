@@ -16,7 +16,6 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 	logger.FromCtx(ctx).Info("creating uniform blocks")
 
 	projViewBlock := gresource.UniformBlock{
-		Id:           0,
 		Name:         ProjViewUniformBlock,
 		BindingPoint: 0,
 
@@ -28,8 +27,6 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 	if err != nil {
 		return err
 	}
-
-	g.Repositories().Uniform.Put(projViewBlock)
 
 	return nil
 }

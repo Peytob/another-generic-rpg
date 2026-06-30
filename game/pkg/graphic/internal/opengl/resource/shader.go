@@ -15,13 +15,13 @@ const FragmentShader = ShaderType(gl.FRAGMENT_SHADER)
 
 type Shader uint32
 
-func (s Shader) Id() uint32 {
+func (s Shader) ID() uint32 {
 	return uint32(s)
 }
 
 func (s Shader) Type() ShaderType {
 	var t int32
-	gl.GetShaderiv(s.Id(), gl.SHADER_TYPE, &t)
+	gl.GetShaderiv(s.ID(), gl.SHADER_TYPE, &t)
 	return ShaderType(t)
 }
 

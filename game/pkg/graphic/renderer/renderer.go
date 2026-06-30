@@ -25,7 +25,7 @@ type RenderOpts struct {
 
 // RenderTarget describes render target
 type RenderTarget struct {
-	RenderBufferId int32
+	RenderBufferID int32
 }
 
 type Renderer interface {

@@ -38,11 +38,10 @@ func loadShaders(ctx context.Context, graphic graphic.Graphic) error {
 	tilemapShaderDesc := gresource.NewShaderBuilder().
 		Set(tilemapVertexShader).
 		Set(tilemapFragmentShader)
-	tilemapShader, err := shaderLoader.BuildShaderProgram(tilemapShaderDesc, TilemapShader)
+	_, err = shaderLoader.BuildShaderProgram(tilemapShaderDesc, TilemapShader)
 	if err != nil {
 		return fmt.Errorf("failed to compile tilemap shader: %w", err)
 	}
-	graphic.Repositories().Shader.Put(tilemapShader)
 
 	logger.FromCtx(ctx).Info("shaders loaded")
 

@@ -25,7 +25,7 @@ func NewCanvas() *Canvas {
 	return NewCanvasCustomBuffer(1024)
 }
 
-func NewCanvasCustomBuffer(bufferSizeVertexes int64) *Canvas {
+func NewCanvasCustomBuffer(bufferSizeVertexes uint32) *Canvas {
 	return &Canvas{
 		vertices:           0,
 		elements:           make([]uint32, 0, bufferSizeVertexes*3),
@@ -39,11 +39,11 @@ func (c *Canvas) Empty() bool {
 }
 
 func (c *Canvas) Draw(drawable renderer.Drawable, opts *renderer.CanvasOpts) {
-	d := drawable.GetVertexes()
+	d := drawable.Vertices()
 	startIndex := c.vertices
 
-	for _, vertex := range d.Vertexes {
-		// todo append transformation
+	for _, vertex := range d.Vertices {
+		// TODO append transformation
 		c.vertices++
 
 		transformedPosition := opts.Transform.TransformPoint(vertex.Position)

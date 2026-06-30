@@ -30,27 +30,29 @@ const (
 
 // LoadedShaderStage temporary type used while shaders loading. Contains information about loaded shader stage
 type LoadedShaderStage struct {
-	Id    uint32
+	ID    uint32
 	Stage ShaderStage
 }
 
 // Shader facade for compiled shader programs (or pipelines in other terms), not only separated stage code
 type Shader struct {
-	Id   uint32
+	ID   uint32
 	Name string
 }
 
-type ShaderBuilder map[ShaderStage]LoadedShaderStage
-
-func NewShaderBuilder() ShaderBuilder {
-	return make(ShaderBuilder, 6)
+type ShaderBuilder struct {
+	stages map[ShaderStage]LoadedShaderStage
 }
 
-func (sb ShaderBuilder) Set(stage LoadedShaderStage) ShaderBuilder {
-	sb[stage.Stage] = stage
+func NewShaderBuilder() *ShaderBuilder {
+	return &ShaderBuilder{stages: make(map[ShaderStage]LoadedShaderStage, 6)}
+}
+
+func (sb *ShaderBuilder) Set(stage LoadedShaderStage) *ShaderBuilder {
+	sb.stages[stage.Stage] = stage
 	return sb
 }
 
-func (sb ShaderBuilder) Get(stage ShaderStage) LoadedShaderStage {
-	return sb[stage]
+func (sb *ShaderBuilder) Stage(stage ShaderStage) LoadedShaderStage {
+	return sb.stages[stage]
 }

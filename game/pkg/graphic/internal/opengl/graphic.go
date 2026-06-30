@@ -38,23 +38,23 @@ func NewGraphic(ctx context.Context) (*Graphic, error) {
 	}, nil
 }
 
-func (g Graphic) Renderer() grenderer.Renderer {
+func (g *Graphic) Renderer() grenderer.Renderer {
 	return g.renderer
 }
 
-func (g Graphic) NewCanvas() grenderer.Canvas {
+func (g *Graphic) NewCanvas() grenderer.Canvas {
 	return oglrenderer.NewCanvas()
 }
 
-func (g Graphic) Services() gservice.Services {
+func (g *Graphic) Services() gservice.Services {
 	return g.services
 }
 
-func (g Graphic) Repositories() grepository.Repositories {
+func (g *Graphic) Repositories() grepository.Repositories {
 	return g.repositories
 }
 
-func (g Graphic) Telemetry() graphic.Telemetry {
+func (g *Graphic) Telemetry() graphic.Telemetry {
 	return graphic.Telemetry{
 		Name:     gl.GoStr(gl.GetString(gl.VENDOR)),
 		Version:  gl.GoStr(gl.GetString(gl.VERSION)),
@@ -62,22 +62,22 @@ func (g Graphic) Telemetry() graphic.Telemetry {
 	}
 }
 
-func (g Graphic) Terminate(ctx context.Context) {
+func (g *Graphic) Terminate(ctx context.Context) {
 	g.terminateShaders(ctx)
 	g.terminateUniformBlocks(ctx)
 	g.renderer.Terminate(ctx)
 }
 
-func (g Graphic) terminateShaders(ctx context.Context) {
+func (g *Graphic) terminateShaders(ctx context.Context) {
 	for _, shader := range g.repositories.Shader.All() {
-		logger.FromCtx(ctx).Info("deleting shader program", "id", shader.Id, "name", shader.Name)
-		gl.DeleteProgram(shader.Id)
+		logger.FromCtx(ctx).Info("deleting shader program", "id", shader.ID, "name", shader.Name)
+		gl.DeleteProgram(shader.ID)
 	}
 }
 
-func (g Graphic) terminateUniformBlocks(ctx context.Context) {
+func (g *Graphic) terminateUniformBlocks(ctx context.Context) {
 	for _, ub := range g.repositories.Uniform.All() {
-		logger.FromCtx(ctx).Info("deleting uniform block", "id", ub.Id, "name", ub.Name)
-		gl.DeleteBuffers(1, &ub.Id)
+		logger.FromCtx(ctx).Info("deleting uniform block", "id", ub.ID, "name", ub.Name)
+		gl.DeleteBuffers(1, &ub.ID)
 	}
 }

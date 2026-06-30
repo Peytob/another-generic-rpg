@@ -11,18 +11,18 @@ import (
 )
 
 type UniformBlock struct {
-	uniformBlocks grepository.UniformBlockRepository
+	uniformBlocks *grepository.UniformBlockRepository
 }
 
-func NewUniformBlock(ub grepository.UniformBlockRepository) *UniformBlock {
+func NewUniformBlock(ub *grepository.UniformBlockRepository) *UniformBlock {
 	return &UniformBlock{
 		uniformBlocks: ub,
 	}
 }
 
-func (u UniformBlock) CreateUniformBlock(ub *gresource.UniformBlock) error {
+func (u *UniformBlock) CreateUniformBlock(ub *gresource.UniformBlock) error {
 	totalSize := 0
-	for _, variable := range ub.Variables {
+	for _, variable := range ub.Variables.All() {
 		totalSize += variable.Size
 	}
 
@@ -32,40 +32,40 @@ func (u UniformBlock) CreateUniformBlock(ub *gresource.UniformBlock) error {
 	gl.BufferData(gl.UNIFORM_BUFFER, totalSize, nil, gl.DYNAMIC_DRAW)
 	gl.BindBufferBase(gl.UNIFORM_BUFFER, ub.BindingPoint, projUbo)
 
-	ub.Id = projUbo
+	ub.ID = projUbo
 
 	return nil
 }
 
-func (u UniformBlock) SetUniformVariableMat4(ub gresource.UniformBlock, variableName string, mat mgl32.Mat4) error {
-	variable, found := ub.Variables.Get(variableName)
+func (u *UniformBlock) SetUniformVariableMat4(ub gresource.UniformBlock, variableName string, mat mgl32.Mat4) error {
+	variable, found := ub.Variables.Lookup(variableName)
 	if !found {
 		return fmt.Errorf("variable not found")
 	}
 
-	gl.BindBuffer(gl.UNIFORM_BUFFER, ub.Id)
+	gl.BindBuffer(gl.UNIFORM_BUFFER, ub.ID)
 	gl.BufferSubData(gl.UNIFORM_BUFFER, variable.Offset, variable.Size, gl.Ptr(&mat[0]))
 	return nil
 }
 
-func (u UniformBlock) BindBlocksFor(shader gresource.Shader) error {
-	shaderProgram := oglresource.ShaderProgram(shader.Id)
+func (u *UniformBlock) BindBlocksFor(shader gresource.Shader) error {
+	shaderProgram := oglresource.ShaderProgram(shader.ID)
 
 	var count int32
-	gl.GetProgramiv(shaderProgram.Id(), gl.ACTIVE_UNIFORM_BLOCKS, &count)
+	gl.GetProgramiv(shaderProgram.ID(), gl.ACTIVE_UNIFORM_BLOCKS, &count)
 
 	for i := uint32(0); i < uint32(count); i++ {
 		var nameLen int32
 		var nameBuf [256]byte
-		gl.GetActiveUniformBlockName(shaderProgram.Id(), i, int32(len(nameBuf)), &nameLen, &nameBuf[0])
+		gl.GetActiveUniformBlockName(shaderProgram.ID(), i, int32(len(nameBuf)), &nameLen, &nameBuf[0])
 		name := string(nameBuf[:nameLen])
 
-		ub, ok := u.uniformBlocks.GetByName(name)
+		ub, ok := u.uniformBlocks.ByName(name)
 		if !ok {
 			return fmt.Errorf("uniform block %s from shader program %s not found in registered uniform blocks", name, shader.Name)
 		}
 
-		gl.UniformBlockBinding(shaderProgram.Id(), i, ub.BindingPoint)
+		gl.UniformBlockBinding(shaderProgram.ID(), i, ub.BindingPoint)
 	}
 
 	return nil

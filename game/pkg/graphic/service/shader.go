@@ -15,7 +15,7 @@ type ShaderLoader interface {
 	LoadGlslStageShader(code string, stage gresource.ShaderStage) (gresource.LoadedShaderStage, error)
 
 	// BuildShaderProgram builds shader program from builder
-	BuildShaderProgram(shaderBuilder gresource.ShaderBuilder, name string) (gresource.Shader, error)
+	BuildShaderProgram(shaderBuilder *gresource.ShaderBuilder, name string) (gresource.Shader, error)
 
 	// Terminate cleanup state after loading shaders
 	Terminate(ctx context.Context)
