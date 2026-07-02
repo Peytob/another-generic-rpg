@@ -17,7 +17,7 @@ type RenderOpts struct {
 	Model math.Transform
 
 	// Shader used to render shader. Required
-	Shader resource.ShaderProgram
+	Shader resource.Shader
 
 	// RenderTarget target to render.
 	RenderTarget RenderTarget
@@ -25,11 +25,10 @@ type RenderOpts struct {
 
 // RenderTarget describes render target
 type RenderTarget struct {
-	RenderBufferId int32
+	RenderBufferID int32
 }
 
 type Renderer interface {
-	UpdateProjection(proj mgl32.Mat4)
 	Render(ctx context.Context, canvas Canvas, opts RenderOpts) error
 	Terminate(ctx context.Context)
 }

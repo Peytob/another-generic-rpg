@@ -6,7 +6,7 @@ import (
 )
 
 type Drawable interface {
-	GetVertexes() gres.IndexesVertices
+	Vertices() gres.VertexData
 }
 
 type CanvasOpts struct {

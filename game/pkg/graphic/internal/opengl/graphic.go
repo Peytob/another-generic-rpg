@@ -2,62 +2,56 @@ package opengl
 
 import (
 	"context"
-	"fmt"
 	"game/pkg/graphic"
-	"game/pkg/graphic/internal/opengl/renderer"
-	"game/pkg/graphic/internal/opengl/resource"
+	oglrenderer "game/pkg/graphic/internal/opengl/renderer"
+	oglservice "game/pkg/graphic/internal/opengl/service"
 	grenderer "game/pkg/graphic/renderer"
-	gresource "game/pkg/graphic/resource"
+	grepository "game/pkg/graphic/repository"
+	gservice "game/pkg/graphic/service"
+	"game/pkg/utils/logger"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 type Graphic struct {
-	renderer *renderer.Renderer
-
-	shaders       *gresource.Shaders
-	uniformBlocks *resource.UniformBlocks
+	renderer     *oglrenderer.Renderer
+	services     gservice.Services
+	repositories grepository.Repositories
 }
 
 func NewGraphic(ctx context.Context) (*Graphic, error) {
-	shaders, err := loadShaders(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load shaders: %w", err)
+	repositories := grepository.Repositories{
+		Uniform: grepository.NewUniformBlockRepository(),
+		Shader:  grepository.NewShaderRepository(),
 	}
 
-	uniformBlocks, err := loadUniformBlocks(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load uniform blocks: %w", err)
-	}
+	services := gservice.Services{}
+	services.Shader = oglservice.NewShader(repositories.Shader)
+	services.Uniform = oglservice.NewUniformBlock(repositories.Uniform)
 
-	err = bindUniformBlocks(shaders, uniformBlocks)
-	if err != nil {
-		return nil, fmt.Errorf("failed to bind uniform blocks: %w", err)
-	}
+	renderer := oglrenderer.NewRenderer(ctx, services.Shader)
 
-	r := renderer.NewRenderer(ctx, uniformBlocks)
-
-	g := &Graphic{
-		renderer: r,
-
-		shaders:       shaders,
-		uniformBlocks: uniformBlocks,
-	}
-
-	return g, nil
+	return &Graphic{
+		renderer:     renderer,
+		services:     services,
+		repositories: repositories,
+	}, nil
 }
 
-// Renderer returns configured and ready renderer object. It can be used to render
 func (g *Graphic) Renderer() grenderer.Renderer {
 	return g.renderer
 }
 
 func (g *Graphic) NewCanvas() grenderer.Canvas {
-	return renderer.NewCanvas()
+	return oglrenderer.NewCanvas()
 }
 
-func (g *Graphic) Shaders() *gresource.Shaders {
-	return g.shaders
+func (g *Graphic) Services() gservice.Services {
+	return g.services
+}
+
+func (g *Graphic) Repositories() grepository.Repositories {
+	return g.repositories
 }
 
 func (g *Graphic) Telemetry() graphic.Telemetry {
@@ -69,7 +63,21 @@ func (g *Graphic) Telemetry() graphic.Telemetry {
 }
 
 func (g *Graphic) Terminate(ctx context.Context) {
-	terminateShaders(ctx, g.shaders)
-	terminateUniformBlocks(ctx, g.uniformBlocks)
+	g.terminateShaders(ctx)
+	g.terminateUniformBlocks(ctx)
 	g.renderer.Terminate(ctx)
+}
+
+func (g *Graphic) terminateShaders(ctx context.Context) {
+	for _, shader := range g.repositories.Shader.All() {
+		logger.FromCtx(ctx).Info("deleting shader program", "id", shader.ID, "name", shader.Name)
+		gl.DeleteProgram(shader.ID)
+	}
+}
+
+func (g *Graphic) terminateUniformBlocks(ctx context.Context) {
+	for _, ub := range g.repositories.Uniform.All() {
+		logger.FromCtx(ctx).Info("deleting uniform block", "id", ub.ID, "name", ub.Name)
+		gl.DeleteBuffers(1, &ub.ID)
+	}
 }
