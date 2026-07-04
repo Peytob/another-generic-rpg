@@ -120,11 +120,11 @@ func (c *Client) Shutdown(ctx context.Context) error {
 }
 
 func (c *Client) dumpRunningInfo(ctx context.Context) {
-	graphicApiInfo := c.graphic.Telemetry()
+	graphicAPIInfo := c.graphic.Telemetry()
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "running with graphic",
-		slog.String("name", graphicApiInfo.Name),
-		slog.String("version", graphicApiInfo.Version),
-		slog.String("renderer", graphicApiInfo.Renderer))
+		slog.String("name", graphicAPIInfo.Name),
+		slog.String("version", graphicAPIInfo.Version),
+		slog.String("renderer", graphicAPIInfo.Renderer))
 }
 
 func (c *Client) onWindowSizeChanged(width int, height int) {

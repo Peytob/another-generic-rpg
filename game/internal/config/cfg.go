@@ -16,7 +16,7 @@ type ClientConfiguration struct {
 
 type ServerConfiguration struct {
 	Log  *LogConfiguration  `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
-	Http *HttpConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
+	HTTP *HTTPConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
 }
 
 type LogConfiguration struct {
@@ -24,7 +24,7 @@ type LogConfiguration struct {
 	Level   slog.Level `yaml:"level" env:"LEVEL"`
 }
 
-type HttpConfiguration struct {
+type HTTPConfiguration struct {
 	Port int    `yaml:"port" env:"PORT" validate:"required,min=1,max=65535"`
 	Host string `yaml:"host" env:"HOST" validate:"required"`
 }

@@ -59,7 +59,7 @@ func (w Window) OnClose(callback func(Window)) {
 }
 
 func (w Window) OnSizeChanged(callback func(width int, height int)) {
-	w.window.SetSizeCallback(func(w *glfw.Window, width int, height int) {
+	w.window.SetSizeCallback(func(_ *glfw.Window, width int, height int) {
 		callback(width, height)
 	})
 }
