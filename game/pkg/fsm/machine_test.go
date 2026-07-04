@@ -26,7 +26,7 @@ const (
 	exitedEvent       = "exited"
 )
 
-func createTestMachine() Machine[string, string, TestState] {
+func createTestMachine() *machine[string, string, TestState] {
 	m, err := NewBuilder[string, string, TestState]().
 		RegisterState(initialState, Transitions[string, string]{
 			initializedEvent: runningState.Identifier(),
@@ -52,7 +52,12 @@ func createTestMachine() Machine[string, string, TestState] {
 		panic("bad test machine: " + err.Error())
 	}
 
-	return m
+	upcasted, ok := m.(*machine[string, string, TestState])
+	if !ok {
+		panic("bad test machine type")
+	}
+
+	return upcasted
 }
 
 func createMachineWithMissingStateTransitions() *machine[string, string, TestState] {
@@ -72,7 +77,11 @@ func createMachineWithMissingStateTransitions() *machine[string, string, TestSta
 }
 
 func TestEventChanges(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should change machine state according to local transitions table", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if err := m.Event(initializedEvent); err != nil {
@@ -85,6 +94,8 @@ func TestEventChanges(t *testing.T) {
 	})
 
 	t.Run("should change machine state according to global transitions table", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if err := m.Event(failedEvent); err != nil {
@@ -97,6 +108,8 @@ func TestEventChanges(t *testing.T) {
 	})
 
 	t.Run("should change machine with higher local transitions priority", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if err := m.Event(initializedEvent); err != nil {
@@ -118,6 +131,8 @@ func TestEventChanges(t *testing.T) {
 	})
 
 	t.Run("should fall through to global transitions when current state has no transitions entry", func(t *testing.T) {
+		t.Parallel()
+
 		m := createMachineWithMissingStateTransitions()
 
 		if err := m.Event(failedEvent); err != nil {
@@ -131,7 +146,11 @@ func TestEventChanges(t *testing.T) {
 }
 
 func TestFinalStates(t *testing.T) {
+	t.Parallel()
+
 	t.Run("should not run after final state", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if err := m.Event(failedEvent); err != nil {
@@ -144,6 +163,8 @@ func TestFinalStates(t *testing.T) {
 	})
 
 	t.Run("should return result in final state", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if err := m.Event(failedEvent); err != nil {
@@ -162,6 +183,8 @@ func TestFinalStates(t *testing.T) {
 	})
 
 	t.Run("should run in not final state", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		if !m.IsRunning() {
@@ -170,6 +193,8 @@ func TestFinalStates(t *testing.T) {
 	})
 
 	t.Run("should not return result in non final state", func(t *testing.T) {
+		t.Parallel()
+
 		m := createTestMachine()
 
 		state, ok := m.Result()

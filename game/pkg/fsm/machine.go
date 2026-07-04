@@ -82,7 +82,7 @@ func (m *machine[E, I, S]) Event(event E) error {
 	return ErrUnknownEvent
 }
 
-func (m *machine[E, I, S]) Result() (state S, ok bool) {
+func (m *machine[E, I, S]) Result() (S, bool) {
 	if !m.IsRunning() {
 		return m.currentState, true
 	}

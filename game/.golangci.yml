@@ -51,6 +51,35 @@ linters:
             - github.com/go-gl/mathgl/mgl32
             - github.com/go-playground/validator/v10
             - github.com/ilyakaznacheev/cleanenv
+    revive:
+      rules:
+        # Structural / naming / control-flow checks kept active.
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+        - name: unreachable-code
+        - name: redefines-builtin-id
+        # Comment-presence checks intentionally disabled by project policy.
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
 
   exclusions:
     presets:
@@ -59,10 +88,11 @@ linters:
       - common-false-positives
       - legacy
     rules:
-      # Complexity in tests is not a quality concern.
+      # Complexity and length in tests are not a quality concern.
       - path: _test\.go
         linters:
           - cyclop
+          - funlen
       # G115 (integer overflow conversion) is unavoidable when calling
       # OpenGL/Glfw C bindings that require fixed-width integer types.
       - linters:
