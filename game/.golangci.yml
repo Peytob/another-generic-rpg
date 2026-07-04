@@ -1,5 +1,5 @@
-# golangci-lint configuration
-# Docs: https://golangci-lint.run/usage/configuration/
+# golangci-lint configuration (strict)
+# Docs: https://golangci-lint.run/docs/configuration/file/
 version: "2"
 
 run:
@@ -8,59 +8,49 @@ run:
   modules-download-mode: readonly
 
 linters:
-  default: none
-  enable:
-    - bodyclose
-    - copyloopvar
-    - errcheck
-    - gocritic
-    - gocyclo
-    - gosec
-    - govet
-    - ineffassign
-    - intrange
-    - misspell
-    - nakedret
-    - nilerr
-    - noctx
-    - prealloc
-    - revive
-    - staticcheck
-    - unconvert
-    - unparam
-    - unused
-    - wastedassign
+  default: all
+  disable:
+    # Disabled linters conflict with idiomatic Go or the project's architecture.
+    - exhaustruct   # false positives on legitimate zero-value returns
+    - godot         # comments are not required to end with a period
+    - godox         # TODO/FIXME markers are intentional
+    - ireturn       # the FSM/architecture legitimately returns interfaces
+    - nlreturn      # opinionated blank line before every return
+    - noinlineerr   # forbids the idiomatic `if err := ...; err != nil`
+    - wsl           # extremely opinionated whitespace (legacy variant)
+    - wsl_v5        # extremely opinionated whitespace
 
   settings:
+    cyclop:
+      max-complexity: 10
+    funlen:
+      lines: 60
+      statements: 40
+    gocognit:
+      min-complexity: 20
     gocyclo:
-      min-complexity: 15
+      min-complexity: 10
+    lll:
+      line-length: 120
+    maintidx:
+      under: 20
     nakedret:
       max-func-lines: 20
     prealloc:
       simple: true
       for-loops: true
-    revive:
-      severity: warning
+    depguard:
       rules:
-        - name: blank-imports
-        - name: context-as-argument
-        - name: context-keys-type
-        - name: dot-imports
-        - name: error-naming
-        - name: error-return
-        - name: error-strings
-        - name: errorf
-        - name: increment-decrement
-        - name: indent-error-flow
-        - name: range
-        - name: receiver-naming
-        - name: redefines-builtin-id
-        - name: superfluous-else
-        - name: time-naming
-        - name: unexported-return
-        - name: unreachable-code
-        - name: var-declaration
-        - name: var-naming
+        main:
+          allow:
+            - $gostd
+            - game
+            - github.com/deckarep/golang-set/v2
+            - github.com/go-gl/gl/v3.3-core/gl
+            - github.com/go-gl/glfw/v3.3/glfw
+            - github.com/go-gl/mathgl/mgl32
+            - github.com/go-playground/validator/v10
+            - github.com/ilyakaznacheev/cleanenv
 
   exclusions:
     presets:
@@ -69,17 +59,34 @@ linters:
       - common-false-positives
       - legacy
     rules:
+      # Complexity in tests is not a quality concern.
       - path: _test\.go
         linters:
-          - gosec
-          - noctx
-          - gocyclo
-          - errcheck
+          - cyclop
       # G115 (integer overflow conversion) is unavoidable when calling
       # OpenGL/Glfw C bindings that require fixed-width integer types.
       - linters:
           - gosec
         text: "G115:"
+      # Raw OpenGL/Glfw C bindings: relax style/opinion linters that fight the
+      # inherent nature of C interop (magic numbers, short names, long and
+      # complex call sequences). Bug-catching linters still apply.
+      - path: pkg/graphic/internal/opengl/|pkg/window/
+        linters:
+          - cyclop
+          - err113
+          - funlen
+          - gocognit
+          - gocritic
+          - gocyclo
+          - lll
+          - maintidx
+          - mnd
+          - nestif
+          - revive
+          - tagalign
+          - varnamelen
+          - wrapcheck
 
 issues:
   max-issues-per-linter: 0

@@ -58,7 +58,7 @@ func validateConfiguration[T ClientConfiguration | ServerConfiguration](cfg *T) 
 			// TODO Return list of invalid fields
 		}
 
-		return err
+		return fmt.Errorf("configuration validation failed: %w", err)
 	}
 
 	return nil

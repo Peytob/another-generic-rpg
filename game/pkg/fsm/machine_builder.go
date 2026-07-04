@@ -1,7 +1,6 @@
 package fsm
 
 import (
-	"errors"
 	"maps"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -94,19 +93,19 @@ func (m *machineBuilder[E, I, S]) FinalStates(states ...I) MachineBuilder[E, I, 
 
 func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 	if len(m.states) == 0 {
-		return nil, errors.New("no states found")
+		return nil, ErrNoStates
 	}
 
 	for leftState := range m.transitions {
 		if !m.containsState(leftState) {
-			return nil, errors.New("transition left state not found")
+			return nil, ErrTransitionLeftStateNotFound
 		}
 
 		for event := range m.transitions[leftState] {
 			rightState := m.transitions[leftState][event]
 
 			if !m.containsState(rightState) {
-				return nil, errors.New("transition right state not found")
+				return nil, ErrTransitionRightStateNotFound
 			}
 		}
 	}
@@ -115,22 +114,22 @@ func (m *machineBuilder[E, I, S]) Build() (Machine[E, I, S], error) {
 		rightState := m.globalTransitions[event]
 
 		if !m.containsState(rightState) {
-			return nil, errors.New("transition right state not found")
+			return nil, ErrTransitionRightStateNotFound
 		}
 	}
 
 	for finalState := range m.finalStates.Iter() {
 		if !m.containsState(finalState) {
-			return nil, errors.New("final state not found")
+			return nil, ErrFinalStateNotFound
 		}
 	}
 
 	if !m.initialStateInitialized {
-		return nil, errors.New("initial state not initialized")
+		return nil, ErrInitialStateNotInitialized
 	}
 
 	if !m.containsState(m.initialState) {
-		return nil, errors.New("initial state not registered")
+		return nil, ErrInitialStateNotRegistered
 	}
 
 	return newMachine(m)
