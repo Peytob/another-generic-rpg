@@ -48,7 +48,7 @@ func main() {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
 
-	/* Compability init */
+	/* Compatibility init */
 
 	err = glfw.Init()
 	if err != nil {

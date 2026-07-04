@@ -1,0 +1,91 @@
+# golangci-lint configuration
+# Docs: https://golangci-lint.run/usage/configuration/
+version: "2"
+
+run:
+  go: "1.25"
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - copyloopvar
+    - errcheck
+    - gocritic
+    - gocyclo
+    - gosec
+    - govet
+    - ineffassign
+    - intrange
+    - misspell
+    - nakedret
+    - nilerr
+    - noctx
+    - prealloc
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - wastedassign
+
+  settings:
+    gocyclo:
+      min-complexity: 15
+    nakedret:
+      max-func-lines: 20
+    prealloc:
+      simple: true
+      for-loops: true
+    revive:
+      severity: warning
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: superfluous-else
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: var-declaration
+        - name: var-naming
+
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+      - legacy
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - noctx
+          - gocyclo
+          - errcheck
+      # G115 (integer overflow conversion) is unavoidable when calling
+      # OpenGL/Glfw C bindings that require fixed-width integer types.
+      - linters:
+          - gosec
+        text: "G115:"
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

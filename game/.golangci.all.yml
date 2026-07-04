@@ -1,0 +1,19 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - godox
+    - ireturn
+    - nlreturn
+    - noinlineerr
+    - wsl_v5
+    - depguard
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+      - legacy
+    rules:
+      - linters: [gosec]
+        text: "G115:"
