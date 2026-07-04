@@ -1,0 +1,4 @@
+# Normalize line endings to LF for all text files.
+# This keeps Go sources (and everything else) at LF on every platform,
+# which is what gofmt/golangci-lint expect.
+* text=auto eol=lf
