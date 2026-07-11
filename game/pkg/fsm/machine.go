@@ -7,23 +7,6 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 )
 
-type MachineError string
-
-func (e MachineError) Error() string {
-	return string(e)
-}
-
-const (
-	// StateNotFoundError operation state not found inside machine
-	StateNotFoundError = MachineError("state not found")
-
-	// MachineNotRunningError operation not allowed for stopped machine
-	MachineNotRunningError = MachineError("machine not running")
-
-	// UnknownEventError event not found in transitions table
-	UnknownEventError = MachineError("unknown event")
-)
-
 // Machine Abstract finite state machine. Only for single-gorutine use, add mutex if you want use it from
 // many gorutines
 type Machine[E comparable, I comparable, S State[I]] interface {
@@ -60,7 +43,7 @@ func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[
 	initialState, initialStateFound := builder.states[builder.initialState]
 
 	if !initialStateFound {
-		return nil, fmt.Errorf("initial state not set: %w", StateNotFoundError)
+		return nil, fmt.Errorf("initial state not set: %w", ErrStateNotFound)
 	}
 
 	transitions := make(map[I]Transitions[E, I], len(builder.transitions))
@@ -81,7 +64,7 @@ func newMachine[E comparable, I comparable, S State[I]](builder *machineBuilder[
 
 func (m *machine[E, I, S]) Event(event E) error {
 	if !m.isRunning {
-		return MachineNotRunningError
+		return ErrMachineNotRunning
 	}
 
 	currentState := m.currentState.Identifier()
@@ -96,10 +79,10 @@ func (m *machine[E, I, S]) Event(event E) error {
 		return m.changeState(nextI)
 	}
 
-	return UnknownEventError
+	return ErrUnknownEvent
 }
 
-func (m *machine[E, I, S]) Result() (state S, ok bool) {
+func (m *machine[E, I, S]) Result() (S, bool) {
 	if !m.IsRunning() {
 		return m.currentState, true
 	}
@@ -123,5 +106,5 @@ func (m *machine[E, I, S]) changeState(nextState I) error {
 		return nil
 	}
 
-	return StateNotFoundError
+	return ErrStateNotFound
 }

@@ -1,4 +1,4 @@
-package server
+package main
 
 import "context"
 
@@ -9,10 +9,10 @@ func NewServer() *Server {
 	return &Server{}
 }
 
-func (e *Server) Run(ctx context.Context) error {
+func (e *Server) Run(_ context.Context) error {
 	return nil
 }
 
-func (e *Server) Shutdown(ctx context.Context) error {
+func (e *Server) Shutdown(_ context.Context) error {
 	return nil
 }
