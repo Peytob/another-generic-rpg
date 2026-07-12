@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"game/pkg/graphic/renderer"
+	"engine/graphic/renderer"
 
 	"github.com/go-gl/mathgl/mgl32"
 )

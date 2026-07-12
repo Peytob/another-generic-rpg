@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
+	oglresource "engine/graphic/internal/opengl/resource"
+	grepository "engine/graphic/repository"
+	gresource "engine/graphic/resource"
+	gservice "engine/graphic/service"
+	"engine/math"
+	"engine/utils/logger"
 	"fmt"
-	oglresource "game/pkg/graphic/internal/opengl/resource"
-	grepository "game/pkg/graphic/repository"
-	gresource "game/pkg/graphic/resource"
-	gservice "game/pkg/graphic/service"
-	"game/pkg/math"
-	"game/pkg/utils/logger"
 	"log/slog"
 	"strings"
 

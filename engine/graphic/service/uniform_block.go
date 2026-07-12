@@ -1,7 +1,7 @@
 package service
 
 import (
-	"game/pkg/graphic/resource"
+	"engine/graphic/resource"
 
 	"github.com/go-gl/mathgl/mgl32"
 )

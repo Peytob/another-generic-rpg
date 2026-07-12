@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
+	"engine/utils/logger"
+	"engine/window"
 	"game/internal/config"
 	"game/internal/engine/client"
 	"game/internal/engine/fsm"
 	"game/internal/engine/graphic"
-	"game/pkg/engine"
-	"game/pkg/utils/logger"
-	"game/pkg/window"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -78,11 +77,11 @@ func main() {
 
 	/* Client */
 
-	machine := engine.NewMachineBuilder().
-		RegisterState(fsm.NewInitialState(), make(engine.Transitions)).
+	machine := fsm.NewMachineBuilder().
+		RegisterState(fsm.NewInitialState(), make(fsm.Transitions)).
 		InitialState(fsm.InitialStateIdentifier).
-		RegisterState(fsm.NewStoppedState(), make(engine.Transitions)).
-		GlobalTransitions(engine.Transitions{
+		RegisterState(fsm.NewStoppedState(), make(fsm.Transitions)).
+		GlobalTransitions(fsm.Transitions{
 			fsm.StoppedEvent: fsm.StoppedStateIdentifier,
 		}).
 		FinalStates(fsm.StoppedStateIdentifier).

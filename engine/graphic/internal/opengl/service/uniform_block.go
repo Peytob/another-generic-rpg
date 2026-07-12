@@ -1,10 +1,10 @@
 package service
 
 import (
+	oglresource "engine/graphic/internal/opengl/resource"
+	grepository "engine/graphic/repository"
+	gresource "engine/graphic/resource"
 	"fmt"
-	oglresource "game/pkg/graphic/internal/opengl/resource"
-	grepository "game/pkg/graphic/repository"
-	gresource "game/pkg/graphic/resource"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"

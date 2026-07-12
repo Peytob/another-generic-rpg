@@ -2,22 +2,21 @@ package fsm
 
 import (
 	"context"
-	"game/pkg/engine"
 )
 
-const ResourcesLoadingStateIdentifier = engine.StateIdentifier("resources_loading")
+const ResourcesLoadingStateIdentifier = StateIdentifier("resources_loading")
 
 type resourcesLoadingState struct {
 }
 
-func NewResourcesLoadingState() engine.State {
+func NewResourcesLoadingState() State {
 	return &resourcesLoadingState{}
 }
 
-func (s resourcesLoadingState) Update(_ context.Context) (engine.Event, error) {
+func (s resourcesLoadingState) Update(_ context.Context) (Event, error) {
 	return NoEvent, nil
 }
 
-func (s resourcesLoadingState) Identifier() engine.StateIdentifier {
+func (s resourcesLoadingState) Identifier() StateIdentifier {
 	return ResourcesLoadingStateIdentifier
 }

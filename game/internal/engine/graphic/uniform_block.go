@@ -2,9 +2,9 @@ package graphic
 
 import (
 	"context"
-	"game/pkg/graphic"
-	gresource "game/pkg/graphic/resource"
-	"game/pkg/utils/logger"
+	"engine/graphic"
+	gresource "engine/graphic/resource"
+	"engine/utils/logger"
 )
 
 const (

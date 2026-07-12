@@ -2,9 +2,9 @@ package graphic
 
 import (
 	"context"
-	"game/pkg/graphic"
-	gbackend "game/pkg/graphic/backend"
-	"game/pkg/utils/logger"
+	"engine/graphic"
+	gbackend "engine/graphic/backend"
+	"engine/utils/logger"
 )
 
 func InitializeGraphic(ctx context.Context) (graphic.Graphic, error) {

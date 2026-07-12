@@ -1,14 +1,14 @@
 package client
 
 import (
+	"engine/graphic"
+	"engine/window"
 	"errors"
-	"game/pkg/engine"
-	"game/pkg/graphic"
-	"game/pkg/window"
+	"game/internal/engine/fsm"
 )
 
 type Builder struct {
-	fsm     engine.Machine
+	fsm     fsm.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -17,7 +17,7 @@ func NewBuilder() *Builder {
 	return &Builder{}
 }
 
-func (b *Builder) Fsm(machine engine.Machine) *Builder {
+func (b *Builder) Fsm(machine fsm.Machine) *Builder {
 	b.fsm = machine
 	return b
 }

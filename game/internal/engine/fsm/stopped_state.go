@@ -2,22 +2,21 @@ package fsm
 
 import (
 	"context"
-	"game/pkg/engine"
 )
 
-const StoppedStateIdentifier = engine.StateIdentifier("stopped")
+const StoppedStateIdentifier = StateIdentifier("stopped")
 
 type stoppedState struct {
 }
 
-func NewStoppedState() engine.State {
+func NewStoppedState() State {
 	return &stoppedState{}
 }
 
-func (s stoppedState) Update(_ context.Context) (engine.Event, error) {
+func (s stoppedState) Update(_ context.Context) (Event, error) {
 	return NoEvent, nil
 }
 
-func (s stoppedState) Identifier() engine.StateIdentifier {
+func (s stoppedState) Identifier() StateIdentifier {
 	return StoppedStateIdentifier
 }

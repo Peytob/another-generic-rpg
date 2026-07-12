@@ -2,9 +2,9 @@ package graphic
 
 import (
 	"context"
-	"game/pkg/graphic/renderer"
-	"game/pkg/graphic/repository"
-	"game/pkg/graphic/service"
+	"engine/graphic/renderer"
+	"engine/graphic/repository"
+	"engine/graphic/service"
 )
 
 type Telemetry struct {

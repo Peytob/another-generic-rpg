@@ -1,7 +1,7 @@
 package resource
 
 import (
-	"game/pkg/math/shape"
+	"engine/math/shape"
 	"testing"
 
 	"github.com/go-gl/mathgl/mgl32"

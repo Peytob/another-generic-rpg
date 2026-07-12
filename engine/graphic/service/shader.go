@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	gresource "game/pkg/graphic/resource"
-	"game/pkg/math"
+	gresource "engine/graphic/resource"
+	"engine/math"
 
 	"github.com/go-gl/mathgl/mgl32"
 )

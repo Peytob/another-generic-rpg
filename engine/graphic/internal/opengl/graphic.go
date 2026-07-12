@@ -2,13 +2,13 @@ package opengl
 
 import (
 	"context"
-	"game/pkg/graphic"
-	oglrenderer "game/pkg/graphic/internal/opengl/renderer"
-	oglservice "game/pkg/graphic/internal/opengl/service"
-	grenderer "game/pkg/graphic/renderer"
-	grepository "game/pkg/graphic/repository"
-	gservice "game/pkg/graphic/service"
-	"game/pkg/utils/logger"
+	"engine/graphic"
+	oglrenderer "engine/graphic/internal/opengl/renderer"
+	oglservice "engine/graphic/internal/opengl/service"
+	grenderer "engine/graphic/renderer"
+	grepository "engine/graphic/repository"
+	gservice "engine/graphic/service"
+	"engine/utils/logger"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
