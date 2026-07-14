@@ -2,22 +2,21 @@ package fsm
 
 import (
 	"context"
-	"game/pkg/engine"
 )
 
-const InitialStateIdentifier = engine.StateIdentifier("initial")
+const InitialStateIdentifier = StateIdentifier("initial")
 
 type initialState struct {
 }
 
-func NewInitialState() engine.State {
+func NewInitialState() State {
 	return &initialState{}
 }
 
-func (s initialState) Update(_ context.Context) (engine.Event, error) {
+func (s initialState) Update(_ context.Context) (Event, error) {
 	return NoEvent, nil
 }
 
-func (s initialState) Identifier() engine.StateIdentifier {
+func (s initialState) Identifier() StateIdentifier {
 	return InitialStateIdentifier
 }

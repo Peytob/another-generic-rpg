@@ -2,8 +2,8 @@ package renderer
 
 import (
 	"context"
-	"game/pkg/graphic/resource"
-	"game/pkg/math"
+	"engine/graphic/resource"
+	"engine/math"
 
 	"github.com/go-gl/mathgl/mgl32"
 )

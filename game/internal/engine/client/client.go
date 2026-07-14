@@ -2,24 +2,23 @@ package client
 
 import (
 	"context"
+	"engine/graphic"
+	renderer2 "engine/graphic/renderer"
+	"engine/graphic/resource"
+	"engine/math"
+	"engine/math/shape"
+	"engine/utils/logger"
+	"engine/window"
 	"fmt"
 	"game/internal/engine/fsm"
 	cgraphic "game/internal/engine/graphic"
-	"game/pkg/engine"
-	"game/pkg/graphic"
-	"game/pkg/graphic/renderer"
-	"game/pkg/graphic/resource"
-	"game/pkg/math"
-	"game/pkg/math/shape"
-	"game/pkg/utils/logger"
-	"game/pkg/window"
 	"log/slog"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Client struct {
-	fsm     engine.Machine
+	fsm     fsm.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -77,7 +76,7 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := c.graphic.NewCanvas()
-		canvas.Draw(sprite, &renderer.CanvasOpts{
+		canvas.Draw(sprite, &renderer2.CanvasOpts{
 			Transform: sprite.Transformation().Transform(),
 		})
 		sprite.Transformation().Rotate(rotate)
@@ -87,7 +86,7 @@ func (c *Client) Run(ctx context.Context) error {
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")
 		}
-		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
+		err = c.graphic.Renderer().Render(ctx, canvas, renderer2.RenderOpts{
 			View: mgl32.Ident4(), // todo camera
 			Model: math.NewTransformation().
 				//Translate(float32(w)/2, float32(h)/2).

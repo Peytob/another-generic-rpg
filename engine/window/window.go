@@ -9,9 +9,12 @@ import (
 )
 
 type Opts struct {
-	Width  int
-	Height int
-	Title  string
+	Width   int
+	Height  int
+	Title   string
+	GLMajor int
+	GLMinor int
+	Visible bool
 }
 
 type Window struct {
@@ -23,10 +26,11 @@ func Init(opts Opts) (*Window, error) {
 	w := &Window{}
 
 	glfw.DefaultWindowHints()
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 3)
+	glfw.WindowHint(glfw.ContextVersionMajor, opts.GLMajor)
+	glfw.WindowHint(glfw.ContextVersionMinor, opts.GLMinor)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.Visible, toGlfwBool(opts.Visible))
 	if w.window, err = glfw.CreateWindow(opts.Width, opts.Height, opts.Title, nil, nil); err != nil {
 		return w, fmt.Errorf("failed to create GLFW w: %w", err)
 	}
@@ -74,4 +78,11 @@ func (w Window) Show() {
 
 func (w Window) Size() (int, int) {
 	return w.window.GetSize()
+}
+
+func toGlfwBool(b bool) int {
+	if b {
+		return glfw.True
+	}
+	return glfw.False
 }

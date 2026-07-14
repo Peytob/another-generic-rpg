@@ -1,8 +1,8 @@
 package renderer
 
 import (
-	gres "game/pkg/graphic/resource"
-	"game/pkg/math"
+	gres "engine/graphic/resource"
+	"engine/math"
 )
 
 type Drawable interface {

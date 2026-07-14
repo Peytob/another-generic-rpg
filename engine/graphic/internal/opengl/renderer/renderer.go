@@ -2,12 +2,12 @@ package renderer
 
 import (
 	"context"
+	oglresource "engine/graphic/internal/opengl/resource"
+	grenderer "engine/graphic/renderer"
+	"engine/graphic/service"
+	"engine/utils/logger"
 	"errors"
 	"fmt"
-	oglresource "game/pkg/graphic/internal/opengl/resource"
-	grenderer "game/pkg/graphic/renderer"
-	"game/pkg/graphic/service"
-	"game/pkg/utils/logger"
 	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"

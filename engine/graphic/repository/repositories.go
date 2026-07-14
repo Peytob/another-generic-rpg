@@ -7,7 +7,7 @@
 package repository
 
 import (
-	gresource "game/pkg/graphic/resource"
+	gresource "engine/graphic/resource"
 	"maps"
 )
 

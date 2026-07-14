@@ -3,10 +3,10 @@ package graphic
 import (
 	"context"
 	_ "embed"
+	"engine/graphic"
+	gresource "engine/graphic/resource"
+	"engine/utils/logger"
 	"fmt"
-	"game/pkg/graphic"
-	gresource "game/pkg/graphic/resource"
-	"game/pkg/utils/logger"
 )
 
 const (
