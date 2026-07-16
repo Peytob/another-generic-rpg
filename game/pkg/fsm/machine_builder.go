@@ -11,6 +11,9 @@ type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	// machine, then transitions will be merged.
 	RegisterState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
+	// BuildState returns state builder, that can be used to build state
+	BuildState(state S) StateBuilder[E, I, S]
+
 	// WriteState registers state if state not exists. Rewrites transitions if state already exists.
 	WriteState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S]
 
@@ -64,6 +67,10 @@ func (m *machineBuilder[E, I, S]) RegisterState(state S, transitions Transitions
 	}
 
 	return m
+}
+
+func (m *machineBuilder[E, I, S]) BuildState(state S) StateBuilder[E, I, S] {
+	return newStateBuilder(m, state)
 }
 
 func (m *machineBuilder[E, I, S]) WriteState(state S, transitions Transitions[E, I]) MachineBuilder[E, I, S] {
