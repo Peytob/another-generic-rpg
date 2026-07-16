@@ -8,6 +8,9 @@ import (
 // Event is the base type for all events. Any type can serve as an event.
 type Event any
 
+// EventType identifies a specific component type via reflection
+type EventType reflect.Type
+
 // EventHandler processes a single event.
 type EventHandler func(ctx context.Context, event Event) error
 
@@ -16,14 +19,26 @@ type Subscription interface {
 	Unsubscribe()
 }
 
+// eventSubscription is a single handler registration. Unsubscribe marks it
+// inactive (tombstone) rather than mutating the handler slice, which keeps
+// EmitEvent iteration safe against reentrancy.
+type eventSubscription struct {
+	handler EventHandler
+	active  bool
+}
+
+func (s *eventSubscription) Unsubscribe() {
+	s.active = false
+}
+
 // EventBus provides publish/subscribe functionality for events.
 type EventBus interface {
-	// Emit publishes an event to all subscribers of its concrete type.
-	Emit(ctx context.Context, event Event) error
+	// EmitEvent publishes an event to all subscribers of its concrete type.
+	EmitEvent(ctx context.Context, event Event) error
 
-	// Subscribe registers a handler for events of the specified reflect.Type.
+	// Subscribe registers a handler for events of the specified EventType.
 	// Returns a Subscription that can be used to unsubscribe.
-	Subscribe(eventType reflect.Type, handler EventHandler) Subscription
+	Subscribe(eventType EventType, handler EventHandler) Subscription
 }
 
 // Subscribe is a type-safe generic wrapper for EventBus.Subscribe.
