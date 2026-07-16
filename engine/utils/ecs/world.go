@@ -32,6 +32,7 @@ type world struct {
 func NewWorld() World {
 	// todo memory allocation configuration
 	return &world{
+		nextEntityID:         1,
 		entities:             make(map[Entity]struct{}, 32),
 		components:           make(map[Entity][]Component, 128),
 		componentsQueryIndex: make(map[ComponentType][]Entity, 64),
@@ -64,6 +65,10 @@ func (w *world) Entities() []Entity {
 }
 
 func (w *world) RegisterComponent(entity Entity, component Component) {
+	if _, ok := w.entities[entity]; !ok {
+		return
+	}
+
 	componentType := ComponentTypeOf(component)
 
 	components := w.components[entity]
@@ -79,6 +84,10 @@ func (w *world) RegisterComponent(entity Entity, component Component) {
 }
 
 func (w *world) UnregisterComponent(entity Entity, componentType ComponentType) {
+	if _, ok := w.entities[entity]; !ok {
+		return
+	}
+
 	components := w.components[entity]
 	for i, c := range components {
 		if ComponentTypeOf(c) == componentType {
@@ -86,10 +95,16 @@ func (w *world) UnregisterComponent(entity Entity, componentType ComponentType) 
 			break
 		}
 	}
-	w.componentsQueryIndex[componentType] = filterOutEntity(w.componentsQueryIndex[componentType], entity)
+	if list, ok := w.componentsQueryIndex[componentType]; ok {
+		w.componentsQueryIndex[componentType] = filterOutEntity(list, entity)
+	}
 }
 
 func (w *world) GetComponent(entity Entity, componentType ComponentType) (Component, bool) {
+	if _, ok := w.entities[entity]; !ok {
+		return nil, false
+	}
+
 	for _, c := range w.components[entity] {
 		if ComponentTypeOf(c) == componentType {
 			return c, true
@@ -122,25 +137,6 @@ func (w *world) Query(componentTypes ...ComponentType) []Entity {
 		}
 	}
 	return result
-}
-
-func (w *world) hasAllComponents(entity Entity, componentTypes []ComponentType) bool {
-	for _, ct := range componentTypes {
-		if !w.HasComponent(entity, ct) {
-			return false
-		}
-	}
-	return true
-}
-
-func filterOutEntity(list []Entity, entity Entity) []Entity {
-	filtered := list[:0]
-	for _, e := range list {
-		if e != entity {
-			filtered = append(filtered, e)
-		}
-	}
-	return filtered
 }
 
 func (w *world) AddSystem(system System) {
@@ -186,6 +182,21 @@ func (w *world) EmitEvent(ctx context.Context, event Event) error {
 	return firstErr
 }
 
+func (w *world) Subscribe(eventType EventType, handler EventHandler) Subscription {
+	sub := &eventSubscription{handler: handler, active: true}
+	w.eventHandlers[eventType] = append(w.eventHandlers[eventType], sub)
+	return sub
+}
+
+func (w *world) Update(ctx context.Context, dt time.Duration) error {
+	for system := range w.SystemsIter() {
+		if err := system(ctx, w, dt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // compactSubscriptions rebuilds the handler slice for an event type without
 // inactive (unsubscribed) entries. A fresh slice is allocated so the backing
 // array of any in-flight EmitEvent range is never mutated, keeping iteration
@@ -205,17 +216,21 @@ func (w *world) compactSubscriptions(eventType EventType) {
 	}
 }
 
-func (w *world) Subscribe(eventType EventType, handler EventHandler) Subscription {
-	sub := &eventSubscription{handler: handler, active: true}
-	w.eventHandlers[eventType] = append(w.eventHandlers[eventType], sub)
-	return sub
-}
-
-func (w *world) Update(ctx context.Context, dt time.Duration) error {
-	for system := range w.SystemsIter() {
-		if err := system(ctx, w, dt); err != nil {
-			return err
+func (w *world) hasAllComponents(entity Entity, componentTypes []ComponentType) bool {
+	for _, ct := range componentTypes {
+		if !w.HasComponent(entity, ct) {
+			return false
 		}
 	}
-	return nil
+	return true
+}
+
+func filterOutEntity(list []Entity, entity Entity) []Entity {
+	filtered := list[:0]
+	for _, e := range list {
+		if e != entity {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
 }
