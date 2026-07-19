@@ -6,8 +6,8 @@ import (
 	"engine/window"
 	"game/internal/client"
 	"game/internal/config"
-	"game/internal/fsm"
-	"game/internal/graphic"
+	"game/internal/gamestate"
+	"game/internal/rendering"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -73,21 +73,21 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
-	g, err := graphic.InitializeGraphic(ctx)
+	g, err := rendering.InitializeGraphic(ctx)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
 
 	/* Client */
 
-	machine := fsm.NewMachineBuilder().
-		RegisterState(fsm.NewInitialState(), make(fsm.Transitions)).
-		InitialState(fsm.InitialStateIdentifier).
-		RegisterState(fsm.NewStoppedState(), make(fsm.Transitions)).
-		GlobalTransitions(fsm.Transitions{
-			fsm.StoppedEvent: fsm.StoppedStateIdentifier,
+	machine := gamestate.NewMachineBuilder().
+		RegisterState(gamestate.NewInitialState(), make(gamestate.Transitions)).
+		InitialState(gamestate.InitialStateIdentifier).
+		RegisterState(gamestate.NewStoppedState(), make(gamestate.Transitions)).
+		GlobalTransitions(gamestate.Transitions{
+			gamestate.StoppedEvent: gamestate.StoppedStateIdentifier,
 		}).
-		FinalStates(fsm.StoppedStateIdentifier).
+		FinalStates(gamestate.StoppedStateIdentifier).
 		MustBuild()
 
 	cl := client.NewBuilder().

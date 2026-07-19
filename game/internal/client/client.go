@@ -10,15 +10,15 @@ import (
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
-	"game/internal/fsm"
-	gamegraphic "game/internal/graphic"
+	"game/internal/gamestate"
+	"game/internal/rendering"
 	"log/slog"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Client struct {
-	fsm     fsm.Machine
+	fsm     gamestate.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -52,7 +52,7 @@ func (c *Client) Run(ctx context.Context) error {
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")
-			err = c.fsm.Event(fsm.StoppedEvent)
+			err = c.fsm.Event(gamestate.StoppedEvent)
 			if err != nil {
 				return fmt.Errorf("failed to stop machine on window close: %w", err)
 			}
@@ -64,7 +64,7 @@ func (c *Client) Run(ctx context.Context) error {
 			return fmt.Errorf("error while executing FSM update: %w", err)
 		}
 
-		if event != fsm.NoEvent {
+		if event != gamestate.NoEvent {
 			err = c.fsm.Event(event)
 			if err != nil {
 				return fmt.Errorf("error while changing FSM state: %w", err)
@@ -82,7 +82,7 @@ func (c *Client) Run(ctx context.Context) error {
 		sprite.Transformation().Rotate(rotate)
 		rotate += 0.0002
 
-		shader, shaderFound := c.graphic.Repositories().Shader.ByName(gamegraphic.TilemapShader)
+		shader, shaderFound := c.graphic.Repositories().Shader.ByName(rendering.TilemapShader)
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")
 		}
@@ -129,17 +129,17 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 func (c *Client) onWindowSizeChanged(width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
 
-	ub, ok := c.graphic.Repositories().Uniform.ByName(gamegraphic.ProjViewUniformBlock)
+	ub, ok := c.graphic.Repositories().Uniform.ByName(rendering.ProjViewUniformBlock)
 	if !ok {
 		// todo log error via contex
-		slog.Default().Error("failed to find uniform block", "name", gamegraphic.ProjViewUniformBlock)
+		slog.Default().Error("failed to find uniform block", "name", rendering.ProjViewUniformBlock)
 		return
 	}
 
-	err := c.graphic.Services().Uniform.SetUniformVariableMat4(ub, gamegraphic.ProjUniform, proj)
+	err := c.graphic.Services().Uniform.SetUniformVariableMat4(ub, rendering.ProjUniform, proj)
 	if err != nil {
 		// todo log error via context
-		slog.Default().Error("failed to set uniform block variable", "name", gamegraphic.ProjViewUniformBlock, "variable", gamegraphic.ProjUniform)
+		slog.Default().Error("failed to set uniform block variable", "name", rendering.ProjViewUniformBlock, "variable", rendering.ProjUniform)
 		return
 	}
 }
