@@ -4,7 +4,7 @@ import (
 	"engine/graphic"
 	"engine/window"
 	"errors"
-	"game/internal/engine/fsm"
+	"game/internal/fsm"
 )
 
 type Builder struct {

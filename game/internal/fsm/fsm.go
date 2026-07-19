@@ -2,7 +2,7 @@ package fsm
 
 import (
 	"context"
-	"game/pkg/fsm"
+	"engine/utils/fsm"
 )
 
 // Event enumerated type to describe engine FSM events
