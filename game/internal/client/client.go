@@ -10,6 +10,7 @@ import (
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
+	"game/internal/gameplay/tilemap"
 	"game/internal/gamestate"
 	"game/internal/rendering"
 	"log/slog"
@@ -33,8 +34,6 @@ func (c *Client) Run(ctx context.Context) error {
 
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
-
-	rotate := float32(0.0)
 
 	for {
 		var err error
@@ -76,18 +75,20 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := c.graphic.NewCanvas()
-		canvas.Draw(sprite, &renderer.CanvasOpts{
-			Transform: sprite.Transformation().Transform(),
-		})
-		sprite.Transformation().Rotate(rotate)
-		rotate += 0.0002
+		tilemapDrawer := tilemap.NewDrawer(tilemap.NewTileRepository())
+		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
+		err = tilemapDrawer.Draw(ctx, tmap, canvas)
+		if err != nil {
+			return err
+		}
 
+		//w, h := c.window.Size()
 		shader, shaderFound := c.graphic.Repositories().Shader.ByName(rendering.TilemapShader)
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")
 		}
 		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
-			View: mgl32.Ident4(), // todo camera
+			View: mgl32.Ident4(), // mgl32.Ortho2D(0, float32(w), float32(h), 0), // todo camera
 			Model: math.NewTransformation().
 				//Translate(float32(w)/2, float32(h)/2).
 				//Rotate(rotate).

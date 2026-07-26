@@ -31,7 +31,10 @@ func TestSprite_Vertices(t *testing.T) {
 
 		data := sprite.Vertices()
 
-		want := mgl32.Rect(100, 100)
+		want := []mgl32.Vec2{
+			{0, 0}, {0, 100}, {100, 100},
+			{0, 0}, {100, 100}, {100, 0},
+		}
 		if len(data.Vertices) != len(want) {
 			t.Fatalf("vertices count = %d, want %d", len(data.Vertices), len(want))
 		}
