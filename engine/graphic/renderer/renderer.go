@@ -21,12 +21,22 @@ type RenderOpts struct {
 
 	// RenderTarget target to render.
 	RenderTarget RenderTarget
+
+	// Mode primitive rasterization mode (fill or wireframe).
+	Mode DrawMode
 }
 
 // RenderTarget describes render target
 type RenderTarget struct {
 	RenderBufferID int32
 }
+
+type DrawMode uint8
+
+const (
+	Fill DrawMode = iota
+	Wireframe
+)
 
 type Renderer interface {
 	Render(ctx context.Context, canvas Canvas, opts RenderOpts) error

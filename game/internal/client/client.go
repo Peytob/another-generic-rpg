@@ -94,6 +94,7 @@ func (c *Client) Run(ctx context.Context) error {
 				//Rotate(rotate).
 				Transform(),
 			Shader: shader,
+			Mode:   renderer.Wireframe,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)

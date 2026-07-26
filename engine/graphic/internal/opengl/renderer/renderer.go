@@ -86,10 +86,20 @@ func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts grenderer.Re
 	}
 
 	gl.BindVertexArray(r.vao.ID())
+	gl.PolygonMode(gl.FRONT_AND_BACK, polygonMode(opts.Mode))
 	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)
 
 	return nil
+}
+
+func polygonMode(mode grenderer.DrawMode) uint32 {
+	switch mode {
+	case grenderer.Wireframe:
+		return gl.LINE
+	default:
+		return gl.FILL
+	}
 }
 
 func (r *Renderer) Terminate(ctx context.Context) {
