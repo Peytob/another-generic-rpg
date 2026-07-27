@@ -77,7 +77,7 @@ func (c *Client) Run(ctx context.Context) error {
 		canvas := c.graphic.NewCanvas()
 		tilemapDrawer := tilemap.NewDrawer(tilemap.NewTileRepository())
 		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
-		err = tilemapDrawer.Draw(ctx, tmap, canvas)
+		err = tilemapDrawer.Draw(ctx, tmap, canvas, tilemap.DrawOpts{})
 		if err != nil {
 			return err
 		}
