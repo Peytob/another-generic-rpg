@@ -6,6 +6,9 @@ type Camera struct {
 	position mgl32.Vec2
 	area     mgl32.Vec2
 	maxArea  mgl32.Vec2
+
+	view            mgl32.Mat4
+	viewNeedsUpdate bool
 }
 
 func NewCamera(position mgl32.Vec2, maxArea mgl32.Vec2) *Camera {
@@ -17,6 +20,7 @@ func NewCamera(position mgl32.Vec2, maxArea mgl32.Vec2) *Camera {
 
 func (c *Camera) Position(position mgl32.Vec2) {
 	c.position = position
+	c.viewNeedsUpdate = true
 }
 
 func (c *Camera) GetPosition() mgl32.Vec2 {
@@ -38,4 +42,12 @@ func (c *Camera) GetArea() mgl32.Vec2 {
 
 func (c *Camera) GetMaxArea() mgl32.Vec2 {
 	return c.maxArea
+}
+
+func (c *Camera) ViewMatrix() mgl32.Mat4 {
+	if c.viewNeedsUpdate {
+		c.view = mgl32.Translate3D(-c.position.X(), -c.position.Y(), 0)
+	}
+
+	return c.view
 }

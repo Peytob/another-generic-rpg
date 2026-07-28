@@ -28,9 +28,11 @@ func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
 
 	// test
-	//w, h := c.window.Size()
+	w, h := c.window.Size()
 	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
 	sprite.Transformation().Translate(-50, 50)
+	camera := rendering.NewCamera(mgl32.Vec2{}, mgl32.Vec2{float32(w), float32(h)})
+	camera.Area(w, h)
 
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
@@ -77,12 +79,13 @@ func (c *Client) Run(ctx context.Context) error {
 		canvas := c.graphic.NewCanvas()
 		tilemapDrawer := tilemap.NewDrawer(tilemap.NewTileRepository())
 		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
-		err = tilemapDrawer.Draw(ctx, tmap, canvas, tilemap.DrawOpts{})
+		err = tilemapDrawer.Draw(ctx, tmap, canvas, tilemap.DrawOpts{
+			Camera: camera,
+		})
 		if err != nil {
 			return err
 		}
 
-		//w, h := c.window.Size()
 		shader, shaderFound := c.graphic.Repositories().Shader.ByName(rendering.TilemapShader)
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")

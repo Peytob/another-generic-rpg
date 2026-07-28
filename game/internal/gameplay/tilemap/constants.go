@@ -1,3 +1,8 @@
 package tilemap
 
-const tileSize = 32
+import "game/isomath"
+
+const (
+	tileWPx = isomath.TileWu * isomath.Unit
+	tileHPx = isomath.TileHu * isomath.Unit
+)
