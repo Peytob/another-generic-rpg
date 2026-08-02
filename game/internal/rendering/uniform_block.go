@@ -1,4 +1,4 @@
-package graphic
+package rendering
 
 import (
 	"context"

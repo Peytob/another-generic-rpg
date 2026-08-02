@@ -26,8 +26,6 @@ func NewRenderer(ctx context.Context, shaderService service.Shader) *Renderer {
 	logger.FromCtx(ctx).Info("created vertex array buffer", slog.Int64("id", int64(defaultVao)))
 
 	gl.BindVertexArray(defaultVao)
-	gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
-	gl.EnableVertexAttribArray(0)
 
 	return &Renderer{
 		vao:           oglresource.VertexArray(defaultVao),
@@ -68,6 +66,8 @@ func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts grenderer.Re
 	{
 		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 		gl.BufferData(gl.ARRAY_BUFFER, len(canvas.positions)*4*2, gl.Ptr(canvas.positions), gl.STATIC_DRAW)
+		gl.VertexAttribPointer(0, 2, gl.FLOAT, false, 2*4, nil)
+		gl.EnableVertexAttribArray(0)
 
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(canvas.elements)*4, gl.Ptr(canvas.elements), gl.STATIC_DRAW)
@@ -86,10 +86,20 @@ func (r *Renderer) renderOgl(_ context.Context, canvas Canvas, opts grenderer.Re
 	}
 
 	gl.BindVertexArray(r.vao.ID())
+	gl.PolygonMode(gl.FRONT_AND_BACK, polygonMode(opts.Mode))
 	gl.DrawElements(gl.TRIANGLES, int32(len(canvas.elements)), gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)
 
 	return nil
+}
+
+func polygonMode(mode grenderer.DrawMode) uint32 {
+	switch mode {
+	case grenderer.Wireframe:
+		return gl.LINE
+	default:
+		return gl.FILL
+	}
 }
 
 func (r *Renderer) Terminate(ctx context.Context) {

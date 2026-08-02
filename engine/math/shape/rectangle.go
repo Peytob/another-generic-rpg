@@ -10,12 +10,20 @@ type Rect struct {
 
 func NewRect(width, height float32) Rect {
 	return Rect{
-		//width:  width,
-		//height: height,
-		//x:      0,
-		//y:      0,
-		points: mgl32.Rect(width, height),
+		points: []mgl32.Vec2{
+			{0.0, 0.0},
+			{0.0, height},
+			{width, height},
+
+			{0.0, 0.0},
+			{width, height},
+			{width, 0.0},
+		},
 	}
+}
+
+func NewZeroRect() Rect {
+	return NewRect(0, 0)
 }
 
 func (r Rect) GetPoints() []mgl32.Vec2 {

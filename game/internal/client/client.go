@@ -3,22 +3,24 @@ package client
 import (
 	"context"
 	"engine/graphic"
-	renderer2 "engine/graphic/renderer"
+	"engine/graphic/renderer"
 	"engine/graphic/resource"
 	"engine/math"
 	"engine/math/shape"
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
-	"game/internal/engine/fsm"
-	cgraphic "game/internal/engine/graphic"
+	"game/internal/gameplay/tilemap"
+	"game/internal/gamestate"
+	"game/internal/rendering"
+	"game/internal/rendering/draw"
 	"log/slog"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Client struct {
-	fsm     fsm.Machine
+	fsm     gamestate.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -27,14 +29,14 @@ func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
 
 	// test
-	//w, h := c.window.Size()
+	w, h := c.window.Size()
 	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
 	sprite.Transformation().Translate(-50, 50)
+	camera := rendering.NewCamera(mgl32.Vec2{}, mgl32.Vec2{float32(w), float32(h)})
+	camera.Area(w, h)
 
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
-
-	rotate := float32(0.0)
 
 	for {
 		var err error
@@ -52,7 +54,7 @@ func (c *Client) Run(ctx context.Context) error {
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")
-			err = c.fsm.Event(fsm.StoppedEvent)
+			err = c.fsm.Event(gamestate.StoppedEvent)
 			if err != nil {
 				return fmt.Errorf("failed to stop machine on window close: %w", err)
 			}
@@ -64,7 +66,7 @@ func (c *Client) Run(ctx context.Context) error {
 			return fmt.Errorf("error while executing FSM update: %w", err)
 		}
 
-		if event != fsm.NoEvent {
+		if event != gamestate.NoEvent {
 			err = c.fsm.Event(event)
 			if err != nil {
 				return fmt.Errorf("error while changing FSM state: %w", err)
@@ -76,23 +78,27 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := c.graphic.NewCanvas()
-		canvas.Draw(sprite, &renderer2.CanvasOpts{
-			Transform: sprite.Transformation().Transform(),
+		tilemapDrawer := draw.NewDrawer(tilemap.NewTileRepository())
+		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
+		err = tilemapDrawer.Draw(ctx, tmap, canvas, draw.DrawOpts{
+			Camera: camera,
 		})
-		sprite.Transformation().Rotate(rotate)
-		rotate += 0.0002
+		if err != nil {
+			return err
+		}
 
-		shader, shaderFound := c.graphic.Repositories().Shader.ByName(cgraphic.TilemapShader)
+		shader, shaderFound := c.graphic.Repositories().Shader.ByName(rendering.TilemapShader)
 		if !shaderFound {
 			return fmt.Errorf("no shader found in graphic repositories")
 		}
-		err = c.graphic.Renderer().Render(ctx, canvas, renderer2.RenderOpts{
-			View: mgl32.Ident4(), // todo camera
+		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
+			View: mgl32.Ident4(), // mgl32.Ortho2D(0, float32(w), float32(h), 0), // todo camera
 			Model: math.NewTransformation().
 				//Translate(float32(w)/2, float32(h)/2).
 				//Rotate(rotate).
 				Transform(),
 			Shader: shader,
+			Mode:   renderer.Wireframe,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to render: %w", err)
@@ -129,17 +135,17 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 func (c *Client) onWindowSizeChanged(width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
 
-	ub, ok := c.graphic.Repositories().Uniform.ByName(cgraphic.ProjViewUniformBlock)
+	ub, ok := c.graphic.Repositories().Uniform.ByName(rendering.ProjViewUniformBlock)
 	if !ok {
 		// todo log error via contex
-		slog.Default().Error("failed to find uniform block", "name", cgraphic.ProjViewUniformBlock)
+		slog.Default().Error("failed to find uniform block", "name", rendering.ProjViewUniformBlock)
 		return
 	}
 
-	err := c.graphic.Services().Uniform.SetUniformVariableMat4(ub, cgraphic.ProjUniform, proj)
+	err := c.graphic.Services().Uniform.SetUniformVariableMat4(ub, rendering.ProjUniform, proj)
 	if err != nil {
 		// todo log error via context
-		slog.Default().Error("failed to set uniform block variable", "name", cgraphic.ProjViewUniformBlock, "variable", cgraphic.ProjUniform)
+		slog.Default().Error("failed to set uniform block variable", "name", rendering.ProjViewUniformBlock, "variable", rendering.ProjUniform)
 		return
 	}
 }

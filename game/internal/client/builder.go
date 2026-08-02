@@ -4,11 +4,11 @@ import (
 	"engine/graphic"
 	"engine/window"
 	"errors"
-	"game/internal/engine/fsm"
+	"game/internal/gamestate"
 )
 
 type Builder struct {
-	fsm     fsm.Machine
+	fsm     gamestate.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -17,7 +17,7 @@ func NewBuilder() *Builder {
 	return &Builder{}
 }
 
-func (b *Builder) Fsm(machine fsm.Machine) *Builder {
+func (b *Builder) Fsm(machine gamestate.Machine) *Builder {
 	b.fsm = machine
 	return b
 }

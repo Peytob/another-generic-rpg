@@ -1,8 +1,9 @@
-# golangci-lint configuration (strict) — GAME module
+# golangci-lint configuration (strict) — ENGINE module
 # Docs: https://golangci-lint.run/docs/configuration/file/
 #
-# This config governs the `game` module. The `game` module depends on the
-# `engine` module, so `engine` is in depguard's allow list.
+# This config governs the `engine` module. `engine` is a reusable library
+# and must NOT depend on `game`, so `game` is intentionally absent from
+# depguard's allow list (any `import "game/..."` here will be flagged).
 version: "2"
 
 run:
@@ -47,14 +48,12 @@ linters:
         main:
           allow:
             - $gostd
-            - engine   # game depends on engine — allowed
-            - game
+            - engine
+            # NOTE: `game` is intentionally excluded — engine must not depend on game.
             - github.com/deckarep/golang-set/v2
             - github.com/go-gl/gl/v3.3-core/gl
             - github.com/go-gl/glfw/v3.3/glfw
             - github.com/go-gl/mathgl/mgl32
-            - github.com/go-playground/validator/v10
-            - github.com/ilyakaznacheev/cleanenv
     revive:
       rules:
         # Structural / naming / control-flow checks kept active.
