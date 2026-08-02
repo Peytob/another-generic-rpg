@@ -13,6 +13,7 @@ import (
 	"game/internal/gameplay/tilemap"
 	"game/internal/gamestate"
 	"game/internal/rendering"
+	"game/internal/rendering/draw"
 	"log/slog"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -77,9 +78,9 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := c.graphic.NewCanvas()
-		tilemapDrawer := tilemap.NewDrawer(tilemap.NewTileRepository())
+		tilemapDrawer := draw.NewDrawer(tilemap.NewTileRepository())
 		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
-		err = tilemapDrawer.Draw(ctx, tmap, canvas, tilemap.DrawOpts{
+		err = tilemapDrawer.Draw(ctx, tmap, canvas, draw.DrawOpts{
 			Camera: camera,
 		})
 		if err != nil {

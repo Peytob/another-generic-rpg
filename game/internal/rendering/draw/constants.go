@@ -1,4 +1,4 @@
-package tilemap
+package draw
 
 import "game/isomath"
 

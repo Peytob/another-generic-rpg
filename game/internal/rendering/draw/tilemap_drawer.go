@@ -1,4 +1,4 @@
-package tilemap
+package draw
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"engine/math"
 	"engine/math/shape"
 	"fmt"
+	"game/internal/gameplay/tilemap"
 	"game/internal/rendering"
 	"game/isomath"
 	stdmath "math"
@@ -15,7 +16,7 @@ import (
 )
 
 type Drawer interface {
-	Draw(ctx context.Context, tilemap *Tilemap, target renderer.Canvas, opts DrawOpts) error
+	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error
 }
 
 type DrawOpts struct {
@@ -23,16 +24,16 @@ type DrawOpts struct {
 }
 
 type tilemapRenderer struct {
-	repository *TileRepository
+	repository *tilemap.TileRepository
 }
 
-func NewDrawer(tileRepository *TileRepository) Drawer {
+func NewDrawer(tileRepository *tilemap.TileRepository) Drawer {
 	return tilemapRenderer{
 		repository: tileRepository,
 	}
 }
 
-func (t tilemapRenderer) Draw(ctx context.Context, tilemap *Tilemap, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error {
 	if tilemap == nil {
 		return fmt.Errorf("tilemap is nil")
 	}
@@ -56,7 +57,7 @@ func (t tilemapRenderer) Draw(ctx context.Context, tilemap *Tilemap, target rend
 	return nil
 }
 
-func (t tilemapRenderer) drawLayer(_ context.Context, layer *Layer, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts DrawOpts) error {
 	transformation := math.NewTransformation()
 	sprite := resource.NewSprite(shape.NewRect(tileWPx, tileHPx), shape.NewZeroRect())
 
@@ -87,7 +88,7 @@ func (t tilemapRenderer) drawLayer(_ context.Context, layer *Layer, target rende
 	return nil
 }
 
-func visibleTileRange(layer *Layer, camera *rendering.Camera) (startX, startY, endX, endY int) {
+func visibleTileRange(layer *tilemap.Layer, camera *rendering.Camera) (startX, startY, endX, endY int) {
 	camPos := camera.GetPosition()
 	camArea := camera.GetArea()
 
