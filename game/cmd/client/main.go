@@ -81,8 +81,16 @@ func main() {
 	/* Client */
 
 	machine := gamestate.NewMachineBuilder().
-		RegisterState(gamestate.NewInitialState(), make(gamestate.Transitions)).
 		InitialState(gamestate.InitialStateIdentifier).
+		BuildState(gamestate.NewInitialState()).
+		Transition(gamestate.StoppedEvent, gamestate.StoppedStateIdentifier).
+		Build().
+		BuildState(gamestate.NewResourcesLoadingState()).
+		Transition(gamestate.ResourcesLoadedEvent, gamestate.PlayingStateIdentifier).
+		Build().
+		BuildState(gamestate.NewPlayingState()).
+		Transition(gamestate.StoppedEvent, gamestate.StoppedStateIdentifier).
+		Build().
 		RegisterState(gamestate.NewStoppedState(), make(gamestate.Transitions)).
 		GlobalTransitions(gamestate.Transitions{
 			gamestate.StoppedEvent: gamestate.StoppedStateIdentifier,
@@ -91,7 +99,7 @@ func main() {
 		MustBuild()
 
 	cl := client.NewBuilder().
-		Fsm(machine).
+		Machine(machine).
 		Window(w).
 		Graphic(g).
 		MustBuild()

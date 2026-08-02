@@ -4,4 +4,5 @@ package gamestate
 const (
 	NoEvent = Event(iota)
 	StoppedEvent
+	ResourcesLoadedEvent
 )

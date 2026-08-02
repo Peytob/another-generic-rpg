@@ -8,7 +8,7 @@ import (
 )
 
 type Builder struct {
-	fsm     gamestate.Machine
+	machine gamestate.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -17,8 +17,8 @@ func NewBuilder() *Builder {
 	return &Builder{}
 }
 
-func (b *Builder) Fsm(machine gamestate.Machine) *Builder {
-	b.fsm = machine
+func (b *Builder) Machine(machine gamestate.Machine) *Builder {
+	b.machine = machine
 	return b
 }
 
@@ -33,24 +33,23 @@ func (b *Builder) Graphic(g graphic.Graphic) *Builder {
 }
 
 func (b *Builder) Build() (*Client, error) {
-	client := &Client{}
-
-	if b.fsm == nil {
-		return nil, errors.New("fsm is nil")
+	if b.machine == nil {
+		return nil, errors.New("machine is nil")
 	}
-	client.fsm = b.fsm
 
 	if b.window == nil {
 		return nil, errors.New("window is nil")
 	}
-	client.window = b.window
 
 	if b.graphic == nil {
 		return nil, errors.New("graphic is nil")
 	}
-	client.graphic = b.graphic
 
-	return client, nil
+	return &Client{
+		runner:  gamestate.NewRunner(b.machine),
+		window:  b.window,
+		graphic: b.graphic,
+	}, nil
 }
 
 func (b *Builder) MustBuild() *Client {

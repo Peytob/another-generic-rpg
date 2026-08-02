@@ -15,12 +15,13 @@ import (
 	"game/internal/rendering"
 	"game/internal/rendering/draw"
 	"log/slog"
+	"time"
 
 	"github.com/go-gl/mathgl/mgl32"
 )
 
 type Client struct {
-	fsm     gamestate.Machine
+	runner  *gamestate.Runner
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -38,6 +39,11 @@ func (c *Client) Run(ctx context.Context) error {
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
 
+	if err := c.runner.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start runner: %w", err)
+	}
+
+	var lastTime time.Time
 	for {
 		var err error
 
@@ -54,23 +60,24 @@ func (c *Client) Run(ctx context.Context) error {
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")
-			err = c.fsm.Event(gamestate.StoppedEvent)
+			err = c.runner.Event(ctx, gamestate.StoppedEvent)
 			if err != nil {
-				return fmt.Errorf("failed to stop machine on window close: %w", err)
+				return fmt.Errorf("failed to stop runner on window close: %w", err)
 			}
 			break
 		}
 
-		event, err := c.fsm.State().Update(ctx)
-		if err != nil {
-			return fmt.Errorf("error while executing FSM update: %w", err)
+		now := time.Now()
+		dt := now.Sub(lastTime)
+		if lastTime.IsZero() {
+			dt = 0
 		}
+		lastTime = now
 
-		if event != gamestate.NoEvent {
-			err = c.fsm.Event(event)
-			if err != nil {
-				return fmt.Errorf("error while changing FSM state: %w", err)
-			}
+		err = c.runner.Update(ctx, dt)
+
+		if err != nil {
+			return fmt.Errorf("error while executing runner update: %w", err)
 		}
 
 		c.window.Clear()
@@ -108,8 +115,8 @@ func (c *Client) Run(ctx context.Context) error {
 
 		c.window.Show()
 
-		if !c.fsm.IsRunning() {
-			logger.FromCtx(ctx).Info("game FSM is completed, closing window")
+		if !c.runner.IsRunning() {
+			logger.FromCtx(ctx).Info("game runner is completed, closing window")
 			break
 		}
 	}
