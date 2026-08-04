@@ -4,11 +4,11 @@ import (
 	"engine/graphic"
 	"engine/window"
 	"errors"
-	"game/internal/gamestate"
+	"game/internal/gamestate/gamemachine"
 )
 
 type Builder struct {
-	machine gamestate.Machine
+	machine gamemachine.Machine
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -17,7 +17,7 @@ func NewBuilder() *Builder {
 	return &Builder{}
 }
 
-func (b *Builder) Machine(machine gamestate.Machine) *Builder {
+func (b *Builder) Machine(machine gamemachine.Machine) *Builder {
 	b.machine = machine
 	return b
 }
@@ -46,7 +46,7 @@ func (b *Builder) Build() (*Client, error) {
 	}
 
 	return &Client{
-		runner:  gamestate.NewRunner(b.machine),
+		runner:  gamemachine.NewRunner(b.machine),
 		window:  b.window,
 		graphic: b.graphic,
 	}, nil

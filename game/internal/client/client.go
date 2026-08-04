@@ -11,7 +11,7 @@ import (
 	"engine/window"
 	"fmt"
 	"game/internal/gameplay/tilemap"
-	"game/internal/gamestate"
+	"game/internal/gamestate/gamemachine"
 	"game/internal/rendering"
 	"game/internal/rendering/draw"
 	"log/slog"
@@ -21,7 +21,7 @@ import (
 )
 
 type Client struct {
-	runner  *gamestate.Runner
+	runner  *gamemachine.Runner
 	window  *window.Window
 	graphic graphic.Graphic
 }
@@ -47,6 +47,13 @@ func (c *Client) Run(ctx context.Context) error {
 	for {
 		var err error
 
+		now := time.Now()
+		dt := now.Sub(lastTime)
+		if lastTime.IsZero() {
+			dt = 0
+		}
+		lastTime = now
+
 		select {
 		case <-ctx.Done():
 			// Mark window as should close
@@ -60,19 +67,12 @@ func (c *Client) Run(ctx context.Context) error {
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")
-			err = c.runner.Event(ctx, gamestate.StoppedEvent)
+			err = c.runner.Event(ctx, gamemachine.StoppedEvent)
 			if err != nil {
 				return fmt.Errorf("failed to stop runner on window close: %w", err)
 			}
 			break
 		}
-
-		now := time.Now()
-		dt := now.Sub(lastTime)
-		if lastTime.IsZero() {
-			dt = 0
-		}
-		lastTime = now
 
 		err = c.runner.Update(ctx, dt)
 
@@ -85,7 +85,7 @@ func (c *Client) Run(ctx context.Context) error {
 		/* test */
 
 		canvas := c.graphic.NewCanvas()
-		tilemapDrawer := draw.NewDrawer(tilemap.NewTileRepository())
+		tilemapDrawer := draw.NewTilemapDrawer(tilemap.NewTileRepository())
 		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
 		err = tilemapDrawer.Draw(ctx, tmap, canvas, draw.DrawOpts{
 			Camera: camera,

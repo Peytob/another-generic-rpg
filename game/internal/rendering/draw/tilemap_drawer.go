@@ -15,7 +15,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type Drawer interface {
+type TilemapDrawer interface {
 	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error
 }
 
@@ -27,7 +27,7 @@ type tilemapRenderer struct {
 	repository *tilemap.TileRepository
 }
 
-func NewDrawer(tileRepository *tilemap.TileRepository) Drawer {
+func NewTilemapDrawer(tileRepository *tilemap.TileRepository) TilemapDrawer {
 	return tilemapRenderer{
 		repository: tileRepository,
 	}

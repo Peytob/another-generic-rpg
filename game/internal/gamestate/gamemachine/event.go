@@ -1,4 +1,4 @@
-package gamestate
+package gamemachine
 
 // Event enumerated type to describe engine FSM events
 const (
