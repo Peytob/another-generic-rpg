@@ -1,12 +1,17 @@
 package ecs
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 // Component is the base type constraint. Any type can serve as a component
 type Component any
 
 // ComponentType identifies a specific component type via reflection
 type ComponentType reflect.Type
+
+var TooManyEntitiesFound = errors.New("found too many entities for method")
 
 // ComponentManager manages component storage, retrieval, and querying
 type ComponentManager interface {
@@ -26,11 +31,28 @@ type ComponentManager interface {
 
 	// Query returns all entities that have components of all the specified types
 	Query(componentTypes ...ComponentType) []Entity
+
+	// QueryOne returns all entities that have component of specified type
+	QueryOne(componentType ComponentType) []Entity
+
+	// QuerySingle returns one entity that have components of all the specified types. If there are more than one entity returns
+	// TooManyEntitiesFound
+	QuerySingle(componentTypes ...ComponentType) (Entity, error)
+
+	// QuerySingleOne returns one entity that have component of specified type. If there are more than one entity returns
+	// TooManyEntitiesFound
+	QuerySingleOne(componentType ComponentType) (Entity, error)
 }
 
 // ComponentTypeOf returns the ComponentType for the given component value
 func ComponentTypeOf(component Component) ComponentType {
 	return ComponentType(reflect.TypeOf(component))
+}
+
+// ComponentTypeOfT generic implementation of ComponentTypeOf
+func ComponentTypeOfT[T Component]() ComponentType {
+	var t T
+	return ComponentTypeOf(t)
 }
 
 // GetComponent is a type-safe generic accessor for components
