@@ -28,7 +28,9 @@ type ComponentManager interface {
 
 	// HasComponent reports whether the entity has a component of the specified type
 	HasComponent(entity Entity, componentType ComponentType) bool
+}
 
+type Query interface {
 	// Query returns all entities that have components of all the specified types
 	Query(componentTypes ...ComponentType) []Entity
 
@@ -56,7 +58,7 @@ func ComponentTypeOfT[T Component]() ComponentType {
 }
 
 // GetComponent is a type-safe generic accessor for components
-func GetComponent[C any](manager ComponentManager, entity Entity) (C, bool) {
+func GetComponent[C Component](manager ComponentManager, entity Entity) (C, bool) {
 	var sample C
 	ct := ComponentType(reflect.TypeOf(&sample).Elem())
 	component, ok := manager.GetComponent(entity, ct)

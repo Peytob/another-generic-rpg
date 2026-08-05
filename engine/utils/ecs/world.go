@@ -12,6 +12,7 @@ import (
 type World interface {
 	EntityManager
 	ComponentManager
+	Query
 	SystemManager
 	EventBus
 

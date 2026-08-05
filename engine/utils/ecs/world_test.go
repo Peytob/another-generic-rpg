@@ -14,10 +14,10 @@ type DamageEvent struct{ Amount int }
 type HealEvent struct{ Amount int }
 
 var (
-	posType  = ComponentTypeOf(Position{})
-	velType  = ComponentTypeOf(Velocity{})
-	hpType   = ComponentTypeOf(Health{})
-	manaType = ComponentTypeOf(Mana{})
+	posType  = ComponentTypeOfT[Position]()
+	velType  = ComponentTypeOfT[Velocity]()
+	hpType   = ComponentTypeOfT[Health]()
+	manaType = ComponentTypeOfT[Mana]()
 )
 
 func assertEqual[T comparable](t *testing.T, got, want T) {
