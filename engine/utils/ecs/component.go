@@ -11,7 +11,7 @@ type Component any
 // ComponentType identifies a specific component type via reflection
 type ComponentType reflect.Type
 
-var TooManyEntitiesFound = errors.New("found too many entities for method")
+var TooManyEntitiesFoundErr = errors.New("found too many entities for method")
 
 // ComponentManager manages component storage, retrieval, and querying
 type ComponentManager interface {
@@ -38,11 +38,11 @@ type Query interface {
 	QueryOne(componentType ComponentType) []Entity
 
 	// QuerySingle returns one entity that have components of all the specified types. If there are more than one entity returns
-	// TooManyEntitiesFound
+	// TooManyEntitiesFoundErr. If no entities found returns InvalidEntity
 	QuerySingle(componentTypes ...ComponentType) (Entity, error)
 
 	// QuerySingleOne returns one entity that have component of specified type. If there are more than one entity returns
-	// TooManyEntitiesFound
+	// TooManyEntitiesFoundErr. If no entities found returns InvalidEntity
 	QuerySingleOne(componentType ComponentType) (Entity, error)
 }
 
@@ -59,12 +59,36 @@ func ComponentTypeOfT[T Component]() ComponentType {
 
 // GetComponent is a type-safe generic accessor for components
 func GetComponent[C Component](manager ComponentManager, entity Entity) (C, bool) {
-	var sample C
-	ct := ComponentType(reflect.TypeOf(&sample).Elem())
+	var zero C
+	ct := ComponentType(reflect.TypeOf(&zero).Elem())
 	component, ok := manager.GetComponent(entity, ct)
 	if !ok {
-		var zero C
 		return zero, false
 	}
+	return component.(C), true
+}
+
+// GetSingleComponent is a type-safe generic accessor for single components
+func GetSingleComponent[C Component](manager interface {
+	Query
+	ComponentManager
+}) (C, bool) {
+	var zero C
+	ct := ComponentType(reflect.TypeOf(&zero).Elem())
+
+	e, err := manager.QuerySingleOne(ct)
+	if err != nil {
+		// todo log error here
+		return zero, false
+	}
+	if e == InvalidEntity {
+		return zero, false
+	}
+
+	component, ok := manager.GetComponent(e, ct)
+	if !ok {
+		return zero, false
+	}
+
 	return component.(C), true
 }

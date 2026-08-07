@@ -79,7 +79,7 @@ func main() {
 
 	/* Client */
 
-	machine := client.NewMachine()
+	machine := client.NewMachine(g)
 
 	cl := client.NewBuilder().
 		Machine(machine).

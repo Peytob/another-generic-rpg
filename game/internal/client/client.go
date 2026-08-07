@@ -3,17 +3,11 @@ package client
 import (
 	"context"
 	"engine/graphic"
-	"engine/graphic/renderer"
-	"engine/graphic/resource"
-	"engine/math"
-	"engine/math/shape"
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
-	"game/internal/gameplay/tilemap"
 	"game/internal/gamestate/gamemachine"
 	"game/internal/rendering"
-	"game/internal/rendering/draw"
 	"log/slog"
 	"time"
 
@@ -28,13 +22,6 @@ type Client struct {
 
 func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
-
-	// test
-	w, h := c.window.Size()
-	sprite := resource.NewSprite(shape.NewRect(100, 100), shape.NewRect(0, 0))
-	sprite.Transformation().Translate(-50, 50)
-	camera := rendering.NewCamera(mgl32.Vec2{}, mgl32.Vec2{float32(w), float32(h)})
-	camera.Area(w, h)
 
 	c.window.OnSizeChanged(c.onWindowSizeChanged)
 	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
@@ -74,45 +61,11 @@ func (c *Client) Run(ctx context.Context) error {
 			break
 		}
 
+		c.window.Clear()
 		err = c.runner.Update(ctx, dt)
-
 		if err != nil {
 			return fmt.Errorf("error while executing runner update: %w", err)
 		}
-
-		c.window.Clear()
-
-		/* test */
-
-		canvas := c.graphic.NewCanvas()
-		tilemapDrawer := draw.NewTilemapDrawer(tilemap.NewTileRepository())
-		tmap, _ := tilemap.NewTilemap("123", 5, 32, 32)
-		err = tilemapDrawer.Draw(ctx, tmap, canvas, draw.DrawOpts{
-			Camera: camera,
-		})
-		if err != nil {
-			return err
-		}
-
-		shader, shaderFound := c.graphic.Repositories().Shader.ByName(rendering.TilemapShader)
-		if !shaderFound {
-			return fmt.Errorf("no shader found in graphic repositories")
-		}
-		err = c.graphic.Renderer().Render(ctx, canvas, renderer.RenderOpts{
-			View: mgl32.Ident4(), // mgl32.Ortho2D(0, float32(w), float32(h), 0), // todo camera
-			Model: math.NewTransformation().
-				//Translate(float32(w)/2, float32(h)/2).
-				//Rotate(rotate).
-				Transform(),
-			Shader: shader,
-			Mode:   renderer.Wireframe,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to render: %w", err)
-		}
-
-		/* end test */
-
 		c.window.Show()
 
 		if !c.runner.IsRunning() {

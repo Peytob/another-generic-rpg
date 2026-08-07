@@ -1,20 +1,19 @@
 package client
 
 import (
+	"engine/graphic"
 	"game/internal/gamestate/gamemachine"
 )
 
-func NewMachine() gamemachine.Machine {
+func NewMachine(g graphic.Graphic) gamemachine.Machine {
 	return gamemachine.NewMachineBuilder().
-		InitialState(gamemachine.InitialStateIdentifier).
+		InitialState(gamemachine.PlayingStateIdentifier). // todo change to InitialState
 		BuildState(gamemachine.NewInitialState()).
-		Transition(gamemachine.StoppedEvent, gamemachine.StoppedStateIdentifier).
 		Build().
 		BuildState(gamemachine.NewResourcesLoadingState()).
 		Transition(gamemachine.ResourcesLoadedEvent, gamemachine.PlayingStateIdentifier).
 		Build().
-		BuildState(gamemachine.NewPlayingState()).
-		Transition(gamemachine.StoppedEvent, gamemachine.StoppedStateIdentifier).
+		BuildState(gamemachine.NewPlayingState(g)).
 		Build().
 		RegisterState(gamemachine.NewStoppedState(), make(gamemachine.Transitions)).
 		GlobalTransitions(gamemachine.Transitions{

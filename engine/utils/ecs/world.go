@@ -155,7 +155,7 @@ func (w *world) QuerySingle(componentTypes ...ComponentType) (Entity, error) {
 	case 1:
 		return result[0], nil
 	default:
-		return InvalidEntity, TooManyEntitiesFound
+		return InvalidEntity, TooManyEntitiesFoundErr
 	}
 }
 
@@ -167,7 +167,7 @@ func (w *world) QuerySingleOne(componentType ComponentType) (Entity, error) {
 	case 1:
 		return entities[0], nil
 	default:
-		return InvalidEntity, TooManyEntitiesFound
+		return InvalidEntity, TooManyEntitiesFoundErr
 	}
 }
 
