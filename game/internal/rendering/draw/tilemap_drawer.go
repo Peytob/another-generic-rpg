@@ -16,10 +16,10 @@ import (
 )
 
 type TilemapDrawer interface {
-	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error
+	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error
 }
 
-type DrawOpts struct {
+type Opts struct {
 	Camera *rendering.Camera
 }
 
@@ -33,7 +33,7 @@ func NewTilemapDrawer(tileRepository *tilemap.TileRepository) TilemapDrawer {
 	}
 }
 
-func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error {
 	if tilemap == nil {
 		return fmt.Errorf("tilemap is nil")
 	}
@@ -57,7 +57,7 @@ func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, tar
 	return nil
 }
 
-func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts Opts) error {
 	transformation := math.NewTransformation()
 	sprite := resource.NewSprite(shape.NewRect(tileWPx, tileHPx), shape.NewZeroRect())
 

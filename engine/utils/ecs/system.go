@@ -7,7 +7,9 @@ import (
 )
 
 // System processes entities matching a component filter each tick
-type System func(ctx context.Context, world World, dt time.Duration) error
+type System interface {
+	Execute(ctx context.Context, world World, dt time.Duration) error
+}
 
 // SystemManager manages system registration and execution order
 type SystemManager interface {

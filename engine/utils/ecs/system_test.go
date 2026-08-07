@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+// fnSystem adapts a function literal into a System so tests can define
+// lightweight inline systems.
+type fnSystem func(ctx context.Context, world World, dt time.Duration) error
+
+func (f fnSystem) Execute(ctx context.Context, world World, dt time.Duration) error {
+	return f(ctx, world, dt)
+}
+
 func TestAddSystem(t *testing.T) {
 	t.Parallel()
 
@@ -14,9 +22,9 @@ func TestAddSystem(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
-		s1 := func(context.Context, World, time.Duration) error { return nil }
-		s2 := func(context.Context, World, time.Duration) error { return nil }
-		s3 := func(context.Context, World, time.Duration) error { return nil }
+		s1 := fnSystem(func(context.Context, World, time.Duration) error { return nil })
+		s2 := fnSystem(func(context.Context, World, time.Duration) error { return nil })
+		s3 := fnSystem(func(context.Context, World, time.Duration) error { return nil })
 
 		w.AddSystem(s1)
 		w.AddSystem(s2)
@@ -30,7 +38,7 @@ func TestAddSystem(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
-		w.AddSystem(func(context.Context, World, time.Duration) error { return nil })
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error { return nil }))
 
 		systems := w.Systems()
 		systems[0] = nil
@@ -45,8 +53,8 @@ func TestAddSystem(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
-		w.AddSystem(func(context.Context, World, time.Duration) error { return nil })
-		w.AddSystem(func(context.Context, World, time.Duration) error { return nil })
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error { return nil }))
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error { return nil }))
 
 		count := 0
 		for range w.SystemsIter() {
@@ -65,18 +73,18 @@ func TestUpdate(t *testing.T) {
 		w := NewWorld()
 		var order []int
 
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			order = append(order, 1)
 			return nil
-		})
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		}))
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			order = append(order, 2)
 			return nil
-		})
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		}))
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			order = append(order, 3)
 			return nil
-		})
+		}))
 
 		if err := w.Update(context.Background(), time.Millisecond); err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -92,18 +100,18 @@ func TestUpdate(t *testing.T) {
 		errSentinel := errors.New("system error")
 		executed := []int{}
 
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			executed = append(executed, 1)
 			return nil
-		})
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		}))
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			executed = append(executed, 2)
 			return errSentinel
-		})
-		w.AddSystem(func(context.Context, World, time.Duration) error {
+		}))
+		w.AddSystem(fnSystem(func(context.Context, World, time.Duration) error {
 			executed = append(executed, 3)
 			return nil
-		})
+		}))
 
 		err := w.Update(context.Background(), 0)
 		if !errors.Is(err, errSentinel) {
@@ -118,12 +126,12 @@ func TestUpdate(t *testing.T) {
 		w := NewWorld()
 		dtWanted := 33 * time.Millisecond
 
-		w.AddSystem(func(_ context.Context, _ World, dt time.Duration) error {
+		w.AddSystem(fnSystem(func(_ context.Context, _ World, dt time.Duration) error {
 			if dt != dtWanted {
 				t.Errorf("dt = %v, want %v", dt, dtWanted)
 			}
 			return nil
-		})
+		}))
 
 		_ = w.Update(context.Background(), dtWanted)
 	})
@@ -135,7 +143,7 @@ func TestUpdate(t *testing.T) {
 		e := w.NewEntity()
 		w.RegisterComponent(e, Health{HP: 10})
 
-		w.AddSystem(func(_ context.Context, world World, _ time.Duration) error {
+		w.AddSystem(fnSystem(func(_ context.Context, world World, _ time.Duration) error {
 			entities := world.Query(hpType)
 			for _, ent := range entities {
 				hp, _ := GetComponent[Health](world, ent)
@@ -143,7 +151,7 @@ func TestUpdate(t *testing.T) {
 				world.RegisterComponent(ent, hp)
 			}
 			return nil
-		})
+		}))
 
 		_ = w.Update(context.Background(), 0)
 

@@ -40,7 +40,7 @@ func (s TilemapRenderSystem) Execute(ctx context.Context, world ecs.World, _ tim
 		return nil
 	}
 
-	err := s.tilemapDrawer.Draw(ctx, tilemapComponent.Tilemap, renderLayersComponent.TilemapCanvas, draw.DrawOpts{
+	err := s.tilemapDrawer.Draw(ctx, tilemapComponent.Tilemap, renderLayersComponent.TilemapCanvas, draw.Opts{
 		Camera: cameraComponent.Camera,
 	})
 	if err != nil {

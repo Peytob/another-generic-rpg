@@ -35,9 +35,9 @@ func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
 
 	drawer := draw.NewTilemapDrawer(nil)
 
-	w.AddSystem(ecssystem.NewCameraPositionSyncSystem().Execute)
-	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer).Execute)
-	w.AddSystem(ecssystem.NewRenderLayersSystem(s.graphic.Repositories().Shader, s.graphic.Renderer()).Execute)
+	w.AddSystem(ecssystem.NewCameraPositionSyncSystem())
+	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer))
+	w.AddSystem(ecssystem.NewRenderLayersSystem(s.graphic.Repositories().Shader, s.graphic.Renderer()))
 
 	return nil
 }

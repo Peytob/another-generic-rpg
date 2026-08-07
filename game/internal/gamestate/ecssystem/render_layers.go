@@ -11,8 +11,6 @@ import (
 	"game/internal/gamestate/ecscomponent"
 	"game/internal/rendering"
 	"time"
-
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 type RenderLayersSystem struct {
@@ -41,8 +39,14 @@ func (s RenderLayersSystem) Execute(ctx context.Context, world ecs.World, _ time
 		return fmt.Errorf("no shader found in graphic repositories")
 	}
 
+	cameraComponent, ok := ecs.GetSingleComponent[ecscomponent.CameraComponent](world)
+	if !ok {
+		l.Warn("no camera found")
+		return nil
+	}
+
 	opts := renderer.RenderOpts{
-		View: mgl32.Ident4(),
+		View: cameraComponent.Camera.ViewMatrix(),
 		Model: math.NewTransformation().
 			Transform(),
 		Shader: shader,

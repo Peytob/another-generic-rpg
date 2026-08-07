@@ -222,7 +222,7 @@ func (w *world) Subscribe(eventType EventType, handler EventHandler) Subscriptio
 
 func (w *world) Update(ctx context.Context, dt time.Duration) error {
 	for system := range w.SystemsIter() {
-		if err := system(ctx, w, dt); err != nil {
+		if err := system.Execute(ctx, w, dt); err != nil {
 			return err
 		}
 	}

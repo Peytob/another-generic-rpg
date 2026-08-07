@@ -12,8 +12,8 @@ import (
 type CameraPositionSyncSystem struct {
 }
 
-func NewCameraPositionSyncSystem() RenderLayersSystem {
-	return RenderLayersSystem{}
+func NewCameraPositionSyncSystem() CameraPositionSyncSystem {
+	return CameraPositionSyncSystem{}
 }
 
 func (s CameraPositionSyncSystem) Execute(_ context.Context, world ecs.World, _ time.Duration) error {
