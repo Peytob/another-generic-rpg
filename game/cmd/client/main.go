@@ -53,11 +53,6 @@ func main() {
 		panic("failed to initialize GLFW: " + err.Error())
 	}
 
-	err = gl.Init()
-	if err != nil {
-		panic("failed to initialize OpenGl: " + err.Error())
-	}
-
 	/* Modules */
 
 	w, err := window.Init(window.Opts{
@@ -70,6 +65,11 @@ func main() {
 	})
 	if err != nil {
 		panic("failed to initialize window module: " + err.Error())
+	}
+
+	err = gl.Init()
+	if err != nil {
+		panic("failed to initialize OpenGl: " + err.Error())
 	}
 
 	g, err := rendering.InitializeGraphic(ctx)
