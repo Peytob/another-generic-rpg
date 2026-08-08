@@ -6,7 +6,6 @@ import (
 	"engine/window"
 	"game/internal/client"
 	"game/internal/config"
-	"game/internal/gamestate"
 	"game/internal/rendering"
 	"log/slog"
 	"os"
@@ -80,18 +79,10 @@ func main() {
 
 	/* Client */
 
-	machine := gamestate.NewMachineBuilder().
-		RegisterState(gamestate.NewInitialState(), make(gamestate.Transitions)).
-		InitialState(gamestate.InitialStateIdentifier).
-		RegisterState(gamestate.NewStoppedState(), make(gamestate.Transitions)).
-		GlobalTransitions(gamestate.Transitions{
-			gamestate.StoppedEvent: gamestate.StoppedStateIdentifier,
-		}).
-		FinalStates(gamestate.StoppedStateIdentifier).
-		MustBuild()
+	machine := client.NewMachine(g)
 
 	cl := client.NewBuilder().
-		Fsm(machine).
+		Machine(machine).
 		Window(w).
 		Graphic(g).
 		MustBuild()

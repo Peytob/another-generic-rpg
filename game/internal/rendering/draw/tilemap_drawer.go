@@ -15,11 +15,11 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type Drawer interface {
-	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error
+type TilemapDrawer interface {
+	Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error
 }
 
-type DrawOpts struct {
+type Opts struct {
 	Camera *rendering.Camera
 }
 
@@ -27,13 +27,13 @@ type tilemapRenderer struct {
 	repository *tilemap.TileRepository
 }
 
-func NewDrawer(tileRepository *tilemap.TileRepository) Drawer {
+func NewTilemapDrawer(tileRepository *tilemap.TileRepository) TilemapDrawer {
 	return tilemapRenderer{
 		repository: tileRepository,
 	}
 }
 
-func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error {
 	if tilemap == nil {
 		return fmt.Errorf("tilemap is nil")
 	}
@@ -57,7 +57,7 @@ func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, tar
 	return nil
 }
 
-func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts DrawOpts) error {
+func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts Opts) error {
 	transformation := math.NewTransformation()
 	sprite := resource.NewSprite(shape.NewRect(tileWPx, tileHPx), shape.NewZeroRect())
 

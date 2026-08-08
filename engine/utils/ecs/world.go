@@ -12,6 +12,7 @@ import (
 type World interface {
 	EntityManager
 	ComponentManager
+	Query
 	SystemManager
 	EventBus
 
@@ -139,6 +140,37 @@ func (w *world) Query(componentTypes ...ComponentType) []Entity {
 	return result
 }
 
+func (w *world) QueryOne(componentType ComponentType) []Entity {
+	entities := w.componentsQueryIndex[componentType]
+	result := make([]Entity, len(entities))
+	copy(result, entities)
+	return result
+}
+
+func (w *world) QuerySingle(componentTypes ...ComponentType) (Entity, error) {
+	result := w.Query(componentTypes...)
+	switch len(result) {
+	case 0:
+		return InvalidEntity, nil
+	case 1:
+		return result[0], nil
+	default:
+		return InvalidEntity, TooManyEntitiesFoundErr
+	}
+}
+
+func (w *world) QuerySingleOne(componentType ComponentType) (Entity, error) {
+	entities := w.componentsQueryIndex[componentType]
+	switch len(entities) {
+	case 0:
+		return InvalidEntity, nil
+	case 1:
+		return entities[0], nil
+	default:
+		return InvalidEntity, TooManyEntitiesFoundErr
+	}
+}
+
 func (w *world) AddSystem(system System) {
 	w.systems = append(w.systems, system)
 }
@@ -190,7 +222,7 @@ func (w *world) Subscribe(eventType EventType, handler EventHandler) Subscriptio
 
 func (w *world) Update(ctx context.Context, dt time.Duration) error {
 	for system := range w.SystemsIter() {
-		if err := system(ctx, w, dt); err != nil {
+		if err := system.Execute(ctx, w, dt); err != nil {
 			return err
 		}
 	}

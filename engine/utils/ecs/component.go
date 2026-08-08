@@ -1,12 +1,17 @@
 package ecs
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 // Component is the base type constraint. Any type can serve as a component
 type Component any
 
 // ComponentType identifies a specific component type via reflection
 type ComponentType reflect.Type
+
+var TooManyEntitiesFoundErr = errors.New("found too many entities for method")
 
 // ComponentManager manages component storage, retrieval, and querying
 type ComponentManager interface {
@@ -23,9 +28,22 @@ type ComponentManager interface {
 
 	// HasComponent reports whether the entity has a component of the specified type
 	HasComponent(entity Entity, componentType ComponentType) bool
+}
 
+type Query interface {
 	// Query returns all entities that have components of all the specified types
 	Query(componentTypes ...ComponentType) []Entity
+
+	// QueryOne returns all entities that have component of specified type
+	QueryOne(componentType ComponentType) []Entity
+
+	// QuerySingle returns one entity that have components of all the specified types. If there are more than one entity returns
+	// TooManyEntitiesFoundErr. If no entities found returns InvalidEntity
+	QuerySingle(componentTypes ...ComponentType) (Entity, error)
+
+	// QuerySingleOne returns one entity that have component of specified type. If there are more than one entity returns
+	// TooManyEntitiesFoundErr. If no entities found returns InvalidEntity
+	QuerySingleOne(componentType ComponentType) (Entity, error)
 }
 
 // ComponentTypeOf returns the ComponentType for the given component value
@@ -33,14 +51,44 @@ func ComponentTypeOf(component Component) ComponentType {
 	return ComponentType(reflect.TypeOf(component))
 }
 
+// ComponentTypeOfT generic implementation of ComponentTypeOf
+func ComponentTypeOfT[T Component]() ComponentType {
+	var t T
+	return ComponentTypeOf(t)
+}
+
 // GetComponent is a type-safe generic accessor for components
-func GetComponent[C any](manager ComponentManager, entity Entity) (C, bool) {
-	var sample C
-	ct := ComponentType(reflect.TypeOf(&sample).Elem())
+func GetComponent[C Component](manager ComponentManager, entity Entity) (C, bool) {
+	var zero C
+	ct := ComponentType(reflect.TypeOf(&zero).Elem())
 	component, ok := manager.GetComponent(entity, ct)
 	if !ok {
-		var zero C
 		return zero, false
 	}
+	return component.(C), true
+}
+
+// GetSingleComponent is a type-safe generic accessor for single components
+func GetSingleComponent[C Component](manager interface {
+	Query
+	ComponentManager
+}) (C, bool) {
+	var zero C
+	ct := ComponentType(reflect.TypeOf(&zero).Elem())
+
+	e, err := manager.QuerySingleOne(ct)
+	if err != nil {
+		// todo log error here
+		return zero, false
+	}
+	if e == InvalidEntity {
+		return zero, false
+	}
+
+	component, ok := manager.GetComponent(e, ct)
+	if !ok {
+		return zero, false
+	}
+
 	return component.(C), true
 }
