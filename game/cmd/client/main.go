@@ -4,7 +4,7 @@ import (
 	"context"
 	"engine/utils/logger"
 	"engine/window"
-	"game/internal/client"
+	"game/internal/app/client"
 	"game/internal/config"
 	"game/internal/rendering"
 	"log/slog"
@@ -53,7 +53,7 @@ func main() {
 		panic("failed to initialize GLFW: " + err.Error())
 	}
 
-	/* Modules */
+	/* MachineModules */
 
 	w, err := window.Init(window.Opts{
 		Width:   800,
