@@ -2,11 +2,11 @@ package ecscomponent
 
 import (
 	"engine/utils/ecs"
-	"game/internal/rendering"
+	rtypes "game/internal/rendering/types"
 )
 
 type CameraComponent struct {
-	Camera *rendering.Camera
+	Camera *rtypes.Camera
 }
 
 var CameraComponentType = ecs.ComponentTypeOfT[CameraComponent]()

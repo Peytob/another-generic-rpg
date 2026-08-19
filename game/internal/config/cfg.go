@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
@@ -55,7 +56,12 @@ func validateConfiguration[T ClientConfiguration | ServerConfiguration](cfg *T) 
 	if err != nil {
 		var validateErrs validator.ValidationErrors
 		if errors.As(err, &validateErrs) {
-			// TODO Return list of invalid fields
+			fields := make([]string, 0, len(validateErrs))
+			for _, e := range validateErrs {
+				fields = append(fields, e.Namespace())
+			}
+
+			return fmt.Errorf("configuration validation failed: %w: %s", err, strings.Join(fields, "; "))
 		}
 
 		return fmt.Errorf("configuration validation failed: %w", err)

@@ -4,8 +4,9 @@ import (
 	"context"
 	"engine/utils/logger"
 	"engine/window"
-	"game/internal/client"
+	"game/internal/app/client"
 	"game/internal/config"
+	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
 	"log/slog"
 	"os"
@@ -53,12 +54,9 @@ func main() {
 		panic("failed to initialize GLFW: " + err.Error())
 	}
 
-	err = gl.Init()
-	if err != nil {
-		panic("failed to initialize OpenGl: " + err.Error())
-	}
+	/* MachineModules */
 
-	/* Modules */
+	repo := repositories.NewRepositories()
 
 	w, err := window.Init(window.Opts{
 		Width:   800,
@@ -72,19 +70,22 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
-	g, err := rendering.InitializeGraphic(ctx)
+	err = gl.Init()
+	if err != nil {
+		panic("failed to initialize OpenGl: " + err.Error())
+	}
+
+	r, err := rendering.NewRendering(ctx, repo)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
 
 	/* Client */
 
-	machine := client.NewMachine(g)
-
 	cl := client.NewBuilder().
-		Machine(machine).
 		Window(w).
-		Graphic(g).
+		Rendering(r).
+		Repositories(repo).
 		MustBuild()
 
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")

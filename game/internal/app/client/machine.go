@@ -1,11 +1,10 @@
 package client
 
 import (
-	"engine/graphic"
 	"game/internal/gamestate/gamemachine"
 )
 
-func NewMachine(g graphic.Graphic) gamemachine.Machine {
+func NewMachine(client *Client) gamemachine.Machine {
 	return gamemachine.NewMachineBuilder().
 		InitialState(gamemachine.PlayingStateIdentifier). // todo change to InitialState
 		BuildState(gamemachine.NewInitialState()).
@@ -13,7 +12,7 @@ func NewMachine(g graphic.Graphic) gamemachine.Machine {
 		BuildState(gamemachine.NewResourcesLoadingState()).
 		Transition(gamemachine.ResourcesLoadedEvent, gamemachine.PlayingStateIdentifier).
 		Build().
-		BuildState(gamemachine.NewPlayingState(g)).
+		BuildState(gamemachine.NewPlayingState(client.rendering, client.repositories)).
 		Build().
 		RegisterState(gamemachine.NewStoppedState(), make(gamemachine.Transitions)).
 		GlobalTransitions(gamemachine.Transitions{

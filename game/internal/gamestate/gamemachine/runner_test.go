@@ -52,16 +52,11 @@ func (s *errorUpdateState) Update(_ context.Context, _ ecs.World, _ time.Duratio
 	return NoEvent, errUpdateSentinel
 }
 
-func buildMachine(initial State, states ...State) Machine {
-	b := NewMachineBuilder().
+func buildMachine(initial State) Machine {
+	return NewMachineBuilder().
 		InitialState(initial.Identifier()).
-		RegisterState(initial, make(Transitions))
-
-	for _, st := range states {
-		b = b.RegisterState(st, make(Transitions))
-	}
-
-	return b.MustBuild()
+		RegisterState(initial, make(Transitions)).
+		MustBuild()
 }
 
 // --- tests ----------------------------------------------------------------
