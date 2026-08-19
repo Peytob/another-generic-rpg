@@ -82,13 +82,7 @@ func main() {
 
 	/* Client */
 
-	machine := client.NewMachine(client.MachineModules{
-		Window:    w,
-		Rendering: r,
-	})
-
 	cl := client.NewBuilder().
-		Machine(machine).
 		Window(w).
 		Rendering(r).
 		Repositories(repo).

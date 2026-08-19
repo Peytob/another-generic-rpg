@@ -9,7 +9,6 @@ import (
 )
 
 type Builder struct {
-	machine      gamemachine.Machine
 	window       *window.Window
 	rendering    rendering.Rendering
 	repositories *repositories.Repositories
@@ -17,11 +16,6 @@ type Builder struct {
 
 func NewBuilder() *Builder {
 	return &Builder{}
-}
-
-func (b *Builder) Machine(machine gamemachine.Machine) *Builder {
-	b.machine = machine
-	return b
 }
 
 func (b *Builder) Window(window *window.Window) *Builder {
@@ -40,10 +34,6 @@ func (b *Builder) Repositories(repo repositories.Repositories) *Builder {
 }
 
 func (b *Builder) Build() (*Client, error) {
-	if b.machine == nil {
-		return nil, errors.New("machine is nil")
-	}
-
 	if b.window == nil {
 		return nil, errors.New("window is nil")
 	}
@@ -56,12 +46,16 @@ func (b *Builder) Build() (*Client, error) {
 		return nil, errors.New("repositories is nil")
 	}
 
-	return &Client{
-		runner:       gamemachine.NewRunner(b.machine),
+	client := &Client{
 		window:       b.window,
 		rendering:    b.rendering,
 		repositories: *b.repositories,
-	}, nil
+	}
+
+	machine := NewMachine(client)
+	client.runner = gamemachine.NewRunner(machine)
+
+	return client, nil
 }
 
 func (b *Builder) MustBuild() *Client {

@@ -6,6 +6,7 @@ import (
 	"game/internal/gameplay/tilemap"
 	"game/internal/gamestate/ecsentity"
 	"game/internal/gamestate/ecssystem"
+	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
 	"game/internal/rendering/draw"
 	"time"
@@ -15,12 +16,14 @@ const PlayingStateIdentifier = StateIdentifier("playing")
 
 // playingState describes main game state that used while game is running
 type playingState struct {
-	renderer rendering.Rendering
+	renderer       rendering.Rendering
+	tileRepository *repositories.TileRepository
 }
 
-func NewPlayingState(r rendering.Rendering) State {
+func NewPlayingState(r rendering.Rendering, repositories repositories.Repositories) State {
 	return &playingState{
-		renderer: r,
+		renderer:       r,
+		tileRepository: repositories.TileRepository,
 	}
 }
 
@@ -33,7 +36,7 @@ func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
 
 	ecsentity.NewRenderStateEntity(w, s.renderer)
 
-	drawer := draw.NewTilemapDrawer(nil)
+	drawer := draw.NewTilemapDrawer(s.tileRepository)
 
 	w.AddSystem(ecssystem.NewCameraPositionSyncSystem())
 	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer))
