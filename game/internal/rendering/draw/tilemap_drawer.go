@@ -4,11 +4,12 @@ import (
 	"context"
 	"engine/graphic/renderer"
 	"engine/graphic/resource"
-	"engine/math"
+	enginemath "engine/math"
 	"engine/math/shape"
 	"fmt"
 	"game/internal/gameplay/tilemap"
-	"game/internal/rendering"
+	"game/internal/gamestate/repositories"
+	"game/internal/rendering/types"
 	"game/isomath"
 	stdmath "math"
 
@@ -20,20 +21,20 @@ type TilemapDrawer interface {
 }
 
 type Opts struct {
-	Camera *rendering.Camera
+	Camera *types.Camera
 }
 
-type tilemapRenderer struct {
-	repository *tilemap.TileRepository
+type tilemapDrawer struct {
+	repository *repositories.TileRepository
 }
 
-func NewTilemapDrawer(tileRepository *tilemap.TileRepository) TilemapDrawer {
-	return tilemapRenderer{
+func NewTilemapDrawer(tileRepository *repositories.TileRepository) TilemapDrawer {
+	return tilemapDrawer{
 		repository: tileRepository,
 	}
 }
 
-func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error {
+func (t tilemapDrawer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error {
 	if tilemap == nil {
 		return fmt.Errorf("tilemap is nil")
 	}
@@ -57,8 +58,8 @@ func (t tilemapRenderer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, tar
 	return nil
 }
 
-func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts Opts) error {
-	transformation := math.NewTransformation()
+func (t tilemapDrawer) drawLayer(_ context.Context, layer *tilemap.Layer, target renderer.Canvas, opts Opts) error {
+	transformation := enginemath.NewTransformation()
 	sprite := resource.NewSprite(shape.NewRect(tileWPx, tileHPx), shape.NewZeroRect())
 
 	startX, startY, endX, endY := visibleTileRange(layer, opts.Camera)
@@ -88,7 +89,7 @@ func (t tilemapRenderer) drawLayer(_ context.Context, layer *tilemap.Layer, targ
 	return nil
 }
 
-func visibleTileRange(layer *tilemap.Layer, camera *rendering.Camera) (startX, startY, endX, endY int) {
+func visibleTileRange(layer *tilemap.Layer, camera *types.Camera) (startX, startY, endX, endY int) {
 	camPos := camera.GetPosition()
 	camArea := camera.GetArea()
 
@@ -116,35 +117,9 @@ func visibleTileRange(layer *tilemap.Layer, camera *rendering.Camera) (startX, s
 	}
 
 	const margin = 1
-	startX = clampInt(floorToInt(minC)-margin, 0, layer.Width())
-	endX = clampInt(ceilToInt(maxC)+margin, 0, layer.Width())
-	startY = clampInt(floorToInt(minR)-margin, 0, layer.Height())
-	endY = clampInt(ceilToInt(maxR)+margin, 0, layer.Height())
+	startX = isomath.ClampInt(isomath.FloorToInt(minC)-margin, 0, layer.Width())
+	endX = isomath.ClampInt(isomath.CeilToInt(maxC)+margin, 0, layer.Width())
+	startY = isomath.ClampInt(isomath.FloorToInt(minR)-margin, 0, layer.Height())
+	endY = isomath.ClampInt(isomath.CeilToInt(maxR)+margin, 0, layer.Height())
 	return startX, startY, endX, endY
-}
-
-func clampInt(v, lo, hi int) int {
-	if v < lo {
-		return lo
-	}
-	if v > hi {
-		return hi
-	}
-	return v
-}
-
-func floorToInt(x float32) int {
-	i := int(x)
-	if x < 0 && float32(i) != x {
-		i--
-	}
-	return i
-}
-
-func ceilToInt(x float32) int {
-	i := int(x)
-	if x > 0 && float32(i) != x {
-		i++
-	}
-	return i
 }

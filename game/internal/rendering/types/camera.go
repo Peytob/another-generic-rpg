@@ -1,4 +1,4 @@
-package rendering
+package types
 
 import "github.com/go-gl/mathgl/mgl32"
 

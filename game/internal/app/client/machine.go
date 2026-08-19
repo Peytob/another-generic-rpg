@@ -1,11 +1,17 @@
 package client
 
 import (
-	"engine/graphic"
+	"engine/window"
 	"game/internal/gamestate/gamemachine"
+	"game/internal/rendering"
 )
 
-func NewMachine(g graphic.Graphic) gamemachine.Machine {
+type MachineModules struct {
+	Window    *window.Window
+	Rendering rendering.Rendering
+}
+
+func NewMachine(mm MachineModules) gamemachine.Machine {
 	return gamemachine.NewMachineBuilder().
 		InitialState(gamemachine.PlayingStateIdentifier). // todo change to InitialState
 		BuildState(gamemachine.NewInitialState()).
@@ -13,7 +19,7 @@ func NewMachine(g graphic.Graphic) gamemachine.Machine {
 		BuildState(gamemachine.NewResourcesLoadingState()).
 		Transition(gamemachine.ResourcesLoadedEvent, gamemachine.PlayingStateIdentifier).
 		Build().
-		BuildState(gamemachine.NewPlayingState(g)).
+		BuildState(gamemachine.NewPlayingState(mm.Rendering)).
 		Build().
 		RegisterState(gamemachine.NewStoppedState(), make(gamemachine.Transitions)).
 		GlobalTransitions(gamemachine.Transitions{

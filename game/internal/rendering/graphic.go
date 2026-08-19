@@ -7,7 +7,7 @@ import (
 	"engine/utils/logger"
 )
 
-func InitializeGraphic(ctx context.Context) (graphic.Graphic, error) {
+func initializeGraphic(ctx context.Context) (graphic.Graphic, error) {
 	logger.FromCtx(ctx).Info("initializing graphic")
 
 	graphics, err := gbackend.NewOpenGlGraphics(ctx)

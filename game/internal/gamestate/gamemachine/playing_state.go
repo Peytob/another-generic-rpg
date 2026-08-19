@@ -2,11 +2,11 @@ package gamemachine
 
 import (
 	"context"
-	"engine/graphic"
 	"engine/utils/ecs"
 	"game/internal/gameplay/tilemap"
 	"game/internal/gamestate/ecsentity"
 	"game/internal/gamestate/ecssystem"
+	"game/internal/rendering"
 	"game/internal/rendering/draw"
 	"time"
 )
@@ -15,12 +15,12 @@ const PlayingStateIdentifier = StateIdentifier("playing")
 
 // playingState describes main game state that used while game is running
 type playingState struct {
-	graphic graphic.Graphic
+	renderer rendering.Rendering
 }
 
-func NewPlayingState(g graphic.Graphic) State {
+func NewPlayingState(r rendering.Rendering) State {
 	return &playingState{
-		graphic: g,
+		renderer: r,
 	}
 }
 
@@ -31,13 +31,13 @@ func (s playingState) Identifier() StateIdentifier {
 func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
 	ecsentity.NewTilemapEntity(w, tilemap.MustNewTilemap("123", 3, 64, 64)) // todo mock
 
-	ecsentity.NewRenderStateEntity(w, s.graphic)
+	ecsentity.NewRenderStateEntity(w, s.renderer)
 
 	drawer := draw.NewTilemapDrawer(nil)
 
 	w.AddSystem(ecssystem.NewCameraPositionSyncSystem())
 	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer))
-	w.AddSystem(ecssystem.NewRenderLayersSystem(s.graphic.Repositories().Shader, s.graphic.Renderer()))
+	w.AddSystem(ecssystem.NewRenderLayersSystem(s.renderer.Repositories().Shader, s.renderer.Renderer()))
 
 	return nil
 }

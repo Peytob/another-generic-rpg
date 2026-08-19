@@ -1,16 +1,18 @@
 package client
 
 import (
-	"engine/graphic"
 	"engine/window"
 	"errors"
 	"game/internal/gamestate/gamemachine"
+	"game/internal/gamestate/repositories"
+	"game/internal/rendering"
 )
 
 type Builder struct {
-	machine gamemachine.Machine
-	window  *window.Window
-	graphic graphic.Graphic
+	machine      gamemachine.Machine
+	window       *window.Window
+	rendering    rendering.Rendering
+	repositories *repositories.Repositories
 }
 
 func NewBuilder() *Builder {
@@ -27,8 +29,13 @@ func (b *Builder) Window(window *window.Window) *Builder {
 	return b
 }
 
-func (b *Builder) Graphic(g graphic.Graphic) *Builder {
-	b.graphic = g
+func (b *Builder) Rendering(g rendering.Rendering) *Builder {
+	b.rendering = g
+	return b
+}
+
+func (b *Builder) Repositories(repo repositories.Repositories) *Builder {
+	b.repositories = &repo
 	return b
 }
 
@@ -41,14 +48,19 @@ func (b *Builder) Build() (*Client, error) {
 		return nil, errors.New("window is nil")
 	}
 
-	if b.graphic == nil {
-		return nil, errors.New("graphic is nil")
+	if b.rendering == nil {
+		return nil, errors.New("rendering is nil")
+	}
+
+	if b.repositories == nil {
+		return nil, errors.New("repositories is nil")
 	}
 
 	return &Client{
-		runner:  gamemachine.NewRunner(b.machine),
-		window:  b.window,
-		graphic: b.graphic,
+		runner:       gamemachine.NewRunner(b.machine),
+		window:       b.window,
+		rendering:    b.rendering,
+		repositories: *b.repositories,
 	}, nil
 }
 

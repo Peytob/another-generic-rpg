@@ -6,6 +6,7 @@ import (
 	"engine/window"
 	"game/internal/app/client"
 	"game/internal/config"
+	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
 	"log/slog"
 	"os"
@@ -72,19 +73,25 @@ func main() {
 		panic("failed to initialize OpenGl: " + err.Error())
 	}
 
-	g, err := rendering.InitializeGraphic(ctx)
+	r, err := rendering.NewRendering(ctx)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
 
+	repo := repositories.NewRepositories()
+
 	/* Client */
 
-	machine := client.NewMachine(g)
+	machine := client.NewMachine(client.MachineModules{
+		Window:    w,
+		Rendering: r,
+	})
 
 	cl := client.NewBuilder().
 		Machine(machine).
 		Window(w).
-		Graphic(g).
+		Rendering(r).
+		Repositories(repo).
 		MustBuild()
 
 	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
