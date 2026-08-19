@@ -13,7 +13,8 @@ const (
 )
 
 func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
-	logger.FromCtx(ctx).Info("creating uniform blocks")
+	log := logger.FromCtx(ctx)
+	log.Info("creating uniform blocks")
 
 	projViewBlock := gresource.UniformBlock{
 		Name:         ProjViewUniformBlock,
@@ -27,6 +28,7 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 	if err != nil {
 		return err
 	}
+	log.Info("created uniform block", "name", projViewBlock.Name, "id", projViewBlock.ID)
 
 	return nil
 }

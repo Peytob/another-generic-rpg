@@ -56,6 +56,8 @@ func main() {
 
 	/* MachineModules */
 
+	repo := repositories.NewRepositories()
+
 	w, err := window.Init(window.Opts{
 		Width:   800,
 		Height:  600,
@@ -73,12 +75,10 @@ func main() {
 		panic("failed to initialize OpenGl: " + err.Error())
 	}
 
-	r, err := rendering.NewRendering(ctx)
+	r, err := rendering.NewRendering(ctx, repo)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}
-
-	repo := repositories.NewRepositories()
 
 	/* Client */
 

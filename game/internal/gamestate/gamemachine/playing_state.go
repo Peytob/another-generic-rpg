@@ -8,7 +8,6 @@ import (
 	"game/internal/gamestate/ecssystem"
 	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
-	"game/internal/rendering/draw"
 	"time"
 )
 
@@ -20,10 +19,10 @@ type playingState struct {
 	tileRepository *repositories.TileRepository
 }
 
-func NewPlayingState(r rendering.Rendering, repositories repositories.Repositories) State {
+func NewPlayingState(r rendering.Rendering, repo repositories.Repositories) State {
 	return &playingState{
 		renderer:       r,
-		tileRepository: repositories.TileRepository,
+		tileRepository: repo.TileRepository,
 	}
 }
 
@@ -36,7 +35,7 @@ func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
 
 	ecsentity.NewRenderStateEntity(w, s.renderer)
 
-	drawer := draw.NewTilemapDrawer(s.tileRepository)
+	drawer := s.renderer.Drawers().Tilemap
 
 	w.AddSystem(ecssystem.NewCameraPositionSyncSystem())
 	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer))
