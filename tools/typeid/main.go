@@ -34,6 +34,7 @@ var errNothingToDo = errors.New("nothing to do")
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+
 	if err := run(); err != nil {
 		slog.Error("typeid: failed", "error", err)
 		os.Exit(1)
@@ -42,11 +43,13 @@ func main() {
 
 func run() error {
 	order, err := ReadOrder()
+
 	if err != nil {
 		if errors.Is(err, errNothingToDo) {
 			slog.Info("typeid: nothing to do", "detail", err.Error())
 			return nil
 		}
+
 		return err
 	}
 

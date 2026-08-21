@@ -86,9 +86,11 @@ func readSources(pkg *packageInfo, goFile string) (OrderedTypeId, error) {
 		Dir:        pkg.Dir,
 		Files:      slices.Clone(pkg.GoFiles),
 	}
+
 	if goFile != "" && !slices.Contains(order.Files, goFile) {
 		order.Files = append(order.Files, goFile)
 	}
+
 	sort.Strings(order.Files)
 
 	order.Sources = make(map[string]string, len(order.Files))
@@ -99,17 +101,20 @@ func readSources(pkg *packageInfo, goFile string) (OrderedTypeId, error) {
 		}
 		order.Sources[f] = string(b)
 	}
+
 	return order, nil
 }
 
 func splitTypes(s string) []string {
 	var names []string
+
 	for _, t := range strings.Split(s, ",") {
 		if t = strings.TrimSpace(t); t != "" && !slices.Contains(names, t) {
 			names = append(names, t)
 		}
 	}
 	return names
+
 }
 
 // structTypeNames returns the names of the non-generic struct types declared
@@ -120,22 +125,26 @@ func structTypeNames(source string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var names []string
 	for _, decl := range f.Decls {
 		gd, ok := decl.(*ast.GenDecl)
 		if !ok || gd.Tok != token.TYPE {
 			continue
 		}
+
 		for _, s := range gd.Specs {
 			ts, ok := s.(*ast.TypeSpec)
 			if !ok || ts.TypeParams != nil {
 				continue
 			}
+
 			if _, ok := ts.Type.(*ast.StructType); ok {
 				names = append(names, ts.Name.Name)
 			}
 		}
 	}
+
 	return names, nil
 }
 
@@ -148,18 +157,23 @@ type packageInfo struct {
 
 func listPackage() (*packageInfo, error) {
 	cmd := exec.Command("go", "list", "-json")
+
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("go list: %v: %s", err, strings.TrimSpace(stderr.String()))
 	}
+
 	var pkg packageInfo
 	if err := json.Unmarshal(stdout.Bytes(), &pkg); err != nil {
 		return nil, fmt.Errorf("go list: decode output: %w", err)
 	}
+
 	if pkg.ImportPath == "" || pkg.Dir == "" {
 		return nil, fmt.Errorf("go list: empty package info")
 	}
+
 	return &pkg, nil
 }

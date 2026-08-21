@@ -76,7 +76,7 @@ func MustNewTilemap(id string, layersCount, width, height int) *Tilemap {
 	return tm
 }
 
-func (t *Tilemap) Id() string {
+func (t *Tilemap) ID() string {
 	return t.id
 }
 
