@@ -5,6 +5,7 @@ import (
 	"engine/graphic"
 	gresource "engine/graphic/resource"
 	"engine/utils/logger"
+	"fmt"
 )
 
 const (
@@ -26,7 +27,7 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 
 	projViewBlock, err := g.Services().Uniform.CreateUniformBlock(projViewBlock)
 	if err != nil {
-		return err
+		return fmt.Errorf("create uniform block %q: %w", ProjViewUniformBlock, err)
 	}
 	log.Info("created uniform block", "name", projViewBlock.Name, "id", projViewBlock.ID)
 
@@ -39,7 +40,7 @@ func bindUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 	for _, shader := range g.Repositories().Shader.All() {
 		err := g.Services().Uniform.BindBlocksFor(shader)
 		if err != nil {
-			return err
+			return fmt.Errorf("bind uniform blocks for shader %q: %w", shader.Name, err)
 		}
 	}
 

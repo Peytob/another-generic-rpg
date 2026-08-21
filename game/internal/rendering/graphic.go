@@ -5,6 +5,7 @@ import (
 	"engine/graphic"
 	gbackend "engine/graphic/backend"
 	"engine/utils/logger"
+	"fmt"
 )
 
 func initializeGraphic(ctx context.Context) (graphic.Graphic, error) {
@@ -12,7 +13,7 @@ func initializeGraphic(ctx context.Context) (graphic.Graphic, error) {
 
 	graphics, err := gbackend.NewOpenGlGraphics(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("initialize opengl graphics: %w", err)
 	}
 
 	err = loadShaders(ctx, graphics)

@@ -20,8 +20,12 @@ linters:
     - ireturn       # the FSM/architecture legitimately returns interfaces
     - nlreturn      # opinionated blank line before every return
     - noinlineerr   # forbids the idiomatic `if err := ...; err != nil`
+    - paralleltest  # t.Parallel() is not required by project policy
+    - testpackage   # white-box tests are intentional (access to unexported fields)
+    - varnamelen    # short idiomatic names (w, r, dt, tm) are acceptable
     - wsl           # extremely opinionated whitespace (legacy variant)
     - wsl_v5        # extremely opinionated whitespace
+    - gomodguard    # deprecated since v2.12.0; superseded by gomodguard_v2
 
   settings:
     cyclop:
@@ -97,6 +101,8 @@ linters:
         linters:
           - cyclop
           - funlen
+          - gocognit
+          - gocyclo
       # G115 (integer overflow conversion) is unavoidable when calling
       # OpenGL/Glfw C bindings that require fixed-width integer types.
       - linters:

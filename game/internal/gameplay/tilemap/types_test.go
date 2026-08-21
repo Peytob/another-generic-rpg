@@ -5,12 +5,17 @@ import (
 	"testing"
 )
 
+const (
+	grassTileID = "grass"
+	stoneTileID = "stone"
+)
+
 func TestTile(t *testing.T) {
 	t.Run("ID returns the tile id", func(t *testing.T) {
-		tile := &Tile{id: "grass"}
+		tile := &Tile{id: grassTileID}
 
-		if got := tile.ID(); got != "grass" {
-			t.Errorf("ID() = %q, want %q", got, "grass")
+		if got := tile.ID(); got != grassTileID {
+			t.Errorf("ID() = %q, want %q", got, grassTileID)
 		}
 	})
 }
@@ -70,7 +75,7 @@ func TestLayer(t *testing.T) {
 
 	t.Run("SetTile replaces tile at coordinates", func(t *testing.T) {
 		layer := Layer{
-			tiles:  []*Tile{{id: "old"}, {id: "old"}, {id: "old"}, {id: "old"}},
+			tiles:  []*Tile{{id: stoneTileID}, {id: stoneTileID}, {id: stoneTileID}, {id: stoneTileID}},
 			width:  2,
 			height: 2,
 		}
@@ -220,7 +225,7 @@ func TestNewTilemap(t *testing.T) {
 			t.Errorf("Height() = %d, want 2", tm.Height())
 		}
 
-		for i := 0; i < tm.LayersCount(); i++ {
+		for i := range tm.LayersCount() {
 			layer, err := tm.Layer(i)
 			if err != nil {
 				t.Fatalf("Layer(%d) unexpected error: %v", i, err)
@@ -231,8 +236,8 @@ func TestNewTilemap(t *testing.T) {
 			if layer.Height() != 2 {
 				t.Errorf("layer %d Height() = %d, want 2", i, layer.Height())
 			}
-			for y := 0; y < 2; y++ {
-				for x := 0; x < 4; x++ {
+			for y := range 2 {
+				for x := range 4 {
 					got, err := layer.Tile(x, y)
 					if err != nil {
 						t.Fatalf("Layer(%d) Tile(%d, %d) unexpected error: %v", i, x, y, err)

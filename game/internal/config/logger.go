@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"io"
 	"log/slog"
 )
 
@@ -13,7 +12,7 @@ type LoggerOpts struct {
 
 func ClientLogger(_ context.Context, opts LoggerOpts) (*slog.Logger, error) {
 	if !opts.Enabled {
-		return slog.New(slog.NewTextHandler(io.Discard, nil)), nil
+		return slog.New(slog.DiscardHandler), nil
 	}
 
 	return slog.New(opts.Handler), nil

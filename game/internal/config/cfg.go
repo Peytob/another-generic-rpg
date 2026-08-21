@@ -11,28 +11,28 @@ import (
 )
 
 type ClientConfiguration struct {
-	Log    *LogConfiguration    `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
-	Window *WindowConfiguration `yaml:"window" env-prefix:"WINDOW_" validate:"omitempty"`
+	Log    *LogConfiguration    `env-prefix:"LOG_"    validate:"omitempty" yaml:"log"`
+	Window *WindowConfiguration `env-prefix:"WINDOW_" validate:"omitempty" yaml:"window"`
 }
 
 type ServerConfiguration struct {
-	Log  *LogConfiguration  `yaml:"log" env-prefix:"LOG_" validate:"omitempty"`
-	HTTP *HTTPConfiguration `yaml:"http" env-prefix:"HTTP_" validate:"omitempty"`
+	Log  *LogConfiguration  `env-prefix:"LOG_"  validate:"omitempty" yaml:"log"`
+	HTTP *HTTPConfiguration `env-prefix:"HTTP_" validate:"omitempty" yaml:"http"`
 }
 
 type LogConfiguration struct {
-	Enabled bool       `yaml:"enabled" env:"ENABLED"`
-	Level   slog.Level `yaml:"level" env:"LEVEL"`
+	Enabled bool       `env:"ENABLED" yaml:"enabled"`
+	Level   slog.Level `env:"LEVEL"   yaml:"level"`
 }
 
 type HTTPConfiguration struct {
-	Port int    `yaml:"port" env:"PORT" validate:"required,min=1,max=65535"`
-	Host string `yaml:"host" env:"HOST" validate:"required"`
+	Port int    `env:"PORT" validate:"required,min=1,max=65535" yaml:"port"`
+	Host string `env:"HOST" validate:"required"                 yaml:"host"`
 }
 
 type WindowConfiguration struct {
-	Width  int `yaml:"width" env:"WIDTH" validate:"required,min=320,max=7680"`
-	Height int `yaml:"height" env:"HEIGHT" validate:"required,min=240,max=4800"`
+	Width  int `env:"WIDTH"  validate:"required,min=320,max=7680" yaml:"width"`
+	Height int `env:"HEIGHT" validate:"required,min=240,max=4800" yaml:"height"`
 }
 
 func LoadConfiguration[T ClientConfiguration | ServerConfiguration](path string) (*T, error) {

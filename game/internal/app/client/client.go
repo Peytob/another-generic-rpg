@@ -106,7 +106,9 @@ func (c *Client) onWindowSizeChanged(width int, height int) {
 	err := c.rendering.Services().Uniform.SetUniformVariableMat4(ub, rendering.ProjUniform, proj)
 	if err != nil {
 		// todo log error via context
-		slog.Default().Error("failed to set uniform block variable", "name", rendering.ProjViewUniformBlock, "variable", rendering.ProjUniform)
+		slog.Default().Error("failed to set uniform block variable",
+			"name", rendering.ProjViewUniformBlock,
+			"variable", rendering.ProjUniform)
 		return
 	}
 }

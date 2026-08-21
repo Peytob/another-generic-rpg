@@ -4,6 +4,7 @@ import (
 	"context"
 	"engine/utils/logger"
 	"engine/window"
+	"fmt"
 	"game/internal/app/client"
 	"game/internal/config"
 	"game/internal/gamestate/repositories"
@@ -18,13 +19,20 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func init() {
+// Window and OpenGL context parameters.
+const (
+	windowWidth  = 800
+	windowHeight = 600
+	windowTitle  = "another-rpg"
+	glMajor      = 3
+	glMinor      = 3
+)
+
+func main() {
 	// Client main method should be executed in main application thread due
 	// to C libraries restrictions
 	runtime.LockOSThread()
-}
 
-func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -33,46 +41,21 @@ func main() {
 		panic(err)
 	}
 
-	l, err := config.ClientLogger(ctx, config.LoggerOpts{
-		Enabled: cfg.Log.Enabled,
-		Handler: slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: cfg.Log.Level,
-		}),
-	})
+	l, err := initLogger(ctx, cfg)
 	if err != nil {
 		panic("failed to initialize logger: " + err.Error())
 	}
-
 	ctx = logger.ToCtx(ctx, l)
 
 	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
-
-	/* Compatibility init */
-
-	err = glfw.Init()
-	if err != nil {
-		panic("failed to initialize GLFW: " + err.Error())
-	}
 
 	/* MachineModules */
 
 	repo := repositories.NewRepositories()
 
-	w, err := window.Init(window.Opts{
-		Width:   800,
-		Height:  600,
-		Title:   "another-rpg",
-		GLMajor: 3,
-		GLMinor: 3,
-		Visible: true,
-	})
+	w, err := initWindow()
 	if err != nil {
 		panic("failed to initialize window module: " + err.Error())
-	}
-
-	err = gl.Init()
-	if err != nil {
-		panic("failed to initialize OpenGl: " + err.Error())
 	}
 
 	r, err := rendering.NewRendering(ctx, repo)
@@ -96,4 +79,43 @@ func main() {
 	if err = cl.Shutdown(ctx); err != nil {
 		panic("failed to stop client gracefully: " + err.Error())
 	}
+}
+
+func initLogger(ctx context.Context, cfg *config.ClientConfiguration) (*slog.Logger, error) {
+	l, err := config.ClientLogger(ctx, config.LoggerOpts{
+		Enabled: cfg.Log.Enabled,
+		Handler: slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: cfg.Log.Level,
+		}),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("init client logger: %w", err)
+	}
+	return l, nil
+}
+
+// initWindow initializes GLFW, creates the window and loads the OpenGL
+// bindings; all C library calls must run on the locked main thread.
+func initWindow() (*window.Window, error) {
+	if err := glfw.Init(); err != nil {
+		return nil, fmt.Errorf("glfw init: %w", err)
+	}
+
+	w, err := window.Init(window.Opts{
+		Width:   windowWidth,
+		Height:  windowHeight,
+		Title:   windowTitle,
+		GLMajor: glMajor,
+		GLMinor: glMinor,
+		Visible: true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("window init: %w", err)
+	}
+
+	if err := gl.Init(); err != nil {
+		return nil, fmt.Errorf("opengl init: %w", err)
+	}
+
+	return w, nil
 }
