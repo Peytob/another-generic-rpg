@@ -34,9 +34,8 @@ func TestDispatchKeyboardEvent(t *testing.T) {
 		Scancode: 42,
 		Action:   hid.Pressed,
 		Mods:     hid.ModShift,
-		Callback: func(key hid.Key, scancode int, action hid.Action, mods hid.Modifier) {
-			calls = append(calls, call{key, scancode, action, mods})
-		},
+	}, func(key hid.Key, scancode int, action hid.Action, mods hid.Modifier) {
+		calls = append(calls, call{key, scancode, action, mods})
 	})
 	if err != nil {
 		t.Fatalf("unexpected add error: %v", err)
@@ -74,9 +73,8 @@ func TestDispatchMouseEvent(t *testing.T) {
 	err := bindings.AddBinding(hid.MouseBinding{
 		Button: hid.MouseButtonRight,
 		Action: hid.Released,
-		Callback: func(button hid.MouseButton, action hid.Action, mods hid.Modifier) {
-			calls = append(calls, call{button, action, mods})
-		},
+	}, func(button hid.MouseButton, action hid.Action, mods hid.Modifier) {
+		calls = append(calls, call{button, action, mods})
 	})
 	if err != nil {
 		t.Fatalf("unexpected add error: %v", err)

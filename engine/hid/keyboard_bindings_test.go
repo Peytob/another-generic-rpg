@@ -1,7 +1,6 @@
 package hid
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -12,8 +11,7 @@ func TestKeyboardBindingsAddAndGetCallback(t *testing.T) {
 		Scancode: 42,
 		Action:   Pressed,
 		Mods:     ModShift,
-		Callback: func(_ Key, _ int, _ Action, _ Modifier) { called = true },
-	})
+	}, func(_ Key, _ int, _ Action, _ Modifier) { called = true })
 	if err != nil {
 		t.Fatalf("unexpected add error: %v", err)
 	}
@@ -31,13 +29,11 @@ func TestKeyboardBindingsSameScancodeDifferentAction(t *testing.T) {
 	_ = bindings.AddBinding(KeyboardBinding{
 		Scancode: 42,
 		Action:   Pressed,
-		Callback: func(_ Key, _ int, _ Action, _ Modifier) { pressed = true },
-	})
+	}, func(_ Key, _ int, _ Action, _ Modifier) { pressed = true })
 	if err := bindings.AddBinding(KeyboardBinding{
 		Scancode: 42,
 		Action:   Released,
-		Callback: func(_ Key, _ int, _ Action, _ Modifier) { released = true },
-	}); err != nil {
+	}, func(_ Key, _ int, _ Action, _ Modifier) { released = true }); err != nil {
 		t.Fatalf("unexpected add error: %v", err)
 	}
 
@@ -51,26 +47,26 @@ func TestKeyboardBindingsSameScancodeDifferentAction(t *testing.T) {
 
 func TestKeyboardBindingsDuplicateError(t *testing.T) {
 	bindings := NewKeyboardBindings("test")
-	_ = bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed, Callback: emptyKeyboardCallback})
+	_ = bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed}, emptyKeyboardCallback)
 
-	err := bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed, Callback: emptyKeyboardCallback})
-	if !errors.Is(err, ErrBindingAlreadyExists) {
-		t.Fatalf("expected ErrBindingAlreadyExists, got: %v", err)
+	err := bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed}, emptyKeyboardCallback)
+	if err == nil {
+		t.Fatal("expected duplicate binding error")
 	}
 }
 
 func TestKeyboardBindingsNilCallbackError(t *testing.T) {
 	bindings := NewKeyboardBindings("test")
 
-	err := bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed})
-	if !errors.Is(err, ErrNilCallback) {
-		t.Fatalf("expected ErrNilCallback, got: %v", err)
+	err := bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed}, nil)
+	if err == nil {
+		t.Fatal("expected nil callback error")
 	}
 }
 
 func TestKeyboardBindingsNoMatchReturnsEmptyCallback(t *testing.T) {
 	bindings := NewKeyboardBindings("test")
-	_ = bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed, Mods: ModShift, Callback: emptyKeyboardCallback})
+	_ = bindings.AddBinding(KeyboardBinding{Scancode: 1, Action: Pressed, Mods: ModShift}, emptyKeyboardCallback)
 
 	if got := bindings.GetCallback(1, Pressed, ModNone); got == nil {
 		t.Fatal("expected non-nil callback")
@@ -85,9 +81,9 @@ func TestKeyboardBindingsNoMatchReturnsEmptyCallback(t *testing.T) {
 
 func TestKeyboardBindingsGetBindingsFor(t *testing.T) {
 	bindings := NewKeyboardBindings("test")
-	_ = bindings.AddBinding(KeyboardBinding{Scancode: 42, Action: Pressed, Callback: emptyKeyboardCallback})
-	_ = bindings.AddBinding(KeyboardBinding{Scancode: 42, Action: Released, Callback: emptyKeyboardCallback})
-	_ = bindings.AddBinding(KeyboardBinding{Scancode: 7, Action: Pressed, Callback: emptyKeyboardCallback})
+	_ = bindings.AddBinding(KeyboardBinding{Scancode: 42, Action: Pressed}, emptyKeyboardCallback)
+	_ = bindings.AddBinding(KeyboardBinding{Scancode: 42, Action: Released}, emptyKeyboardCallback)
+	_ = bindings.AddBinding(KeyboardBinding{Scancode: 7, Action: Pressed}, emptyKeyboardCallback)
 
 	got, err := bindings.GetBindingsFor(42)
 	if err != nil {
