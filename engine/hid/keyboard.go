@@ -2,7 +2,7 @@ package hid
 
 type ScancodeMapper interface {
 	GetScancode(key Key) int32
-	GetKeyName(scancode int32)
+	GetKeyName(scancode int32) string
 }
 
 type Keyboard interface {

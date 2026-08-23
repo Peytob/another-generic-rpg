@@ -11,4 +11,8 @@ const (
 type Hid interface {
 	Keyboard() Keyboard
 	Mouse() Mouse
+
+	// Dispatch drains buffered input events and invokes callbacks
+	// bound to them via current keyboard/mouse bindings.
+	Dispatch()
 }

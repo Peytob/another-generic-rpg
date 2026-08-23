@@ -80,6 +80,12 @@ func (w Window) Size() (int, int) {
 	return w.window.GetSize()
 }
 
+// Raw returns underlying GLFW window, intended for GLFW-specific
+// engine modules only (e.g. hid backend).
+func (w Window) Raw() *glfw.Window {
+	return w.window
+}
+
 func toGlfwBool(b bool) int {
 	if b {
 		return glfw.True

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"engine/hid"
 	"engine/window"
 	"errors"
 	"game/internal/gamestate/gamemachine"
@@ -10,6 +11,7 @@ import (
 
 type Builder struct {
 	window       *window.Window
+	hid          hid.Hid
 	rendering    rendering.Rendering
 	repositories *repositories.Repositories
 }
@@ -20,6 +22,11 @@ func NewBuilder() *Builder {
 
 func (b *Builder) Window(window *window.Window) *Builder {
 	b.window = window
+	return b
+}
+
+func (b *Builder) Hid(h hid.Hid) *Builder {
+	b.hid = h
 	return b
 }
 
@@ -38,6 +45,10 @@ func (b *Builder) Build() (*Client, error) {
 		return nil, errors.New("window is nil")
 	}
 
+	if b.hid == nil {
+		return nil, errors.New("hid is nil")
+	}
+
 	if b.rendering == nil {
 		return nil, errors.New("rendering is nil")
 	}
@@ -48,6 +59,7 @@ func (b *Builder) Build() (*Client, error) {
 
 	client := &Client{
 		window:       b.window,
+		hid:          b.hid,
 		rendering:    b.rendering,
 		repositories: *b.repositories,
 	}
