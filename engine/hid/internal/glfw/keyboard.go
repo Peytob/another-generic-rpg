@@ -9,13 +9,11 @@ import (
 const defaultBindingsName = "default"
 
 type Keyboard struct {
-	buffer   *InputBuffer
 	bindings hid.KeyboardBindings
 }
 
-func newKeyboard(buffer *InputBuffer) *Keyboard {
+func newKeyboard() *Keyboard {
 	return &Keyboard{
-		buffer:   buffer,
 		bindings: hid.NewKeyboardBindings(defaultBindingsName),
 	}
 }

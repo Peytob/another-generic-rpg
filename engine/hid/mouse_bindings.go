@@ -30,14 +30,14 @@ func (mb MouseBindings) AddBinding(binding MouseBinding, callback MouseCallback)
 	return mb.add(binding, callback)
 }
 
-func (mb MouseBindings) GetBindingsFor(button MouseButton) ([]MouseBinding, error) {
+func (mb MouseBindings) GetBindingsFor(button MouseButton) []MouseBinding {
 	result := make([]MouseBinding, 0)
 	for key := range mb.keys {
 		if key.Button == button {
 			result = append(result, key)
 		}
 	}
-	return result, nil
+	return result
 }
 
 func (mb MouseBindings) GetCallback(button MouseButton, action Action, mods Modifier) MouseCallback {

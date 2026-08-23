@@ -85,10 +85,7 @@ func TestKeyboardBindingsGetBindingsFor(t *testing.T) {
 	_ = bindings.AddBinding(KeyboardBinding{Scancode: 42, Action: Released}, emptyKeyboardCallback)
 	_ = bindings.AddBinding(KeyboardBinding{Scancode: 7, Action: Pressed}, emptyKeyboardCallback)
 
-	got, err := bindings.GetBindingsFor(42)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	got := bindings.GetBindingsFor(42)
 	if len(got) != 2 {
 		t.Fatalf("expected 2 bindings for scancode 42, got %d", len(got))
 	}

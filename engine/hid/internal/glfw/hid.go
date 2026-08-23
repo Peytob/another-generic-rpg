@@ -28,7 +28,7 @@ func NewHid(win *glfw.Window) (*Hid, error) {
 
 func newHid() *Hid {
 	h := &Hid{buffer: &InputBuffer{}}
-	h.keyboard = newKeyboard(h.buffer)
+	h.keyboard = newKeyboard()
 	h.mouse = newMouse()
 	return h
 }

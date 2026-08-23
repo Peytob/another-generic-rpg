@@ -47,10 +47,7 @@ func TestMouseBindingsGetBindingsFor(t *testing.T) {
 	_ = bindings.AddBinding(MouseBinding{Button: MouseButtonMiddle, Action: Released}, emptyMouseCallback)
 	_ = bindings.AddBinding(MouseBinding{Button: MouseButton8, Action: Pressed}, emptyMouseCallback)
 
-	got, err := bindings.GetBindingsFor(MouseButtonMiddle)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	got := bindings.GetBindingsFor(MouseButtonMiddle)
 	if len(got) != 2 {
 		t.Fatalf("expected 2 bindings for middle button, got %d", len(got))
 	}

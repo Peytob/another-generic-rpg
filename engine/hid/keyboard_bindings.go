@@ -30,14 +30,14 @@ func (kb KeyboardBindings) AddBinding(binding KeyboardBinding, callback Keyboard
 	return kb.add(binding, callback)
 }
 
-func (kb KeyboardBindings) GetBindingsFor(scancode int32) ([]KeyboardBinding, error) {
+func (kb KeyboardBindings) GetBindingsFor(scancode int32) []KeyboardBinding {
 	result := make([]KeyboardBinding, 0)
 	for key := range kb.keys {
 		if key.Scancode == scancode {
 			result = append(result, key)
 		}
 	}
-	return result, nil
+	return result
 }
 
 func (kb KeyboardBindings) GetCallback(scancode int32, action Action, mods Modifier) KeyboardCallback {
