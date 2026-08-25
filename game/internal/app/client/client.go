@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"engine/hid"
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 type Client struct {
 	runner       *gamemachine.Runner
 	window       *window.Window
+	hid          hid.Hid
 	rendering    rendering.Rendering
 	repositories repositories.Repositories
 }
@@ -52,6 +54,7 @@ func (c *Client) Run(ctx context.Context) error {
 		}
 
 		c.window.PoolEvents()
+		c.hid.Dispatch()
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")

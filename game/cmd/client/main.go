@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"engine/hid"
+	hidbackend "engine/hid/backend"
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
@@ -58,6 +60,11 @@ func main() {
 		panic("failed to initialize window module: " + err.Error())
 	}
 
+	h, err := initHid(w)
+	if err != nil {
+		panic("failed to initialize hid module: " + err.Error())
+	}
+
 	r, err := rendering.NewRendering(ctx, repo)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
@@ -67,6 +74,7 @@ func main() {
 
 	cl := client.NewBuilder().
 		Window(w).
+		Hid(h).
 		Rendering(r).
 		Repositories(repo).
 		MustBuild()
@@ -118,4 +126,8 @@ func initWindow() (*window.Window, error) {
 	}
 
 	return w, nil
+}
+
+func initHid(w *window.Window) (hid.Hid, error) {
+	return hidbackend.NewGlfwHid(w.Raw())
 }
