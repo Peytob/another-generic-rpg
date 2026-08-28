@@ -6,10 +6,10 @@ import (
 	"game/internal/gamestate/ecscomponent"
 )
 
-func NewTilemapEntity(w ecs.World, tilemap *tilemap.Tilemap) ecs.Entity {
+func NewTilemap(w ecs.World, tilemap *tilemap.Tilemap) ecs.Entity {
 	e := w.NewEntity()
 
-	w.RegisterComponent(e, ecscomponent.TilemapComponent{
+	w.RegisterComponent(e, ecscomponent.Tilemap{
 		Tilemap: tilemap,
 	})
 

@@ -31,15 +31,15 @@ func (s playingState) Identifier() StateIdentifier {
 }
 
 func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
-	ecsentity.NewTilemapEntity(w, tilemap.MustNewTilemap("123", 3, 64, 64)) // todo mock
+	ecsentity.NewTilemap(w, tilemap.MustNewTilemap("123", 3, 64, 64)) // todo mock
 
-	ecsentity.NewRenderStateEntity(w, s.renderer)
+	ecsentity.NewRenderState(w, s.renderer.NewCanvas())
 
 	drawer := s.renderer.Drawers().Tilemap
 
-	w.AddSystem(ecssystem.NewCameraPositionSyncSystem())
-	w.AddSystem(ecssystem.NewTilemapRenderSystem(drawer))
-	w.AddSystem(ecssystem.NewRenderLayersSystem(s.renderer.Repositories().Shader, s.renderer.Renderer()))
+	w.AddSystem(ecssystem.NewCameraPositionSync())
+	w.AddSystem(ecssystem.NewTilemapRender(drawer))
+	w.AddSystem(ecssystem.NewRenderLayers(s.renderer.Repositories().Shader, s.renderer.Renderer()))
 
 	return nil
 }

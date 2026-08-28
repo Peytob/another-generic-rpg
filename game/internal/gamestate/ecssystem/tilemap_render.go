@@ -9,32 +9,32 @@ import (
 	"time"
 )
 
-type TilemapRenderSystem struct {
+type TilemapRender struct {
 	tilemapDrawer draw.TilemapDrawer
 }
 
-func NewTilemapRenderSystem(tilemapDrawer draw.TilemapDrawer) TilemapRenderSystem {
-	return TilemapRenderSystem{
+func NewTilemapRender(tilemapDrawer draw.TilemapDrawer) TilemapRender {
+	return TilemapRender{
 		tilemapDrawer: tilemapDrawer,
 	}
 }
 
-func (s TilemapRenderSystem) Execute(ctx context.Context, world ecs.World, _ time.Duration) error {
+func (s TilemapRender) Execute(ctx context.Context, world ecs.World, _ time.Duration) error {
 	l := logger.FromCtx(ctx).With("system", "tilemap_render")
 
-	tilemapComponent, ok := ecs.GetSingleComponent[ecscomponent.TilemapComponent](world)
+	tilemapComponent, ok := ecs.GetSingleComponent[ecscomponent.Tilemap](world)
 	if !ok {
 		l.Warn("no tilemap found, nothing to render")
 		return nil
 	}
 
-	renderLayersComponent, ok := ecs.GetSingleComponent[ecscomponent.RenderLayersComponent](world)
+	renderLayersComponent, ok := ecs.GetSingleComponent[ecscomponent.RenderLayers](world)
 	if !ok {
 		l.Warn("no render layers found")
 		return nil
 	}
 
-	cameraComponent, ok := ecs.GetSingleComponent[ecscomponent.CameraComponent](world)
+	cameraComponent, ok := ecs.GetSingleComponent[ecscomponent.Camera](world)
 	if !ok {
 		l.Warn("no camera found")
 		return nil

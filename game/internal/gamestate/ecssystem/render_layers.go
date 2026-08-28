@@ -13,22 +13,22 @@ import (
 	"time"
 )
 
-type RenderLayersSystem struct {
+type RenderLayers struct {
 	shaderRepository *repository.ShaderRepository
 	renderer         renderer.Renderer
 }
 
-func NewRenderLayersSystem(shaderRepository *repository.ShaderRepository, renderer renderer.Renderer) RenderLayersSystem {
-	return RenderLayersSystem{
+func NewRenderLayers(shaderRepository *repository.ShaderRepository, renderer renderer.Renderer) RenderLayers {
+	return RenderLayers{
 		shaderRepository: shaderRepository,
 		renderer:         renderer,
 	}
 }
 
-func (s RenderLayersSystem) Execute(ctx context.Context, world ecs.World, _ time.Duration) error {
+func (s RenderLayers) Execute(ctx context.Context, world ecs.World, _ time.Duration) error {
 	l := logger.FromCtx(ctx).With("system", "render_layers")
 
-	renderLayersComponent, ok := ecs.GetSingleComponent[ecscomponent.RenderLayersComponent](world)
+	renderLayersComponent, ok := ecs.GetSingleComponent[ecscomponent.RenderLayers](world)
 	if !ok {
 		l.Warn("no render layers found")
 		return nil
@@ -39,7 +39,7 @@ func (s RenderLayersSystem) Execute(ctx context.Context, world ecs.World, _ time
 		return fmt.Errorf("no shader found in graphic repositories")
 	}
 
-	cameraComponent, ok := ecs.GetSingleComponent[ecscomponent.CameraComponent](world)
+	cameraComponent, ok := ecs.GetSingleComponent[ecscomponent.Camera](world)
 	if !ok {
 		l.Warn("no camera found")
 		return nil
