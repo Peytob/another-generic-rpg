@@ -2,14 +2,23 @@ package ecs
 
 import (
 	"errors"
-	"reflect"
 )
 
-// Component is the base type constraint. Any type can serve as a component
-type Component any
+// Component is the base type constraint for components.
+//
+// Implementations must provide a Type method returning their unique
+// ComponentType. Type must be cheap, deterministic, and must not
+// dereference the receiver (a value receiver is recommended) so it can be
+// called on zero values.
+type Component interface {
+	Type() ComponentType
+}
 
-// ComponentType identifies a specific component type via reflection
-type ComponentType reflect.Type
+// ComponentType identifies a specific component type.
+//
+// Values must be unique per component type; they are assigned by the
+// component definition rather than allocated by the ecs package.
+type ComponentType int64
 
 var TooManyEntitiesFoundErr = errors.New("found too many entities for method")
 
@@ -46,21 +55,10 @@ type Query interface {
 	QuerySingleOne(componentType ComponentType) (Entity, error)
 }
 
-// ComponentTypeOf returns the ComponentType for the given component value
-func ComponentTypeOf(component Component) ComponentType {
-	return ComponentType(reflect.TypeOf(component))
-}
-
-// ComponentTypeOfT generic implementation of ComponentTypeOf
-func ComponentTypeOfT[T Component]() ComponentType {
-	var t T
-	return ComponentTypeOf(t)
-}
-
 // GetComponent is a type-safe generic accessor for components
 func GetComponent[C Component](manager ComponentManager, entity Entity) (C, bool) {
 	var zero C
-	ct := ComponentType(reflect.TypeOf(&zero).Elem())
+	ct := zero.Type()
 	component, ok := manager.GetComponent(entity, ct)
 	if !ok {
 		return zero, false
@@ -74,7 +72,7 @@ func GetSingleComponent[C Component](manager interface {
 	ComponentManager
 }) (C, bool) {
 	var zero C
-	ct := ComponentType(reflect.TypeOf(&zero).Elem())
+	ct := zero.Type()
 
 	e, err := manager.QuerySingleOne(ct)
 	if err != nil {

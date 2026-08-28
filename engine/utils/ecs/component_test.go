@@ -349,3 +349,89 @@ func TestRegisterUnregisterQueryConsistency(t *testing.T) {
 		assertSliceEqual(t, got, []Entity{e})
 	})
 }
+
+func TestGetComponentGeneric(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns typed component and true", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		e := w.NewEntity()
+		w.RegisterComponent(e, Position{7, 8})
+
+		pos, ok := GetComponent[Position](w, e)
+		if !ok {
+			t.Fatal("expected ok=true")
+		}
+		assertEqual(t, pos, Position{7, 8})
+	})
+
+	t.Run("returns zero value and false for missing component", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		e := w.NewEntity()
+
+		vel, ok := GetComponent[Velocity](w, e)
+		if ok {
+			t.Error("expected ok=false")
+		}
+		assertEqual(t, vel, Velocity{})
+	})
+
+	t.Run("returns zero value and false for non-existent entity", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+
+		pos, ok := GetComponent[Position](w, 999)
+		if ok {
+			t.Error("expected ok=false")
+		}
+		assertEqual(t, pos, Position{})
+	})
+}
+
+func TestGetSingleComponentGeneric(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns the only component of its type", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		w.RegisterComponent(w.NewEntity(), Health{77})
+
+		hp, ok := GetSingleComponent[Health](w)
+		if !ok {
+			t.Fatal("expected ok=true")
+		}
+		assertEqual(t, hp, Health{HP: 77})
+	})
+
+	t.Run("returns zero value and false when no component exists", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+
+		hp, ok := GetSingleComponent[Health](w)
+		if ok {
+			t.Error("expected ok=false")
+		}
+		assertEqual(t, hp, Health{})
+	})
+
+	t.Run("returns zero value and false when too many entities", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		w.RegisterComponent(w.NewEntity(), Health{1})
+		w.RegisterComponent(w.NewEntity(), Health{2})
+
+		hp, ok := GetSingleComponent[Health](w)
+		if ok {
+			t.Error("expected ok=false")
+		}
+		assertEqual(t, hp, Health{})
+	})
+}

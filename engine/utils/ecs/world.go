@@ -3,7 +3,6 @@ package ecs
 import (
 	"context"
 	"iter"
-	"reflect"
 	"time"
 )
 
@@ -70,11 +69,11 @@ func (w *world) RegisterComponent(entity Entity, component Component) {
 		return
 	}
 
-	componentType := ComponentTypeOf(component)
+	componentType := component.Type()
 
 	components := w.components[entity]
 	for i, c := range components {
-		if ComponentTypeOf(c) == componentType {
+		if c.Type() == componentType {
 			components[i] = component
 			return
 		}
@@ -91,7 +90,7 @@ func (w *world) UnregisterComponent(entity Entity, componentType ComponentType) 
 
 	components := w.components[entity]
 	for i, c := range components {
-		if ComponentTypeOf(c) == componentType {
+		if c.Type() == componentType {
 			w.components[entity] = append(components[:i], components[i+1:]...)
 			break
 		}
@@ -107,7 +106,7 @@ func (w *world) GetComponent(entity Entity, componentType ComponentType) (Compon
 	}
 
 	for _, c := range w.components[entity] {
-		if ComponentTypeOf(c) == componentType {
+		if c.Type() == componentType {
 			return c, true
 		}
 	}
@@ -192,7 +191,10 @@ func (w *world) SystemsIter() iter.Seq[System] {
 }
 
 func (w *world) EmitEvent(ctx context.Context, event Event) error {
-	eventType := EventType(reflect.TypeOf(event))
+	if event == nil {
+		return nil
+	}
+	eventType := event.Type()
 	subs := w.eventHandlers[eventType]
 
 	hasInactive := false

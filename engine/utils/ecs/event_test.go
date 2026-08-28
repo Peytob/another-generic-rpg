@@ -151,6 +151,29 @@ func TestUnsubscribe(t *testing.T) {
 	})
 }
 
+func TestEmitNilEvent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("emit nil event is a no-op", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		called := false
+
+		Subscribe[*DamageEvent](w, func(context.Context, *DamageEvent) error {
+			called = true
+			return nil
+		})
+
+		if err := w.EmitEvent(context.Background(), nil); err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if called {
+			t.Error("handler should not be called for nil event")
+		}
+	})
+}
+
 func TestEmitEventError(t *testing.T) {
 	t.Parallel()
 

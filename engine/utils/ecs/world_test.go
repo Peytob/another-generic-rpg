@@ -13,12 +13,23 @@ type Mana struct{ MP int }
 type DamageEvent struct{ Amount int }
 type HealEvent struct{ Amount int }
 
-var (
-	posType  = ComponentTypeOfT[Position]()
-	velType  = ComponentTypeOfT[Velocity]()
-	hpType   = ComponentTypeOfT[Health]()
-	manaType = ComponentTypeOfT[Mana]()
+const (
+	posType  ComponentType = 1
+	velType  ComponentType = 2
+	hpType   ComponentType = 3
+	manaType ComponentType = 4
+
+	damageEventType EventType = 1
+	healEventType   EventType = 2
 )
+
+func (Position) Type() ComponentType { return posType }
+func (Velocity) Type() ComponentType { return velType }
+func (Health) Type() ComponentType   { return hpType }
+func (Mana) Type() ComponentType     { return manaType }
+
+func (*DamageEvent) Type() EventType { return damageEventType }
+func (*HealEvent) Type() EventType   { return healEventType }
 
 func assertEqual[T comparable](t *testing.T, got, want T) {
 	t.Helper()
