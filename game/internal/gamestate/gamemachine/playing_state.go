@@ -3,9 +3,6 @@ package gamemachine
 import (
 	"context"
 	"engine/utils/ecs"
-	"game/internal/gameplay/tilemap"
-	"game/internal/gamestate/ecsentity"
-	"game/internal/gamestate/ecssystem"
 	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
 	"time"
@@ -31,16 +28,6 @@ func (s playingState) Identifier() StateIdentifier {
 }
 
 func (s playingState) OnEnter(_ context.Context, w ecs.World) error {
-	ecsentity.NewTilemap(w, tilemap.MustNewTilemap("123", 3, 64, 64)) // todo mock
-
-	ecsentity.NewRenderState(w, s.renderer.NewCanvas())
-
-	drawer := s.renderer.Drawers().Tilemap
-
-	w.AddSystem(ecssystem.NewCameraPositionSync())
-	w.AddSystem(ecssystem.NewTilemapRender(drawer))
-	w.AddSystem(ecssystem.NewRenderLayers(s.renderer.Repositories().Shader, s.renderer.Renderer()))
-
 	return nil
 }
 
