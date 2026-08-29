@@ -2,7 +2,7 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/ecs"
+	"game/internal/gameplay/world"
 	"time"
 )
 
@@ -18,14 +18,14 @@ func (s resourcesLoadingState) Identifier() StateIdentifier {
 	return ResourcesLoadingStateIdentifier
 }
 
-func (s resourcesLoadingState) OnEnter(_ context.Context, _ ecs.World) error {
+func (s resourcesLoadingState) OnEnter(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s resourcesLoadingState) OnExit(_ context.Context, _ ecs.World) error {
+func (s resourcesLoadingState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s resourcesLoadingState) Update(_ context.Context, _ ecs.World, _ time.Duration) (Event, error) {
+func (s resourcesLoadingState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
 	return NoEvent, nil
 }

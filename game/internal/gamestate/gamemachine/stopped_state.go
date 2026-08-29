@@ -2,7 +2,7 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/ecs"
+	"game/internal/gameplay/world"
 	"time"
 )
 
@@ -18,14 +18,14 @@ func (s stoppedState) Identifier() StateIdentifier {
 	return StoppedStateIdentifier
 }
 
-func (s stoppedState) OnEnter(_ context.Context, _ ecs.World) error {
+func (s stoppedState) OnEnter(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s stoppedState) OnExit(_ context.Context, _ ecs.World) error {
+func (s stoppedState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s stoppedState) Update(_ context.Context, _ ecs.World, _ time.Duration) (Event, error) {
+func (s stoppedState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
 	return NoEvent, nil
 }

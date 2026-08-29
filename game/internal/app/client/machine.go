@@ -12,7 +12,7 @@ func NewMachine(client *Client) gamemachine.Machine {
 		BuildState(gamemachine.NewResourcesLoadingState()).
 		Transition(gamemachine.ResourcesLoadedEvent, gamemachine.PlayingStateIdentifier).
 		Build().
-		BuildState(gamemachine.NewPlayingState(client.rendering, client.repositories)).
+		BuildState(gamemachine.NewPlayingState(client.rendering, client.repositories, client.hid)).
 		Build().
 		RegisterState(gamemachine.NewStoppedState(), make(gamemachine.Transitions)).
 		GlobalTransitions(gamemachine.Transitions{

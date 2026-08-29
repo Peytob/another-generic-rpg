@@ -2,7 +2,7 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/ecs"
+	"game/internal/gameplay/world"
 	"time"
 )
 
@@ -18,14 +18,14 @@ func (s initialState) Identifier() StateIdentifier {
 	return InitialStateIdentifier
 }
 
-func (s initialState) OnEnter(_ context.Context, _ ecs.World) error {
+func (s initialState) OnEnter(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s initialState) OnExit(_ context.Context, _ ecs.World) error {
+func (s initialState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s initialState) Update(_ context.Context, _ ecs.World, _ time.Duration) (Event, error) {
+func (s initialState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
 	return NoEvent, nil
 }

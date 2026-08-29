@@ -2,12 +2,12 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/ecs"
 	"fmt"
+	"game/internal/gameplay/world"
 	"time"
 )
 
-// Runner connects a game state FSM with an ECS World. On every state
+// Runner connects a game state FSM with a gameplay World. On every state
 // transition a fresh World is created, giving each state an isolated
 // simulation context. The Runner ensures that state lifecycle hooks
 // (OnEnter / OnExit) are called at the correct moments:
@@ -23,11 +23,11 @@ import (
 // goroutine (the main game loop).
 type Runner struct {
 	machine Machine
-	world   ecs.World
+	world   *world.World
 	started bool
 }
 
-// NewRunner creates a Runner. The ECS World is created lazily on Start.
+// NewRunner creates a Runner. The World is created lazily on Start.
 func NewRunner(machine Machine) *Runner {
 	return &Runner{
 		machine: machine,
@@ -36,10 +36,10 @@ func NewRunner(machine Machine) *Runner {
 
 // NewRunnerWithWorld creates a Runner with a pre-configured initial World.
 // The World is still recreated on every subsequent state transition.
-func NewRunnerWithWorld(machine Machine, world ecs.World) *Runner {
+func NewRunnerWithWorld(machine Machine, w *world.World) *Runner {
 	return &Runner{
 		machine: machine,
-		world:   world,
+		world:   w,
 	}
 }
 
@@ -52,7 +52,7 @@ func (r *Runner) Start(ctx context.Context) error {
 	}
 	r.started = true
 	if r.world == nil {
-		r.world = ecs.NewWorld()
+		r.world = &world.World{}
 	}
 	return r.machine.State().OnEnter(ctx, r.world)
 }
@@ -97,8 +97,8 @@ func (r *Runner) State() State {
 	return r.machine.State()
 }
 
-// World returns the ECS World for the currently active state.
-func (r *Runner) World() ecs.World {
+// World returns the gameplay World for the currently active state.
+func (r *Runner) World() *world.World {
 	return r.world
 }
 
@@ -120,7 +120,7 @@ func (r *Runner) transition(ctx context.Context, event Event) error {
 		return fmt.Errorf("fsm event %d: %w", event, err)
 	}
 
-	r.world = ecs.NewWorld()
+	r.world = &world.World{}
 
 	if r.machine.IsRunning() {
 		next := r.machine.State()

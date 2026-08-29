@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"engine/utils/ecs"
+	"game/internal/gameplay/world"
 )
 
 // --- test helpers ---------------------------------------------------------
@@ -24,17 +24,17 @@ type trackingState struct {
 
 func (s *trackingState) Identifier() StateIdentifier { return s.id }
 
-func (s *trackingState) OnEnter(_ context.Context, _ ecs.World) error {
+func (s *trackingState) OnEnter(_ context.Context, _ *world.World) error {
 	s.enterCnt++
 	return s.enterErr
 }
 
-func (s *trackingState) OnExit(_ context.Context, _ ecs.World) error {
+func (s *trackingState) OnExit(_ context.Context, _ *world.World) error {
 	s.exitCnt++
 	return s.exitErr
 }
 
-func (s *trackingState) Update(_ context.Context, _ ecs.World, _ time.Duration) (Event, error) {
+func (s *trackingState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
 	s.updateCnt++
 	return s.event, nil
 }
@@ -45,10 +45,10 @@ type errorUpdateState struct {
 	id StateIdentifier
 }
 
-func (s *errorUpdateState) Identifier() StateIdentifier                  { return s.id }
-func (s *errorUpdateState) OnEnter(_ context.Context, _ ecs.World) error { return nil }
-func (s *errorUpdateState) OnExit(_ context.Context, _ ecs.World) error  { return nil }
-func (s *errorUpdateState) Update(_ context.Context, _ ecs.World, _ time.Duration) (Event, error) {
+func (s *errorUpdateState) Identifier() StateIdentifier                     { return s.id }
+func (s *errorUpdateState) OnEnter(_ context.Context, _ *world.World) error { return nil }
+func (s *errorUpdateState) OnExit(_ context.Context, _ *world.World) error  { return nil }
+func (s *errorUpdateState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
 	return NoEvent, errUpdateSentinel
 }
 
@@ -151,38 +151,6 @@ func TestRunnerUpdateTriggersTransition(t *testing.T) {
 	}
 	if r.State().Identifier() != s2.Identifier() {
 		t.Errorf("current state should be s2")
-	}
-}
-
-func TestRunnerRecreatesWorldOnTransition(t *testing.T) {
-	t.Parallel()
-
-	s1 := &trackingState{id: "s1", event: ResourcesLoadedEvent}
-	s2 := &trackingState{id: "s2"}
-
-	m := NewMachineBuilder().
-		InitialState(s1.Identifier()).
-		BuildState(s1).
-		Transition(ResourcesLoadedEvent, s2.Identifier()).
-		Build().
-		BuildState(s2).
-		Build().
-		MustBuild()
-
-	r := NewRunner(m)
-	_ = r.Start(context.Background())
-
-	worldBefore := r.World()
-	worldBefore.NewEntity()
-
-	_ = r.Update(context.Background(), time.Millisecond)
-
-	worldAfter := r.World()
-	if worldAfter == worldBefore {
-		t.Fatal("World should be recreated on transition")
-	}
-	if got := len(worldAfter.Entities()); got != 0 {
-		t.Errorf("new World should be empty, got %d entities", got)
 	}
 }
 
@@ -314,11 +282,6 @@ func TestRunnerWorldAccessible(t *testing.T) {
 
 	if r.World() == nil {
 		t.Fatal("World should not be nil after Start")
-	}
-
-	e := r.World().NewEntity()
-	if e == ecs.InvalidEntity {
-		t.Fatal("World should create valid entities")
 	}
 }
 

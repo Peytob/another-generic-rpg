@@ -2,8 +2,8 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/ecs"
 	"engine/utils/fsm"
+	"game/internal/gameplay/world"
 	"time"
 )
 
@@ -12,27 +12,26 @@ type Event int
 
 type StateIdentifier string
 
-// State represents a single game state in the FSM. Each state is tied to an
-// ECS World through lifecycle hooks: OnEnter sets up the world (systems,
-// entities), Update advances the simulation, and OnExit tears down what
-// OnEnter created.
+// State represents a single game state in the FSM. Each state is tied to a
+// gameplay World through lifecycle hooks: OnEnter sets up the world,
+// Update advances the simulation, and OnExit tears down what OnEnter created.
 type State interface {
 	fsm.State[StateIdentifier]
 
 	// OnEnter is called once when this state becomes the active state.
-	// It receives the shared ECS World so the state can register systems,
-	// create entities, or subscribe to events.
-	OnEnter(ctx context.Context, world ecs.World) error
+	// It receives the shared World so the state can set up gameplay
+	// entities or subscribe to events.
+	OnEnter(ctx context.Context, world *world.World) error
 
 	// OnExit is called once when this state is about to be replaced by
-	// another state. It receives the shared ECS World so the state can
-	// clean up (remove systems, unsubscribe, etc.).
-	OnExit(ctx context.Context, world ecs.World) error
+	// another state. It receives the shared World so the state can
+	// clean up (remove handlers, unsubscribe, etc.).
+	OnExit(ctx context.Context, world *world.World) error
 
 	// Update advances the state by one tick. The state should drive the
-	// ECS World update and may return an Event to trigger an FSM transition.
+	// World update and may return an Event to trigger an FSM transition.
 	// Returning NoEvent keeps the current state.
-	Update(ctx context.Context, world ecs.World, dt time.Duration) (Event, error)
+	Update(ctx context.Context, world *world.World, dt time.Duration) (Event, error)
 }
 
 // Machine Alias for engine specific FSM
