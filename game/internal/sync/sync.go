@@ -1,8 +1,5 @@
-package gameloop
-
-import (
-	"context"
-)
+// Package sync abstracts the client-server communication channel.
+package sync
 
 // ServerMessage is a placeholder for messages received from the game server.
 type ServerMessage struct{}
@@ -23,12 +20,3 @@ type NoopSync struct{}
 
 func (NoopSync) Drain() []ServerMessage { return nil }
 func (NoopSync) Enqueue(InputPacket)    {}
-
-// SyncStage returns a Before stage that drains pending server messages into
-// Frame.ServerMessages for the simulation ticks to apply.
-func SyncStage[E comparable, A comparable](s Sync) Stage[E, A] {
-	return func(_ context.Context, f *Frame[E, A]) error {
-		f.ServerMessages = s.Drain()
-		return nil
-	}
-}

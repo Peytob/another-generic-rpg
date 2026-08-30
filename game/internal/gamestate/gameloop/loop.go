@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"game/internal/gameplay/world"
+	"game/internal/input"
+	"game/internal/sync"
 	"time"
 )
 
@@ -48,11 +50,11 @@ type Frame[E comparable, A comparable] struct {
 
 	// Input is the input snapshot drained by the input stage; it stays
 	// empty unless an input stage filled it.
-	Input InputFrame[A]
+	Input input.InputFrame[A]
 
 	// ServerMessages holds messages drained by the sync stage; tick stages
 	// are responsible for applying them to the World.
-	ServerMessages []ServerMessage
+	ServerMessages []sync.ServerMessage
 
 	// World is the gameplay world owned by the current state.
 	World *world.World

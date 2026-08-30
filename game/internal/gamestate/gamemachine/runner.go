@@ -2,6 +2,7 @@ package gamemachine
 
 import (
 	"context"
+	"engine/utils/logger"
 	"fmt"
 	"game/internal/gameplay/world"
 	"time"
@@ -110,12 +111,17 @@ func (r *Runner) IsRunning() bool {
 // transition performs the full lifecycle: OnExit -> FSM.Event -> new World ->
 // OnEnter. The old World is discarded after OnExit completes.
 func (r *Runner) transition(ctx context.Context, event Event) error {
+	l := logger.FromCtx(ctx).With("svc", "runner", "op", "transition")
+
+	l.Info("performing game machine transition", "event", event)
 	current := r.machine.State()
 
+	l.Info("exiting game state", "state", current.Identifier())
 	if err := current.OnExit(ctx, r.world); err != nil {
 		return fmt.Errorf("state %q onExit: %w", current.Identifier(), err)
 	}
 
+	l.Info("performing event callback", "state", current.Identifier())
 	if err := r.machine.Event(event); err != nil {
 		return fmt.Errorf("fsm event %d: %w", event, err)
 	}
@@ -124,6 +130,7 @@ func (r *Runner) transition(ctx context.Context, event Event) error {
 
 	if r.machine.IsRunning() {
 		next := r.machine.State()
+		l.Info("entering new state", "state", current.Identifier(), "next_state", next.Identifier())
 		if err := next.OnEnter(ctx, r.world); err != nil {
 			return fmt.Errorf("state %q onEnter: %w", next.Identifier(), err)
 		}

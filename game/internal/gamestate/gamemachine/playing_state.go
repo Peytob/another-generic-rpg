@@ -7,7 +7,9 @@ import (
 	"game/internal/gameplay/world"
 	"game/internal/gamestate/gameloop"
 	"game/internal/gamestate/repositories"
+	"game/internal/input"
 	"game/internal/rendering"
+	"game/internal/sync"
 	"time"
 )
 
@@ -16,17 +18,6 @@ const PlayingStateIdentifier = StateIdentifier("playing")
 // playingLoopTick is the fixed simulation step of the playing state loop.
 const playingLoopTick = time.Second / 60
 
-// gameAction enumerates input actions recognized by the playing state.
-type gameAction int
-
-const (
-	actionMoveUp gameAction = iota
-	actionMoveDown
-	actionMoveLeft
-	actionMoveRight
-	actionExit
-)
-
 // playingState describes main game state that used while game is running.
 // Its Update is a gameloop pipeline: input snapshot and server sync run once
 // per frame, simulation advances in fixed ticks, rendering closes the frame.
@@ -34,8 +25,8 @@ type playingState struct {
 	renderer       rendering.Rendering
 	tileRepository *repositories.TileRepository
 	hid            hid.Hid
-	collector      *gameloop.InputCollector[gameAction]
-	loop           *gameloop.Loop[Event, gameAction]
+	collector      *input.InputCollector[input.Action]
+	loop           *gameloop.Loop[Event, input.Action]
 }
 
 func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hid.Hid) State {
@@ -43,13 +34,13 @@ func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hi
 		renderer:       r,
 		tileRepository: repo.TileRepository,
 		hid:            h,
-		collector:      gameloop.NewInputCollector[gameAction](),
+		collector:      input.NewInputCollector[input.Action](),
 	}
 
-	s.loop = gameloop.NewLoop[Event, gameAction](playingLoopTick).
+	s.loop = gameloop.NewLoop[Event, input.Action](playingLoopTick).
 		Before(
-			gameloop.InputStage[Event, gameAction](s.collector),
-			gameloop.SyncStage[Event, gameAction](gameloop.NoopSync{}),
+			gameloop.InputStage[Event, input.Action](s.collector),
+			gameloop.SyncStage[Event, input.Action](sync.NoopSync{}),
 			s.handleGlobalInput,
 		).
 		EachTick(s.simulate).
@@ -87,21 +78,21 @@ func (s *playingState) Update(ctx context.Context, w *world.World, dt time.Durat
 }
 
 // handleGlobalInput maps frame input to state machine transitions.
-func (s *playingState) handleGlobalInput(_ context.Context, f *gameloop.Frame[Event, gameAction]) error {
-	if f.Input.Pressed(actionExit) {
+func (s *playingState) handleGlobalInput(_ context.Context, f *gameloop.Frame[Event, input.Action]) error {
+	if f.Input.Pressed(input.Exit) {
 		f.RequestTransition(StoppedEvent)
 	}
 	return nil
 }
 
 // simulate advances the gameplay simulation by one fixed tick.
-func (s *playingState) simulate(_ context.Context, _ *gameloop.Frame[Event, gameAction]) error {
+func (s *playingState) simulate(_ context.Context, _ *gameloop.Frame[Event, input.Action]) error {
 	// todo advance world simulation by f.Dt applying f.ServerMessages
 	return nil
 }
 
 // render draws the current frame.
-func (s *playingState) render(_ context.Context, _ *gameloop.Frame[Event, gameAction]) error {
+func (s *playingState) render(_ context.Context, _ *gameloop.Frame[Event, input.Action]) error {
 	// todo draw scene via s.renderer.Drawers() using f.Alpha interpolation
 	return nil
 }
@@ -112,7 +103,7 @@ func (s *playingState) keyboardBindings() (hid.KeyboardBindings, error) {
 	kb := hid.NewKeyboardBindings("playing_keyboard")
 	mapper := s.hid.Keyboard()
 
-	bind := func(key hid.Key, action gameAction) error {
+	bind := func(key hid.Key, action input.Action) error {
 		scancode := mapper.GetScancode(key)
 
 		press := func(_ hid.Key, _ int, _ hid.Action, _ hid.Modifier) {
@@ -132,12 +123,12 @@ func (s *playingState) keyboardBindings() (hid.KeyboardBindings, error) {
 		return nil
 	}
 
-	for key, action := range map[hid.Key]gameAction{
-		hid.KeyW:      actionMoveUp,
-		hid.KeyS:      actionMoveDown,
-		hid.KeyA:      actionMoveLeft,
-		hid.KeyD:      actionMoveRight,
-		hid.KeyEscape: actionExit,
+	for key, action := range map[hid.Key]input.Action{
+		hid.KeyW:      input.MoveUp,
+		hid.KeyS:      input.MoveDown,
+		hid.KeyA:      input.MoveLeft,
+		hid.KeyD:      input.MoveRight,
+		hid.KeyEscape: input.Exit,
 	} {
 		if err := bind(key, action); err != nil {
 			return hid.KeyboardBindings{}, err

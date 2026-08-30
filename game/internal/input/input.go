@@ -1,8 +1,20 @@
-package gameloop
+// Package input provides per-frame input snapshots collected from hid
+// binding callbacks.
+package input
 
 import (
-	"context"
 	"maps"
+)
+
+// Action enumerates game input actions recognized by gameplay states.
+type Action int
+
+const (
+	MoveUp Action = iota
+	MoveDown
+	MoveLeft
+	MoveRight
+	Exit
 )
 
 // InputFrame is an immutable snapshot of the input events collected during
@@ -88,13 +100,4 @@ func (c *InputCollector[A]) Drain() InputFrame[A] {
 	c.released = nil
 
 	return frame
-}
-
-// InputStage returns a Before stage that drains the collector into
-// Frame.Input at the start of every frame.
-func InputStage[E comparable, A comparable](c *InputCollector[A]) Stage[E, A] {
-	return func(_ context.Context, f *Frame[E, A]) error {
-		f.Input = c.Drain()
-		return nil
-	}
 }
