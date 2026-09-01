@@ -4,11 +4,9 @@ import (
 	"context"
 	"engine/utils/fsm"
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 	"time"
 )
-
-// Event enumerated type to describe engine FSM events
-type Event int
 
 type StateIdentifier string
 
@@ -31,18 +29,18 @@ type State interface {
 	// Update advances the state by one tick. The state should drive the
 	// World update and may return an Event to trigger an FSM transition.
 	// Returning NoEvent keeps the current state.
-	Update(ctx context.Context, world *world.World, dt time.Duration) (Event, error)
+	Update(ctx context.Context, world *world.World, dt time.Duration) (event.Event, error)
 }
 
 // Machine Alias for engine specific FSM
-type Machine = fsm.Machine[Event, StateIdentifier, State]
+type Machine = fsm.Machine[event.Event, StateIdentifier, State]
 
 // MachineBuilder Alias for engine specific FSM builder
-type MachineBuilder = fsm.MachineBuilder[Event, StateIdentifier, State]
+type MachineBuilder = fsm.MachineBuilder[event.Event, StateIdentifier, State]
 
 // Transitions Alias for engine specific transitions
-type Transitions = fsm.Transitions[Event, StateIdentifier]
+type Transitions = fsm.Transitions[event.Event, StateIdentifier]
 
 func NewMachineBuilder() MachineBuilder {
-	return fsm.NewBuilder[Event, StateIdentifier, State]()
+	return fsm.NewBuilder[event.Event, StateIdentifier, State]()
 }

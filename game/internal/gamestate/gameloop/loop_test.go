@@ -7,13 +7,7 @@ import (
 	"time"
 
 	"game/internal/gameplay/world"
-)
-
-type testAction int
-
-const (
-	testActionA testAction = iota
-	testActionB
+	"game/internal/gamestate/event"
 )
 
 var errStageSentinel = errors.New("stage boom")
@@ -21,19 +15,19 @@ var errStageSentinel = errors.New("stage boom")
 func TestBeforeAndAfterRunOncePerFrame(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](100 * time.Millisecond)
+	l := NewLoop(100 * time.Millisecond)
 
 	var beforeCnt, tickCnt, afterCnt int
 
-	l.Before(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.Before(func(_ context.Context, _ *Frame) error {
 		beforeCnt++
 		return nil
 	})
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		tickCnt++
 		return nil
 	})
-	l.After(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, _ *Frame) error {
 		afterCnt++
 		return nil
 	})
@@ -65,16 +59,16 @@ func TestBeforeAndAfterRunOncePerFrame(t *testing.T) {
 func TestEachTickFixedStepAccumulator(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](100 * time.Millisecond)
+	l := NewLoop(100 * time.Millisecond)
 
 	var tickCnt int
 	var lastAlpha float64
 
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		tickCnt++
 		return nil
 	})
-	l.After(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, f *Frame) error {
 		lastAlpha = f.Alpha
 		return nil
 	})
@@ -109,19 +103,19 @@ func TestEachTickFixedStepAccumulator(t *testing.T) {
 func TestTickStagesSeeTickDtOthersSeeFrameDt(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](50 * time.Millisecond)
+	l := NewLoop(50 * time.Millisecond)
 
 	var beforeDt, tickDt, afterDt time.Duration
 
-	l.Before(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.Before(func(_ context.Context, f *Frame) error {
 		beforeDt = f.Dt
 		return nil
 	})
-	l.EachTick(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, f *Frame) error {
 		tickDt = f.Dt
 		return nil
 	})
-	l.After(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, f *Frame) error {
 		afterDt = f.Dt
 		return nil
 	})
@@ -145,16 +139,16 @@ func TestTickStagesSeeTickDtOthersSeeFrameDt(t *testing.T) {
 func TestFrameDtClamped(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](50 * time.Millisecond)
+	l := NewLoop(50 * time.Millisecond)
 
 	var tickCnt int
 	var frameDt time.Duration
 
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		tickCnt++
 		return nil
 	})
-	l.Before(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.Before(func(_ context.Context, f *Frame) error {
 		frameDt = f.Dt
 		return nil
 	})
@@ -176,11 +170,11 @@ func TestFrameDtClamped(t *testing.T) {
 func TestLagDroppedAfterTickCap(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](10 * time.Millisecond)
+	l := NewLoop(10 * time.Millisecond)
 
 	var tickCnt int
 
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		tickCnt++
 		return nil
 	})
@@ -208,18 +202,18 @@ func TestLagDroppedAfterTickCap(t *testing.T) {
 func TestZeroTickRunsEachTickOncePerFrame(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](0)
+	l := NewLoop(0)
 
 	var tickCnt int
 	var tickDt time.Duration
 	var alpha float64
 
-	l.EachTick(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, f *Frame) error {
 		tickCnt++
 		tickDt = f.Dt
 		return nil
 	})
-	l.After(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, f *Frame) error {
 		alpha = f.Alpha
 		return nil
 	})
@@ -245,25 +239,23 @@ func TestZeroTickRunsEachTickOncePerFrame(t *testing.T) {
 func TestTransitionRequestedBeforeFrameCompletes(t *testing.T) {
 	t.Parallel()
 
-	const stopEvent = 7
-
-	l := NewLoop[int, testAction](0)
+	l := NewLoop(0)
 
 	var afterCnt int
 
-	l.Before(func(_ context.Context, f *Frame[int, testAction]) error {
-		f.RequestTransition(stopEvent)
+	l.Before(func(_ context.Context, f *Frame) error {
+		f.RequestTransition(event.StoppedEvent)
 		return nil
 	})
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		return nil
 	})
-	l.After(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, _ *Frame) error {
 		afterCnt++
 		return nil
 	})
 
-	event, err := l.Run(context.Background(), &world.World{}, time.Millisecond)
+	ev, err := l.Run(context.Background(), &world.World{}, time.Millisecond)
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
@@ -271,43 +263,43 @@ func TestTransitionRequestedBeforeFrameCompletes(t *testing.T) {
 	if afterCnt != 1 {
 		t.Errorf("frame should complete after transition request, after stages ran %d", afterCnt)
 	}
-	if event != stopEvent {
-		t.Errorf("expected transition %d, got %d", stopEvent, event)
+	if ev != event.StoppedEvent {
+		t.Errorf("expected transition %d, got %d", event.StoppedEvent, ev)
 	}
 }
 
-func TestNoTransitionReturnsZeroValue(t *testing.T) {
+func TestNoTransitionReturnsNoEvent(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](0)
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l := NewLoop(0)
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		return nil
 	})
 
-	event, err := l.Run(context.Background(), &world.World{}, time.Millisecond)
+	ev, err := l.Run(context.Background(), &world.World{}, time.Millisecond)
 	if err != nil {
 		t.Fatalf("Run: %v", err)
 	}
-	if event != 0 {
-		t.Errorf("expected zero event, got %d", event)
+	if ev != event.NoEvent {
+		t.Errorf("expected NoEvent, got %d", ev)
 	}
 }
 
 func TestBeforeStageErrorPropagates(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](0)
+	l := NewLoop(0)
 
 	var tickCnt, afterCnt int
 
-	l.Before(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.Before(func(_ context.Context, _ *Frame) error {
 		return errStageSentinel
 	})
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		tickCnt++
 		return nil
 	})
-	l.After(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.After(func(_ context.Context, _ *Frame) error {
 		afterCnt++
 		return nil
 	})
@@ -324,9 +316,9 @@ func TestBeforeStageErrorPropagates(t *testing.T) {
 func TestTickStageErrorPropagates(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](100 * time.Millisecond)
+	l := NewLoop(100 * time.Millisecond)
 
-	l.EachTick(func(_ context.Context, _ *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, _ *Frame) error {
 		return errStageSentinel
 	})
 
@@ -341,11 +333,11 @@ func TestTickStageErrorPropagates(t *testing.T) {
 func TestWorldPassedToStages(t *testing.T) {
 	t.Parallel()
 
-	l := NewLoop[int, testAction](0)
+	l := NewLoop(0)
 
 	var seen *world.World
 
-	l.EachTick(func(_ context.Context, f *Frame[int, testAction]) error {
+	l.EachTick(func(_ context.Context, f *Frame) error {
 		seen = f.World
 		return nil
 	})

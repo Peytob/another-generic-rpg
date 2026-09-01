@@ -2,9 +2,9 @@ package gamemachine
 
 import (
 	"context"
-	"engine/utils/logger"
 	"fmt"
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 	"time"
 )
 
@@ -71,13 +71,13 @@ func (r *Runner) Update(ctx context.Context, dt time.Duration) error {
 		return nil
 	}
 
-	event, err := r.machine.State().Update(ctx, r.world, dt)
+	ev, err := r.machine.State().Update(ctx, r.world, dt)
 	if err != nil {
 		return fmt.Errorf("state %q update: %w", r.machine.State().Identifier(), err)
 	}
 
-	if event != NoEvent {
-		return r.transition(ctx, event)
+	if ev != event.NoEvent {
+		return r.transition(ctx, ev)
 	}
 
 	return nil
@@ -86,11 +86,11 @@ func (r *Runner) Update(ctx context.Context, dt time.Duration) error {
 // Event triggers an FSM transition from outside the state update loop
 // (e.g. a window-close signal). It calls OnExit on the current state, performs
 // the transition, creates a fresh World, and calls OnEnter on the new state.
-func (r *Runner) Event(ctx context.Context, event Event) error {
+func (r *Runner) Event(ctx context.Context, ev event.Event) error {
 	if !r.started || !r.machine.IsRunning() {
-		return r.machine.Event(event)
+		return r.machine.Event(ev)
 	}
-	return r.transition(ctx, event)
+	return r.transition(ctx, ev)
 }
 
 // State returns the currently active state.
@@ -110,27 +110,21 @@ func (r *Runner) IsRunning() bool {
 
 // transition performs the full lifecycle: OnExit -> FSM.Event -> new World ->
 // OnEnter. The old World is discarded after OnExit completes.
-func (r *Runner) transition(ctx context.Context, event Event) error {
-	l := logger.FromCtx(ctx).With("svc", "runner", "op", "transition")
-
-	l.Info("performing game machine transition", "event", event)
+func (r *Runner) transition(ctx context.Context, ev event.Event) error {
 	current := r.machine.State()
 
-	l.Info("exiting game state", "state", current.Identifier())
 	if err := current.OnExit(ctx, r.world); err != nil {
 		return fmt.Errorf("state %q onExit: %w", current.Identifier(), err)
 	}
 
-	l.Info("performing event callback", "state", current.Identifier())
-	if err := r.machine.Event(event); err != nil {
-		return fmt.Errorf("fsm event %d: %w", event, err)
+	if err := r.machine.Event(ev); err != nil {
+		return fmt.Errorf("fsm event %d: %w", ev, err)
 	}
 
 	r.world = &world.World{}
 
 	if r.machine.IsRunning() {
 		next := r.machine.State()
-		l.Info("entering new state", "state", current.Identifier(), "next_state", next.Identifier())
 		if err := next.OnEnter(ctx, r.world); err != nil {
 			return fmt.Errorf("state %q onEnter: %w", next.Identifier(), err)
 		}

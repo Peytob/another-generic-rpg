@@ -7,7 +7,7 @@ import (
 func TestCollectorPressReleaseSnapshot(t *testing.T) {
 	t.Parallel()
 
-	c := NewInputCollector[Action]()
+	c := NewInputCollector()
 
 	frame := c.Drain()
 	if !frame.Empty() {
@@ -46,7 +46,7 @@ func TestCollectorPressReleaseSnapshot(t *testing.T) {
 func TestCollectorHeldPersistsUntilRelease(t *testing.T) {
 	t.Parallel()
 
-	c := NewInputCollector[Action]()
+	c := NewInputCollector()
 
 	c.Press(MoveLeft)
 	_ = c.Drain()
@@ -69,7 +69,7 @@ func TestCollectorHeldPersistsUntilRelease(t *testing.T) {
 func TestCollectorDuplicatePressesDeduplicated(t *testing.T) {
 	t.Parallel()
 
-	c := NewInputCollector[Action]()
+	c := NewInputCollector()
 
 	c.Press(MoveRight)
 	c.Press(MoveRight)

@@ -6,6 +6,7 @@ import (
 	"engine/utils/logger"
 	"engine/window"
 	"fmt"
+	"game/internal/gamestate/event"
 	"game/internal/gamestate/gamemachine"
 	"game/internal/gamestate/repositories"
 	"game/internal/rendering"
@@ -58,7 +59,7 @@ func (c *Client) Run(ctx context.Context) error {
 
 		if c.window.ShouldClose() {
 			logger.FromCtx(ctx).Debug("stopping game machine")
-			err = c.runner.Event(ctx, gamemachine.StoppedEvent)
+			err = c.runner.Event(ctx, event.StoppedEvent)
 			if err != nil {
 				return fmt.Errorf("failed to stop runner on window close: %w", err)
 			}

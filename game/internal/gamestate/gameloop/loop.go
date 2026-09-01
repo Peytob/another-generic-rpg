@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 	"game/internal/input"
 	"game/internal/sync"
 	"time"
@@ -34,12 +35,12 @@ const (
 	maxTicksPerFrame = 5
 )
 
-// Stage is a single step of a frame pipeline. E is the FSM event type the
-// state may request via Frame.RequestTransition, A is the input action type.
-type Stage[E comparable, A comparable] func(ctx context.Context, f *Frame[E, A]) error
+// Stage is a single step of a frame pipeline. Stages of one Loop run on the
+// main game goroutine only.
+type Stage func(ctx context.Context, f *Frame) error
 
 // Frame is the shared per-frame context passed to every stage.
-type Frame[E comparable, A comparable] struct {
+type Frame struct {
 	// Dt is the real duration of the current frame (already clamped).
 	// During EachTick stages it is temporarily set to the fixed tick.
 	Dt time.Duration
@@ -50,7 +51,7 @@ type Frame[E comparable, A comparable] struct {
 
 	// Input is the input snapshot drained by the input stage; it stays
 	// empty unless an input stage filled it.
-	Input input.InputFrame[A]
+	Input input.InputFrame
 
 	// ServerMessages holds messages drained by the sync stage; tick stages
 	// are responsible for applying them to the World.
@@ -59,18 +60,18 @@ type Frame[E comparable, A comparable] struct {
 	// World is the gameplay world owned by the current state.
 	World *world.World
 
-	transition E
+	transition event.Event
 }
 
 // RequestTransition asks the state machine to perform a transition after
 // the current frame completes. The loop never transitions mid-frame.
-func (f *Frame[E, A]) RequestTransition(event E) {
-	f.transition = event
+func (f *Frame) RequestTransition(ev event.Event) {
+	f.transition = ev
 }
 
-// Transition returns the requested transition or the zero value of E when
-// no stage requested one.
-func (f *Frame[E, A]) Transition() E {
+// Transition returns the requested transition or NoEvent when no stage
+// requested one.
+func (f *Frame) Transition() event.Event {
 	return f.transition
 }
 
@@ -78,61 +79,59 @@ func (f *Frame[E, A]) Transition() E {
 //
 // Loop is not safe for concurrent use; it must be driven from the same
 // goroutine that runs the hid Dispatch (the main game loop goroutine).
-type Loop[E comparable, A comparable] struct {
+type Loop struct {
 	tick     time.Duration
-	before   []Stage[E, A]
-	eachTick []Stage[E, A]
-	after    []Stage[E, A]
+	before   []Stage
+	eachTick []Stage
+	after    []Stage
 	acc      time.Duration
 }
 
 // NewLoop creates a Loop with the given fixed simulation step. A zero or
 // negative tick switches the loop into variable-step mode where EachTick
 // stages run once per frame with the real frame delta.
-func NewLoop[E comparable, A comparable](tick time.Duration) *Loop[E, A] {
-	return &Loop[E, A]{tick: tick}
+func NewLoop(tick time.Duration) *Loop {
+	return &Loop{tick: tick}
 }
 
 // Before appends stages that run once per frame before simulation ticks.
-func (l *Loop[E, A]) Before(stages ...Stage[E, A]) *Loop[E, A] {
+func (l *Loop) Before(stages ...Stage) *Loop {
 	l.before = append(l.before, stages...)
 	return l
 }
 
 // EachTick appends simulation stages executed with the fixed time step.
-func (l *Loop[E, A]) EachTick(stages ...Stage[E, A]) *Loop[E, A] {
+func (l *Loop) EachTick(stages ...Stage) *Loop {
 	l.eachTick = append(l.eachTick, stages...)
 	return l
 }
 
 // After appends stages that run once per frame after simulation ticks.
-func (l *Loop[E, A]) After(stages ...Stage[E, A]) *Loop[E, A] {
+func (l *Loop) After(stages ...Stage) *Loop {
 	l.after = append(l.after, stages...)
 	return l
 }
 
 // Run advances the loop by one frame with the given world and frame delta.
 // It returns the transition requested by stages via Frame.RequestTransition
-// or the zero value of E when no transition was requested.
-func (l *Loop[E, A]) Run(ctx context.Context, w *world.World, dt time.Duration) (E, error) {
-	var zero E
-
+// or NoEvent when no transition was requested.
+func (l *Loop) Run(ctx context.Context, w *world.World, dt time.Duration) (event.Event, error) {
 	if dt > maxFrameDt {
 		dt = maxFrameDt
 	}
 
-	f := &Frame[E, A]{Dt: dt, World: w}
+	f := &Frame{Dt: dt, World: w}
 
 	if err := l.runStages(ctx, f, l.before); err != nil {
-		return zero, fmt.Errorf("before stage: %w", err)
+		return event.NoEvent, fmt.Errorf("before stage: %w", err)
 	}
 
 	if err := l.advanceTicks(ctx, f); err != nil {
-		return zero, err
+		return event.NoEvent, err
 	}
 
 	if err := l.runStages(ctx, f, l.after); err != nil {
-		return zero, fmt.Errorf("after stage: %w", err)
+		return event.NoEvent, fmt.Errorf("after stage: %w", err)
 	}
 
 	return f.transition, nil
@@ -141,7 +140,7 @@ func (l *Loop[E, A]) Run(ctx context.Context, w *world.World, dt time.Duration) 
 // advanceTicks executes EachTick stages according to the accumulated time:
 // fixed-step loops run them zero..maxTicksPerFrame times per frame, while
 // variable-step loops run them exactly once with the real frame delta.
-func (l *Loop[E, A]) advanceTicks(ctx context.Context, f *Frame[E, A]) error {
+func (l *Loop) advanceTicks(ctx context.Context, f *Frame) error {
 	if l.tick <= 0 {
 		return l.runTick(ctx, f, f.Dt)
 	}
@@ -171,7 +170,7 @@ func (l *Loop[E, A]) advanceTicks(ctx context.Context, f *Frame[E, A]) error {
 // runTick runs all EachTick stages once, exposing dt as the frame delta for
 // their duration. The frame is shared, so transition requests made inside
 // tick stages are preserved.
-func (l *Loop[E, A]) runTick(ctx context.Context, f *Frame[E, A], dt time.Duration) error {
+func (l *Loop) runTick(ctx context.Context, f *Frame, dt time.Duration) error {
 	frameDt := f.Dt
 	f.Dt = dt
 	defer func() { f.Dt = frameDt }()
@@ -183,7 +182,7 @@ func (l *Loop[E, A]) runTick(ctx context.Context, f *Frame[E, A], dt time.Durati
 	return nil
 }
 
-func (l *Loop[E, A]) runStages(ctx context.Context, f *Frame[E, A], stages []Stage[E, A]) error {
+func (l *Loop) runStages(ctx context.Context, f *Frame, stages []Stage) error {
 	for _, stage := range stages {
 		if err := stage(ctx, f); err != nil {
 			return err

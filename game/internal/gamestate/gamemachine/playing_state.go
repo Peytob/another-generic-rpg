@@ -5,6 +5,7 @@ import (
 	"engine/hid"
 	"fmt"
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 	"game/internal/gamestate/gameloop"
 	"game/internal/gamestate/repositories"
 	"game/internal/input"
@@ -25,8 +26,8 @@ type playingState struct {
 	renderer       rendering.Rendering
 	tileRepository *repositories.TileRepository
 	hid            hid.Hid
-	collector      *input.InputCollector[input.Action]
-	loop           *gameloop.Loop[Event, input.Action]
+	collector      *input.InputCollector
+	loop           *gameloop.Loop
 }
 
 func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hid.Hid) State {
@@ -34,17 +35,17 @@ func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hi
 		renderer:       r,
 		tileRepository: repo.TileRepository,
 		hid:            h,
-		collector:      input.NewInputCollector[input.Action](),
+		collector:      input.NewInputCollector(),
 	}
 
-	s.loop = gameloop.NewLoop[Event, input.Action](playingLoopTick).
+	s.loop = gameloop.NewLoop(playingLoopTick).
 		Before(
-			gameloop.InputStage[Event, input.Action](s.collector),
-			gameloop.SyncStage[Event, input.Action](sync.NoopSync{}),
-			s.handleGlobalInput,
+			gameloop.InputStage(s.collector),
+			gameloop.SyncStage(sync.NoopSync{}),
+			gameloop.GlobalInput(),
 		).
-		EachTick(s.simulate).
-		After(s.render)
+		EachTick(gameloop.Simulate()).
+		After(gameloop.WorldRender(s.renderer))
 
 	return s
 }
@@ -73,28 +74,8 @@ func (s *playingState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s *playingState) Update(ctx context.Context, w *world.World, dt time.Duration) (Event, error) {
+func (s *playingState) Update(ctx context.Context, w *world.World, dt time.Duration) (event.Event, error) {
 	return s.loop.Run(ctx, w, dt)
-}
-
-// handleGlobalInput maps frame input to state machine transitions.
-func (s *playingState) handleGlobalInput(_ context.Context, f *gameloop.Frame[Event, input.Action]) error {
-	if f.Input.Pressed(input.Exit) {
-		f.RequestTransition(StoppedEvent)
-	}
-	return nil
-}
-
-// simulate advances the gameplay simulation by one fixed tick.
-func (s *playingState) simulate(_ context.Context, _ *gameloop.Frame[Event, input.Action]) error {
-	// todo advance world simulation by f.Dt applying f.ServerMessages
-	return nil
-}
-
-// render draws the current frame.
-func (s *playingState) render(_ context.Context, _ *gameloop.Frame[Event, input.Action]) error {
-	// todo draw scene via s.renderer.Drawers() using f.Alpha interpolation
-	return nil
 }
 
 // keyboardBindings binds gameplay keys to collector events. Bindings are

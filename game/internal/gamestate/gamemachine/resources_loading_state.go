@@ -3,6 +3,7 @@ package gamemachine
 import (
 	"context"
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 	"time"
 )
 
@@ -26,6 +27,6 @@ func (s resourcesLoadingState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s resourcesLoadingState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
-	return NoEvent, nil
+func (s resourcesLoadingState) Update(_ context.Context, _ *world.World, _ time.Duration) (event.Event, error) {
+	return event.ResourcesLoadedEvent, nil
 }

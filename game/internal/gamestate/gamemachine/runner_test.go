@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"game/internal/gameplay/world"
+	"game/internal/gamestate/event"
 )
 
 // --- test helpers ---------------------------------------------------------
@@ -19,7 +20,7 @@ type trackingState struct {
 	updateCnt int
 	exitErr   error
 	enterErr  error
-	event     Event
+	event     event.Event
 }
 
 func (s *trackingState) Identifier() StateIdentifier { return s.id }
@@ -34,7 +35,7 @@ func (s *trackingState) OnExit(_ context.Context, _ *world.World) error {
 	return s.exitErr
 }
 
-func (s *trackingState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
+func (s *trackingState) Update(_ context.Context, _ *world.World, _ time.Duration) (event.Event, error) {
 	s.updateCnt++
 	return s.event, nil
 }
@@ -48,8 +49,8 @@ type errorUpdateState struct {
 func (s *errorUpdateState) Identifier() StateIdentifier                     { return s.id }
 func (s *errorUpdateState) OnEnter(_ context.Context, _ *world.World) error { return nil }
 func (s *errorUpdateState) OnExit(_ context.Context, _ *world.World) error  { return nil }
-func (s *errorUpdateState) Update(_ context.Context, _ *world.World, _ time.Duration) (Event, error) {
-	return NoEvent, errUpdateSentinel
+func (s *errorUpdateState) Update(_ context.Context, _ *world.World, _ time.Duration) (event.Event, error) {
+	return event.NoEvent, errUpdateSentinel
 }
 
 func buildMachine(initial State) Machine {
@@ -119,13 +120,13 @@ func TestRunnerUpdateAutoStarts(t *testing.T) {
 func TestRunnerUpdateTriggersTransition(t *testing.T) {
 	t.Parallel()
 
-	s1 := &trackingState{id: "s1", event: ResourcesLoadedEvent}
+	s1 := &trackingState{id: "s1", event: event.ResourcesLoadedEvent}
 	s2 := &trackingState{id: "s2"}
 
 	m := NewMachineBuilder().
 		InitialState(s1.Identifier()).
 		BuildState(s1).
-		Transition(ResourcesLoadedEvent, s2.Identifier()).
+		Transition(event.ResourcesLoadedEvent, s2.Identifier()).
 		Build().
 		BuildState(s2).
 		Build().
@@ -163,7 +164,7 @@ func TestRunnerEventTriggersTransition(t *testing.T) {
 	m := NewMachineBuilder().
 		InitialState(s1.Identifier()).
 		BuildState(s1).
-		Transition(StoppedEvent, s2.Identifier()).
+		Transition(event.StoppedEvent, s2.Identifier()).
 		Build().
 		BuildState(s2).
 		Build().
@@ -173,7 +174,7 @@ func TestRunnerEventTriggersTransition(t *testing.T) {
 	r := NewRunner(m)
 	_ = r.Start(context.Background())
 
-	if err := r.Event(context.Background(), StoppedEvent); err != nil {
+	if err := r.Event(context.Background(), event.StoppedEvent); err != nil {
 		t.Fatalf("Event: %v", err)
 	}
 
@@ -201,7 +202,7 @@ func TestRunnerEventOnFinalStateOmitsOnEnter(t *testing.T) {
 		Build().
 		RegisterState(stopped, make(Transitions)).
 		GlobalTransitions(Transitions{
-			StoppedEvent: stopped.Identifier(),
+			event.StoppedEvent: stopped.Identifier(),
 		}).
 		FinalStates(stopped.Identifier()).
 		MustBuild()
@@ -209,7 +210,7 @@ func TestRunnerEventOnFinalStateOmitsOnEnter(t *testing.T) {
 	r := NewRunner(m)
 	_ = r.Start(context.Background())
 
-	if err := r.Event(context.Background(), StoppedEvent); err != nil {
+	if err := r.Event(context.Background(), event.StoppedEvent); err != nil {
 		t.Fatalf("Event: %v", err)
 	}
 
@@ -222,13 +223,13 @@ func TestRunnerOnExitErrorPropagates(t *testing.T) {
 	t.Parallel()
 
 	errSentinel := errors.New("exit boom")
-	s1 := &trackingState{id: "s1", event: ResourcesLoadedEvent, exitErr: errSentinel}
+	s1 := &trackingState{id: "s1", event: event.ResourcesLoadedEvent, exitErr: errSentinel}
 	s2 := &trackingState{id: "s2"}
 
 	m := NewMachineBuilder().
 		InitialState(s1.Identifier()).
 		BuildState(s1).
-		Transition(ResourcesLoadedEvent, s2.Identifier()).
+		Transition(event.ResourcesLoadedEvent, s2.Identifier()).
 		Build().
 		BuildState(s2).
 		Build().
@@ -251,13 +252,13 @@ func TestRunnerOnEnterErrorPropagates(t *testing.T) {
 	t.Parallel()
 
 	errSentinel := errors.New("enter boom")
-	s1 := &trackingState{id: "s1", event: ResourcesLoadedEvent}
+	s1 := &trackingState{id: "s1", event: event.ResourcesLoadedEvent}
 	s2 := &trackingState{id: "s2", enterErr: errSentinel}
 
 	m := NewMachineBuilder().
 		InitialState(s1.Identifier()).
 		BuildState(s1).
-		Transition(ResourcesLoadedEvent, s2.Identifier()).
+		Transition(event.ResourcesLoadedEvent, s2.Identifier()).
 		Build().
 		BuildState(s2).
 		Build().
