@@ -10,7 +10,7 @@ import (
 // Machine Abstract finite state machine. Only for single-gorutine use, add mutex if you want use it from
 // many gorutines
 type Machine[E comparable, I comparable, S State[I]] interface {
-	// Event changes current machine state according to given event
+	// Event changes current machine state according to given state
 	Event(event E) error
 
 	// Result if machine on final state - returns current state and true flag, zero value and false otherwise

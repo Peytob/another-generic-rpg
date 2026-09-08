@@ -1,24 +1,24 @@
 package client
 
 import (
-	"game/internal/gamestate/event"
-	"game/internal/gamestate/gamemachine"
+	"game/internal/game/machine"
+	"game/internal/game/state"
 )
 
-func NewMachine(client *Client) gamemachine.Machine {
-	return gamemachine.NewMachineBuilder().
-		InitialState(gamemachine.ResourcesLoadingStateIdentifier). // todo change to InitialState
-		BuildState(gamemachine.NewInitialState()).
+func NewMachine(client *Client) machine.Machine {
+	return machine.NewBuilder().
+		InitialState(machine.ResourcesLoadingStateIdentifier). // todo change to InitialState
+		BuildState(machine.NewInitialState()).
 		Build().
-		BuildState(gamemachine.NewResourcesLoadingState()).
-		Transition(event.ResourcesLoadedEvent, gamemachine.PlayingStateIdentifier).
+		BuildState(machine.NewResourcesLoadingState()).
+		Transition(state.ResourcesLoadedEvent, machine.PlayingStateIdentifier).
 		Build().
-		BuildState(gamemachine.NewPlayingState(client.rendering, client.repositories, client.hid)).
+		BuildState(machine.NewPlayingState(client.rendering, client.repositories, client.hid)).
 		Build().
-		RegisterState(gamemachine.NewStoppedState(), make(gamemachine.Transitions)).
-		GlobalTransitions(gamemachine.Transitions{
-			event.StoppedEvent: gamemachine.StoppedStateIdentifier,
+		RegisterState(machine.NewStoppedState(), make(machine.Transitions)).
+		GlobalTransitions(machine.Transitions{
+			state.StoppedEvent: machine.StoppedStateIdentifier,
 		}).
-		FinalStates(gamemachine.StoppedStateIdentifier).
+		FinalStates(machine.StoppedStateIdentifier).
 		MustBuild()
 }

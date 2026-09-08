@@ -231,7 +231,7 @@ func (w *world) Update(ctx context.Context, dt time.Duration) error {
 	return nil
 }
 
-// compactSubscriptions rebuilds the handler slice for an event type without
+// compactSubscriptions rebuilds the handler slice for an state type without
 // inactive (unsubscribed) entries. A fresh slice is allocated so the backing
 // array of any in-flight EmitEvent range is never mutated, keeping iteration
 // safe against reentrancy.

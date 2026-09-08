@@ -1,4 +1,4 @@
-package gameloop
+package loop
 
 import (
 	"context"

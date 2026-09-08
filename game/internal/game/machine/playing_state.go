@@ -1,13 +1,12 @@
-package gamemachine
+package machine
 
 import (
 	"context"
 	"engine/hid"
 	"fmt"
-	"game/internal/gameplay/world"
-	"game/internal/gamestate/event"
-	"game/internal/gamestate/gameloop"
-	"game/internal/gamestate/repositories"
+	"game/internal/game/loop"
+	"game/internal/game/repositories"
+	"game/internal/game/state"
 	"game/internal/input"
 	"game/internal/rendering"
 	"game/internal/sync"
@@ -20,14 +19,14 @@ const PlayingStateIdentifier = StateIdentifier("playing")
 const playingLoopTick = time.Second / 60
 
 // playingState describes main game state that used while game is running.
-// Its Update is a gameloop pipeline: input snapshot and server sync run once
+// Its Update is a loop pipeline: input snapshot and server sync run once
 // per frame, simulation advances in fixed ticks, rendering closes the frame.
 type playingState struct {
 	renderer       rendering.Rendering
 	tileRepository *repositories.TileRepository
 	hid            hid.Hid
 	collector      *input.InputCollector
-	loop           *gameloop.Loop
+	loop           *loop.Loop
 }
 
 func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hid.Hid) State {
@@ -38,14 +37,14 @@ func NewPlayingState(r rendering.Rendering, repo repositories.Repositories, h hi
 		collector:      input.NewInputCollector(),
 	}
 
-	s.loop = gameloop.NewLoop(playingLoopTick).
+	s.loop = loop.NewLoop(playingLoopTick).
 		Before(
-			gameloop.InputStage(s.collector),
-			gameloop.SyncStage(sync.NoopSync{}),
-			gameloop.GlobalInput(),
+			loop.InputStage(s.collector),
+			loop.SyncStage(sync.NoopSync{}),
+			loop.GlobalInput(),
 		).
-		EachTick(gameloop.Simulate()).
-		After(gameloop.WorldRender(s.renderer))
+		EachTick(loop.Simulate()).
+		After(loop.WorldRender(s.renderer))
 
 	return s
 }
@@ -54,7 +53,7 @@ func (s *playingState) Identifier() StateIdentifier {
 	return PlayingStateIdentifier
 }
 
-func (s *playingState) OnEnter(_ context.Context, _ *world.World) error {
+func (s *playingState) OnEnter(_ context.Context, _ *state.State) error {
 	kb, err := s.keyboardBindings()
 	if err != nil {
 		return fmt.Errorf("failed to build keyboard bindings: %w", err)
@@ -66,7 +65,7 @@ func (s *playingState) OnEnter(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s *playingState) OnExit(_ context.Context, _ *world.World) error {
+func (s *playingState) OnExit(_ context.Context, _ *state.State) error {
 	// Reset bindings so callbacks of a deactivated state never fire.
 	s.hid.Keyboard().SetCurrentBindings(hid.NewKeyboardBindings("unbound_keyboard"))
 	s.hid.Mouse().SetCurrentBindings(hid.NewMouseBindings("unbound_mouse"))
@@ -74,8 +73,8 @@ func (s *playingState) OnExit(_ context.Context, _ *world.World) error {
 	return nil
 }
 
-func (s *playingState) Update(ctx context.Context, w *world.World, dt time.Duration) (event.Event, error) {
-	return s.loop.Run(ctx, w, dt)
+func (s *playingState) Update(ctx context.Context, currentState *state.State, dt time.Duration) (state.Event, error) {
+	return s.loop.Run(ctx, currentState, dt)
 }
 
 // keyboardBindings binds gameplay keys to collector events. Bindings are

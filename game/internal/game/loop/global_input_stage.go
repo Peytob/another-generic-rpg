@@ -1,8 +1,8 @@
-package gameloop
+package loop
 
 import (
 	"context"
-	"game/internal/gamestate/event"
+	"game/internal/game/state"
 	"game/internal/input"
 )
 
@@ -11,7 +11,7 @@ import (
 func GlobalInput() Stage {
 	return func(_ context.Context, f *Frame) error {
 		if f.Input.Pressed(input.Exit) {
-			f.RequestTransition(event.StoppedEvent)
+			f.RequestTransition(state.StoppedEvent)
 		}
 		return nil
 	}

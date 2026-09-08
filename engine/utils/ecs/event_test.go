@@ -9,7 +9,7 @@ import (
 func TestSubscribeAndEmit(t *testing.T) {
 	t.Parallel()
 
-	t.Run("delivers event to single subscriber", func(t *testing.T) {
+	t.Run("delivers state to single subscriber", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -25,12 +25,12 @@ func TestSubscribeAndEmit(t *testing.T) {
 		}
 
 		if received == nil {
-			t.Fatal("event was not delivered")
+			t.Fatal("state was not delivered")
 		}
 		assertEqual(t, received.Amount, 42)
 	})
 
-	t.Run("delivers event to multiple subscribers in order", func(t *testing.T) {
+	t.Run("delivers state to multiple subscribers in order", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -56,7 +56,7 @@ func TestSubscribeAndEmit(t *testing.T) {
 		assertSliceEqual(t, order, []int{1, 2, 3})
 	})
 
-	t.Run("different event types are isolated", func(t *testing.T) {
+	t.Run("different state types are isolated", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -154,7 +154,7 @@ func TestUnsubscribe(t *testing.T) {
 func TestEmitNilEvent(t *testing.T) {
 	t.Parallel()
 
-	t.Run("emit nil event is a no-op", func(t *testing.T) {
+	t.Run("emit nil state is a no-op", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -169,7 +169,7 @@ func TestEmitNilEvent(t *testing.T) {
 			t.Errorf("expected nil error, got %v", err)
 		}
 		if called {
-			t.Error("handler should not be called for nil event")
+			t.Error("handler should not be called for nil state")
 		}
 	})
 }

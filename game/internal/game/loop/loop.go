@@ -1,24 +1,9 @@
-// Package gameloop provides a reusable per-frame pipeline that game states
-// compose from individual stages (input, server sync, simulation, rendering).
-//
-// A Loop splits a frame into three stage groups:
-//
-//   - Before stages run once per frame (input snapshot, server sync).
-//   - EachTick stages run zero or more times per frame with a fixed time
-//     step (simulation), depending on the accumulated frame time.
-//   - After stages run once per frame (rendering) and receive the
-//     interpolation factor Alpha for smooth visuals between fixed ticks.
-//
-// A Loop created with a zero tick runs EachTick stages exactly once per
-// frame with the real frame delta, which suits states without a fixed-step
-// simulation (e.g. menus).
-package gameloop
+package loop
 
 import (
 	"context"
 	"fmt"
-	"game/internal/gameplay/world"
-	"game/internal/gamestate/event"
+	"game/internal/game/state"
 	"game/internal/input"
 	"game/internal/sync"
 	"time"
@@ -35,10 +20,6 @@ const (
 	maxTicksPerFrame = 5
 )
 
-// Stage is a single step of a frame pipeline. Stages of one Loop run on the
-// main game goroutine only.
-type Stage func(ctx context.Context, f *Frame) error
-
 // Frame is the shared per-frame context passed to every stage.
 type Frame struct {
 	// Dt is the real duration of the current frame (already clamped).
@@ -53,27 +34,30 @@ type Frame struct {
 	// empty unless an input stage filled it.
 	Input input.InputFrame
 
-	// ServerMessages holds messages drained by the sync stage; tick stages
-	// are responsible for applying them to the World.
+	// ServerMessages holds current working server messages
 	ServerMessages []sync.ServerMessage
 
-	// World is the gameplay world owned by the current state.
-	World *world.World
+	// ClientMessage holds current working client messages
+	ClientMessage []sync.ClientMessage
 
-	transition event.Event
+	State *state.State
+
+	transition state.Event
 }
 
 // RequestTransition asks the state machine to perform a transition after
 // the current frame completes. The loop never transitions mid-frame.
-func (f *Frame) RequestTransition(ev event.Event) {
+func (f *Frame) RequestTransition(ev state.Event) {
 	f.transition = ev
 }
 
 // Transition returns the requested transition or NoEvent when no stage
 // requested one.
-func (f *Frame) Transition() event.Event {
+func (f *Frame) Transition() state.Event {
 	return f.transition
 }
+
+type Stage func(ctx context.Context, f *Frame) error
 
 // Loop orchestrates the frame pipeline of a single game state.
 //
@@ -115,23 +99,23 @@ func (l *Loop) After(stages ...Stage) *Loop {
 // Run advances the loop by one frame with the given world and frame delta.
 // It returns the transition requested by stages via Frame.RequestTransition
 // or NoEvent when no transition was requested.
-func (l *Loop) Run(ctx context.Context, w *world.World, dt time.Duration) (event.Event, error) {
+func (l *Loop) Run(ctx context.Context, currentState *state.State, dt time.Duration) (state.Event, error) {
 	if dt > maxFrameDt {
 		dt = maxFrameDt
 	}
 
-	f := &Frame{Dt: dt, World: w}
+	f := &Frame{Dt: dt, State: currentState}
 
 	if err := l.runStages(ctx, f, l.before); err != nil {
-		return event.NoEvent, fmt.Errorf("before stage: %w", err)
+		return state.NoEvent, fmt.Errorf("before stage: %w", err)
 	}
 
 	if err := l.advanceTicks(ctx, f); err != nil {
-		return event.NoEvent, err
+		return state.NoEvent, err
 	}
 
 	if err := l.runStages(ctx, f, l.after); err != nil {
-		return event.NoEvent, fmt.Errorf("after stage: %w", err)
+		return state.NoEvent, fmt.Errorf("after stage: %w", err)
 	}
 
 	return f.transition, nil

@@ -6,7 +6,6 @@ import (
 	grenderer "engine/graphic/renderer"
 	grepository "engine/graphic/repository"
 	gservice "engine/graphic/service"
-	"game/internal/gamestate/repositories"
 )
 
 // Rendering extension for graphic module with game-specific logic
@@ -22,7 +21,7 @@ type rendering struct {
 	drawers *Drawers
 }
 
-func NewRendering(ctx context.Context, repo repositories.Repositories) (Rendering, error) {
+func NewRendering(ctx context.Context) (Rendering, error) {
 	g, err := initializeGraphic(ctx)
 	if err != nil {
 		return nil, err
@@ -30,7 +29,7 @@ func NewRendering(ctx context.Context, repo repositories.Repositories) (Renderin
 
 	return &rendering{
 		graphic: g,
-		drawers: NewDrawers(g, repo),
+		drawers: NewDrawers(g),
 	}, nil
 }
 

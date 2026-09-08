@@ -23,7 +23,7 @@ func TestInputBufferFIFO(t *testing.T) {
 
 	mouse := b.drainMouse()
 	if len(mouse) != 1 || mouse[0].button != hid.MouseButtonLeft {
-		t.Fatalf("expected 1 left button event, got %v", mouse)
+		t.Fatalf("expected 1 left button state, got %v", mouse)
 	}
 }
 

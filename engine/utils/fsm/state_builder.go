@@ -1,10 +1,10 @@
 package fsm
 
 type StateBuilder[E comparable, I comparable, S State[I]] interface {
-	// Transition adds transition to state. If transition for this event already exists it will be rewritten
+	// Transition adds transition to state. If transition for this state already exists it will be rewritten
 	Transition(event E, nextState I) StateBuilder[E, I, S]
 
-	// TransitionS adds transition to state using State directly. If transition for this event already exists it will be rewritten
+	// TransitionS adds transition to state using State directly. If transition for this state already exists it will be rewritten
 	TransitionS(event E, nextState S) StateBuilder[E, I, S]
 
 	// Build calls 'RegisterState' from parent MachineBuilder and returns it.

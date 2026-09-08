@@ -13,8 +13,8 @@ func NewTilemapRepository() *TilemapRepository {
 }
 
 func (r *TilemapRepository) ByID(id string) (*tilemap.Tilemap, bool) {
-	tilemap, ok := r.idIndex[id]
-	return tilemap, ok
+	t, ok := r.idIndex[id]
+	return t, ok
 }
 
 func (r *TilemapRepository) Put(id string, tilemap *tilemap.Tilemap) bool {

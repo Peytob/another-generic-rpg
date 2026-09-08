@@ -12,5 +12,5 @@ func TestNoopSync(t *testing.T) {
 	if msgs := s.Drain(); msgs != nil {
 		t.Errorf("NoopSync.Drain should return nil, got %v", msgs)
 	}
-	s.Enqueue(InputPacket{})
+	s.Enqueue(ClientMessage{})
 }
