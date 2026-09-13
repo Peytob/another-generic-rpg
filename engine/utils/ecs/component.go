@@ -8,8 +8,7 @@ import (
 //
 // Implementations must provide a Type method returning their unique
 // ComponentType. Type must be cheap, deterministic, and must not
-// dereference the receiver (a value receiver is recommended) so it can be
-// called on zero values.
+// dereference the receiver so it can be called on zero values.
 type Component interface {
 	Type() ComponentType
 }
@@ -63,7 +62,11 @@ func GetComponent[C Component](manager ComponentManager, entity Entity) (C, bool
 	if !ok {
 		return zero, false
 	}
-	return component.(C), true
+	typed, ok := component.(C)
+	if !ok {
+		return zero, false
+	}
+	return typed, true
 }
 
 // GetSingleComponent is a type-safe generic accessor for single components
@@ -88,5 +91,10 @@ func GetSingleComponent[C Component](manager interface {
 		return zero, false
 	}
 
-	return component.(C), true
+	typed, ok := component.(C)
+	if !ok {
+		return zero, false
+	}
+
+	return typed, true
 }

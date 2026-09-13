@@ -20,7 +20,7 @@ type MachineBuilder[E comparable, I comparable, S State[I]] interface {
 	// InitialState state that be used as initial on Machine. If initial state already exists it will be rewritten.
 	InitialState(state I) MachineBuilder[E, I, S]
 
-	// GlobalTransitions adds global transitions to Machine. If a transition for an state is already
+	// GlobalTransitions adds global transitions to Machine. If a transition for an event is already
 	// specified, then the old transition will be overwritten
 	GlobalTransitions(transitions Transitions[E, I]) MachineBuilder[E, I, S]
 

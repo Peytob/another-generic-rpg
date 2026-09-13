@@ -9,7 +9,7 @@ import (
 func TestSubscribeAndEmit(t *testing.T) {
 	t.Parallel()
 
-	t.Run("delivers state to single subscriber", func(t *testing.T) {
+	t.Run("delivers event to single subscriber", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -25,12 +25,12 @@ func TestSubscribeAndEmit(t *testing.T) {
 		}
 
 		if received == nil {
-			t.Fatal("state was not delivered")
+			t.Fatal("event was not delivered")
 		}
 		assertEqual(t, received.Amount, 42)
 	})
 
-	t.Run("delivers state to multiple subscribers in order", func(t *testing.T) {
+	t.Run("delivers event to multiple subscribers in order", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -56,7 +56,7 @@ func TestSubscribeAndEmit(t *testing.T) {
 		assertSliceEqual(t, order, []int{1, 2, 3})
 	})
 
-	t.Run("different state types are isolated", func(t *testing.T) {
+	t.Run("different event types are isolated", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -86,6 +86,31 @@ func TestSubscribeAndEmit(t *testing.T) {
 
 		if err := w.EmitEvent(context.Background(), &DamageEvent{Amount: 1}); err != nil {
 			t.Errorf("expected nil error, got %v", err)
+		}
+	})
+}
+
+func TestSubscribeTypeMismatch(t *testing.T) {
+	t.Parallel()
+
+	t.Run("mismatched pointer form returns an error and skips handler", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		called := false
+
+		Subscribe[PingEvent](w, func(context.Context, PingEvent) error {
+			called = true
+			return nil
+		})
+
+		err := w.EmitEvent(context.Background(), &PingEvent{Seq: 1})
+
+		if err == nil {
+			t.Fatal("expected type mismatch error, got nil")
+		}
+		if called {
+			t.Error("handler should not be called for mismatched event form")
 		}
 	})
 }
@@ -154,7 +179,7 @@ func TestUnsubscribe(t *testing.T) {
 func TestEmitNilEvent(t *testing.T) {
 	t.Parallel()
 
-	t.Run("emit nil state is a no-op", func(t *testing.T) {
+	t.Run("emit nil event is a no-op", func(t *testing.T) {
 		t.Parallel()
 
 		w := NewWorld()
@@ -169,7 +194,7 @@ func TestEmitNilEvent(t *testing.T) {
 			t.Errorf("expected nil error, got %v", err)
 		}
 		if called {
-			t.Error("handler should not be called for nil state")
+			t.Error("handler should not be called for nil event")
 		}
 	})
 }

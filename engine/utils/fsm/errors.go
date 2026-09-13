@@ -13,8 +13,8 @@ const (
 	// ErrMachineNotRunning operation not allowed for stopped machine.
 	ErrMachineNotRunning = MachineError("machine not running")
 
-	// ErrUnknownEvent state not found in transitions table.
-	ErrUnknownEvent = MachineError("unknown state")
+	// ErrUnknownEvent event not found in transitions table.
+	ErrUnknownEvent = MachineError("unknown event")
 
 	// ErrNoStates no states registered in the machine.
 	ErrNoStates = MachineError("no states found")

@@ -391,6 +391,20 @@ func TestGetComponentGeneric(t *testing.T) {
 		}
 		assertEqual(t, pos, Position{})
 	})
+
+	t.Run("returns zero value and false for mismatched pointer form", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		e := w.NewEntity()
+		w.RegisterComponent(e, &Position{7, 8})
+
+		pos, ok := GetComponent[Position](w, e)
+		if ok {
+			t.Error("expected ok=false for pointer-form component")
+		}
+		assertEqual(t, pos, Position{})
+	})
 }
 
 func TestGetSingleComponentGeneric(t *testing.T) {
@@ -431,6 +445,19 @@ func TestGetSingleComponentGeneric(t *testing.T) {
 		hp, ok := GetSingleComponent[Health](w)
 		if ok {
 			t.Error("expected ok=false")
+		}
+		assertEqual(t, hp, Health{})
+	})
+
+	t.Run("returns zero value and false for mismatched pointer form", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		w.RegisterComponent(w.NewEntity(), &Health{77})
+
+		hp, ok := GetSingleComponent[Health](w)
+		if ok {
+			t.Error("expected ok=false for pointer-form component")
 		}
 		assertEqual(t, hp, Health{})
 	})

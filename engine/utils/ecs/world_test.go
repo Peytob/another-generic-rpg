@@ -12,6 +12,7 @@ type Mana struct{ MP int }
 
 type DamageEvent struct{ Amount int }
 type HealEvent struct{ Amount int }
+type PingEvent struct{ Seq int }
 
 const (
 	posType  ComponentType = 1
@@ -21,6 +22,7 @@ const (
 
 	damageEventType EventType = 1
 	healEventType   EventType = 2
+	pingEventType   EventType = 3
 )
 
 func (Position) Type() ComponentType { return posType }
@@ -30,6 +32,7 @@ func (Mana) Type() ComponentType     { return manaType }
 
 func (*DamageEvent) Type() EventType { return damageEventType }
 func (*HealEvent) Type() EventType   { return healEventType }
+func (PingEvent) Type() EventType    { return pingEventType }
 
 func assertEqual[T comparable](t *testing.T, got, want T) {
 	t.Helper()

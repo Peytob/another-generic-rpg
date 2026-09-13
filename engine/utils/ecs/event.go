@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"context"
+	"fmt"
 )
 
 // Event is the base type constraint for events.
@@ -14,16 +15,16 @@ type Event interface {
 	Type() EventType
 }
 
-// EventType identifies a specific state type.
+// EventType identifies a specific event type.
 //
-// Values must be unique per state type; they are assigned by the state
+// Values must be unique per event type; they are assigned by the event
 // definition rather than allocated by the ecs package.
 type EventType int64
 
-// EventHandler processes a single state.
+// EventHandler processes a single event.
 type EventHandler func(ctx context.Context, event Event) error
 
-// Subscription represents an active state subscription that can be cancelled.
+// Subscription represents an active event subscription that can be cancelled.
 type Subscription interface {
 	Unsubscribe()
 }
@@ -42,7 +43,7 @@ func (s *eventSubscription) Unsubscribe() {
 
 // EventBus provides publish/subscribe functionality for events.
 type EventBus interface {
-	// EmitEvent publishes an state to all subscribers of its concrete type.
+	// EmitEvent publishes an event to all subscribers of its concrete type.
 	EmitEvent(ctx context.Context, event Event) error
 
 	// Subscribe registers a handler for events of the specified EventType.
@@ -55,7 +56,7 @@ type EventBus interface {
 // Usage:
 //
 //	sub := ecs.Subscribe[*DamageEvent](world, func(ctx context.Context, e *DamageEvent) error {
-//	    // handle state
+//	    // handle event
 //	    return nil
 //	})
 //	defer sub.Unsubscribe()
@@ -64,7 +65,11 @@ func Subscribe[E Event](bus EventBus, handler func(ctx context.Context, event E)
 	eventType := sample.Type()
 
 	wrapped := func(ctx context.Context, event Event) error {
-		return handler(ctx, event.(E))
+		typed, ok := event.(E)
+		if !ok {
+			return fmt.Errorf("event type mismatch for EventType %d: got %T, expected %T", eventType, event, sample)
+		}
+		return handler(ctx, typed)
 	}
 
 	return bus.Subscribe(eventType, wrapped)
