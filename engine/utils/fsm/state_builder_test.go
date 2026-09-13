@@ -26,7 +26,7 @@ func TestStateBuilder_Transition(t *testing.T) {
 		}
 
 		if err := machine.Event(initializedEvent); err != nil {
-			t.Errorf("unexpected error on event: %v", err)
+			t.Errorf("unexpected error on state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -34,7 +34,7 @@ func TestStateBuilder_Transition(t *testing.T) {
 		}
 	})
 
-	t.Run("should overwrite transition when event already exists", func(t *testing.T) {
+	t.Run("should overwrite transition when state already exists", func(t *testing.T) {
 		t.Parallel()
 
 		m := NewBuilder[string, string, TestState]()
@@ -55,7 +55,7 @@ func TestStateBuilder_Transition(t *testing.T) {
 		}
 
 		if err := machine.Event(initializedEvent); err != nil {
-			t.Errorf("unexpected error on event: %v", err)
+			t.Errorf("unexpected error on state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -109,7 +109,7 @@ func TestStateBuilder_Transition(t *testing.T) {
 		}
 
 		if err := machine.Event(initializedEvent); err != nil {
-			t.Errorf("unexpected error on event: %v", err)
+			t.Errorf("unexpected error on state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -214,7 +214,7 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 		}
 
 		if err := machine.Event(initializedEvent); err != nil {
-			t.Errorf("unexpected error on event: %v", err)
+			t.Errorf("unexpected error on state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -253,7 +253,7 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 		}
 
 		if err := machine.Event(initializedEvent); err != nil {
-			t.Errorf("unexpected error on initialized event: %v", err)
+			t.Errorf("unexpected error on initialized state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -262,7 +262,7 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 		}
 
 		if err := machine.Event(levelChangedEvent); err != nil {
-			t.Errorf("unexpected error on levelChanged event: %v", err)
+			t.Errorf("unexpected error on levelChanged state: %v", err)
 		}
 
 		if machine.State().Identifier() != loadingState.Identifier() {
@@ -271,7 +271,7 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 		}
 
 		if err := machine.Event(loadedEvent); err != nil {
-			t.Errorf("unexpected error on loaded event: %v", err)
+			t.Errorf("unexpected error on loaded state: %v", err)
 		}
 
 		if machine.State().Identifier() != runningState.Identifier() {
@@ -280,7 +280,7 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 		}
 
 		if err := machine.Event(exitedEvent); err != nil {
-			t.Errorf("unexpected error on exited event: %v", err)
+			t.Errorf("unexpected error on exited state: %v", err)
 		}
 
 		if machine.State().Identifier() != exitedState.Identifier() {
@@ -353,11 +353,11 @@ func TestMachineBuilder_BuildState(t *testing.T) {
 			errB := machineB.Event(event)
 
 			if errA != nil || errB != nil {
-				t.Fatalf("event %s: machineA err=%v, machineB err=%v", event, errA, errB)
+				t.Fatalf("state %s: machineA err=%v, machineB err=%v", event, errA, errB)
 			}
 
 			if machineA.State().Identifier() != machineB.State().Identifier() {
-				t.Errorf("after event %s: machineA=%s, machineB=%s",
+				t.Errorf("after state %s: machineA=%s, machineB=%s",
 					event, machineA.State().Identifier(), machineB.State().Identifier())
 			}
 		}

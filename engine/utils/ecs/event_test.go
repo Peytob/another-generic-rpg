@@ -90,6 +90,31 @@ func TestSubscribeAndEmit(t *testing.T) {
 	})
 }
 
+func TestSubscribeTypeMismatch(t *testing.T) {
+	t.Parallel()
+
+	t.Run("mismatched pointer form returns an error and skips handler", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		called := false
+
+		Subscribe[PingEvent](w, func(context.Context, PingEvent) error {
+			called = true
+			return nil
+		})
+
+		err := w.EmitEvent(context.Background(), &PingEvent{Seq: 1})
+
+		if err == nil {
+			t.Fatal("expected type mismatch error, got nil")
+		}
+		if called {
+			t.Error("handler should not be called for mismatched event form")
+		}
+	})
+}
+
 func TestUnsubscribe(t *testing.T) {
 	t.Parallel()
 
@@ -147,6 +172,29 @@ func TestUnsubscribe(t *testing.T) {
 
 		if err := w.EmitEvent(context.Background(), &DamageEvent{Amount: 1}); err != nil {
 			t.Errorf("expected nil, got %v", err)
+		}
+	})
+}
+
+func TestEmitNilEvent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("emit nil event is a no-op", func(t *testing.T) {
+		t.Parallel()
+
+		w := NewWorld()
+		called := false
+
+		Subscribe[*DamageEvent](w, func(context.Context, *DamageEvent) error {
+			called = true
+			return nil
+		})
+
+		if err := w.EmitEvent(context.Background(), nil); err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if called {
+			t.Error("handler should not be called for nil event")
 		}
 	})
 }

@@ -8,7 +8,6 @@ import (
 	"engine/math/shape"
 	"fmt"
 	"game/internal/gameplay/tilemap"
-	"game/internal/gamestate/repositories"
 	"game/internal/rendering/types"
 	"game/isomath"
 	stdmath "math"
@@ -25,13 +24,10 @@ type Opts struct {
 }
 
 type tilemapDrawer struct {
-	repository *repositories.TileRepository
 }
 
-func NewTilemapDrawer(tileRepository *repositories.TileRepository) TilemapDrawer {
-	return tilemapDrawer{
-		repository: tileRepository,
-	}
+func NewTilemapDrawer() TilemapDrawer {
+	return tilemapDrawer{}
 }
 
 func (t tilemapDrawer) Draw(ctx context.Context, tilemap *tilemap.Tilemap, target renderer.Canvas, opts Opts) error {

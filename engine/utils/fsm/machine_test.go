@@ -37,7 +37,7 @@ func createTestMachine() *machine[string, string, TestState] {
 		}).
 		RegisterState(loadingState, Transitions[string, string]{
 			loadedEvent: runningState.Identifier(),
-			failedEvent: initialState.Identifier(), // will be reset just for event priority testing
+			failedEvent: initialState.Identifier(), // will be reset just for state priority testing
 		}).
 		RegisterState(failedState, Transitions[string, string]{}).
 		RegisterState(exitedState, Transitions[string, string]{}).
@@ -89,7 +89,7 @@ func TestEventChanges(t *testing.T) {
 		}
 
 		if m.State().Identifier() != runningState.Identifier() {
-			t.Errorf("wrong state after initialized event: %s", m.State().Identifier())
+			t.Errorf("wrong state after initialized state: %s", m.State().Identifier())
 		}
 	})
 
@@ -103,7 +103,7 @@ func TestEventChanges(t *testing.T) {
 		}
 
 		if m.State().Identifier() != failedState.Identifier() {
-			t.Errorf("wrong state after failed event: %s", m.State().Identifier())
+			t.Errorf("wrong state after failed state: %s", m.State().Identifier())
 		}
 	})
 
@@ -120,13 +120,13 @@ func TestEventChanges(t *testing.T) {
 			t.Error(err)
 		}
 
-		// Failed event on level changing state will throw machine back to initializing state
+		// Failed state on level changing state will throw machine back to initializing state
 		if err := m.Event(failedEvent); err != nil {
 			t.Error(err)
 		}
 
 		if m.State().Identifier() != initialState.Identifier() {
-			t.Errorf("wrong state after failed event: %s", m.State().Identifier())
+			t.Errorf("wrong state after failed state: %s", m.State().Identifier())
 		}
 	})
 

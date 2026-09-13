@@ -4,8 +4,8 @@ import (
 	"engine/hid"
 	"engine/window"
 	"errors"
-	"game/internal/gamestate/gamemachine"
-	"game/internal/gamestate/repositories"
+	"game/internal/game/machine"
+	"game/internal/game/repositories"
 	"game/internal/rendering"
 )
 
@@ -64,8 +64,8 @@ func (b *Builder) Build() (*Client, error) {
 		repositories: *b.repositories,
 	}
 
-	machine := NewMachine(client)
-	client.runner = gamemachine.NewRunner(machine)
+	clientMachine := NewMachine(client)
+	client.runner = machine.NewRunner(clientMachine, *b.repositories)
 
 	return client, nil
 }

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"game/internal/app/client"
 	"game/internal/config"
-	"game/internal/gamestate/repositories"
+	"game/internal/game/repositories"
 	"game/internal/rendering"
 	"log/slog"
 	"os"
@@ -65,7 +65,7 @@ func main() {
 		panic("failed to initialize hid module: " + err.Error())
 	}
 
-	r, err := rendering.NewRendering(ctx, repo)
+	r, err := rendering.NewRendering(ctx)
 	if err != nil {
 		panic("failed to initialize graphic module: " + err.Error())
 	}

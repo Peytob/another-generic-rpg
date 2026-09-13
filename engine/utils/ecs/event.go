@@ -2,14 +2,24 @@ package ecs
 
 import (
 	"context"
-	"reflect"
+	"fmt"
 )
 
-// Event is the base type for all events. Any type can serve as an event.
-type Event any
+// Event is the base type constraint for events.
+//
+// Implementations must provide a Type method returning their unique
+// EventType. Type must be cheap, deterministic, and must not dereference
+// the receiver so it can be called on nil pointers of the implementing
+// type.
+type Event interface {
+	Type() EventType
+}
 
-// EventType identifies a specific component type via reflection
-type EventType reflect.Type
+// EventType identifies a specific event type.
+//
+// Values must be unique per event type; they are assigned by the event
+// definition rather than allocated by the ecs package.
+type EventType int64
 
 // EventHandler processes a single event.
 type EventHandler func(ctx context.Context, event Event) error
@@ -50,12 +60,16 @@ type EventBus interface {
 //	    return nil
 //	})
 //	defer sub.Unsubscribe()
-func Subscribe[E any](bus EventBus, handler func(ctx context.Context, event E) error) Subscription {
+func Subscribe[E Event](bus EventBus, handler func(ctx context.Context, event E) error) Subscription {
 	var sample E
-	eventType := reflect.TypeOf(&sample).Elem()
+	eventType := sample.Type()
 
 	wrapped := func(ctx context.Context, event Event) error {
-		return handler(ctx, event.(E))
+		typed, ok := event.(E)
+		if !ok {
+			return fmt.Errorf("event type mismatch for EventType %d: got %T, expected %T", eventType, event, sample)
+		}
+		return handler(ctx, typed)
 	}
 
 	return bus.Subscribe(eventType, wrapped)
