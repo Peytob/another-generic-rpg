@@ -58,8 +58,8 @@ func TestUniformBlockRepository(t *testing.T) {
 		repo := NewUniformBlockRepository()
 		repo.Put(gresource.UniformBlock{ID: 1, Name: "ProjView"})
 
-		if !repo.Delete(1) {
-			t.Fatal("expected Delete to succeed")
+		if !repo.Remove(1) {
+			t.Fatal("expected Remove to succeed")
 		}
 		if _, ok := repo.ByID(1); ok {
 			t.Error("expected ByID to be empty after delete")
@@ -67,8 +67,8 @@ func TestUniformBlockRepository(t *testing.T) {
 		if _, ok := repo.ByName("ProjView"); ok {
 			t.Error("expected ByName to be empty after delete")
 		}
-		if repo.Delete(1) {
-			t.Error("expected second Delete to fail")
+		if repo.Remove(1) {
+			t.Error("expected second Remove to fail")
 		}
 	})
 
@@ -136,8 +136,8 @@ func TestShaderRepository(t *testing.T) {
 		repo := NewShaderRepository()
 		repo.Put(gresource.Shader{ID: 1, Name: "Tilemap"})
 
-		if !repo.Delete(1) {
-			t.Fatal("expected Delete to succeed")
+		if !repo.Remove(1) {
+			t.Fatal("expected Remove to succeed")
 		}
 		if _, ok := repo.ByID(1); ok {
 			t.Error("expected ByID to be empty after delete")
@@ -145,8 +145,8 @@ func TestShaderRepository(t *testing.T) {
 		if _, ok := repo.ByName("Tilemap"); ok {
 			t.Error("expected ByName to be empty after delete")
 		}
-		if repo.Delete(1) {
-			t.Error("expected second Delete to fail")
+		if repo.Remove(1) {
+			t.Error("expected second Remove to fail")
 		}
 	})
 
