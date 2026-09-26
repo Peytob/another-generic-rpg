@@ -17,38 +17,38 @@ func NewUniformBlockRepository() *UniformBlockRepository {
 	}
 }
 
-func (ub *UniformBlockRepository) ByID(id uint32) (gresource.UniformBlock, bool) {
-	return ub.idIndex.Get(id)
+func (ubr *UniformBlockRepository) ByID(id uint32) (gresource.UniformBlock, bool) {
+	return ubr.idIndex.Get(id)
 }
 
-func (ub *UniformBlockRepository) ByName(name string) (gresource.UniformBlock, bool) {
-	return ub.nameIndex.Get(name)
+func (ubr *UniformBlockRepository) ByName(name string) (gresource.UniformBlock, bool) {
+	return ubr.nameIndex.Get(name)
 }
 
-func (ub *UniformBlockRepository) Remove(id uint32) bool {
-	uniformBlock, ok := ub.idIndex.Get(id)
+func (ubr *UniformBlockRepository) Remove(id uint32) bool {
+	uniformBlock, ok := ubr.idIndex.Get(id)
 	if !ok {
 		return false
 	}
 
-	ub.idIndex.Remove(uniformBlock.ID)
-	ub.nameIndex.Remove(uniformBlock.Name)
+	ubr.idIndex.Remove(uniformBlock.ID)
+	ubr.nameIndex.Remove(uniformBlock.Name)
 
 	return true
 }
 
-func (ub *UniformBlockRepository) Put(uniformBlock gresource.UniformBlock) bool {
-	_, exists := ub.ByID(uniformBlock.ID)
+func (ubr *UniformBlockRepository) Put(uniformBlock gresource.UniformBlock) bool {
+	_, exists := ubr.ByID(uniformBlock.ID)
 	if exists {
 		return false
 	}
 
-	ub.idIndex.Add(uniformBlock.ID, uniformBlock)
-	ub.nameIndex.Add(uniformBlock.Name, uniformBlock)
+	ubr.idIndex.Add(uniformBlock.ID, uniformBlock)
+	ubr.nameIndex.Add(uniformBlock.Name, uniformBlock)
 
 	return true
 }
 
-func (ub *UniformBlockRepository) All() []gresource.UniformBlock {
-	return ub.idIndex.Array()
+func (ubr *UniformBlockRepository) All() []gresource.UniformBlock {
+	return ubr.idIndex.Array()
 }

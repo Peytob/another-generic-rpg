@@ -15,7 +15,7 @@ func NewIndex[K comparable, V any]() Index[K, V] {
 	}
 }
 
-func (i Index[K, V]) Add(key K, value V) bool {
+func (i *Index[K, V]) Add(key K, value V) bool {
 	_, exists := i.index[key]
 	if exists {
 		return false
@@ -27,9 +27,9 @@ func (i Index[K, V]) Add(key K, value V) bool {
 	return true
 }
 
-func (i Index[K, V]) Remove(key K) bool {
+func (i *Index[K, V]) Remove(key K) bool {
 	_, exists := i.index[key]
-	if exists {
+	if !exists {
 		return false
 	}
 
@@ -44,7 +44,7 @@ func (i Index[K, V]) Get(key K) (V, bool) {
 	return v, ok
 }
 
-func (i Index[K, V]) Array() []V {
+func (i *Index[K, V]) Array() []V {
 	if i.all == nil {
 		i.updateAllCache()
 	}
@@ -53,15 +53,15 @@ func (i Index[K, V]) Array() []V {
 }
 
 func (i Index[K, V]) Count() int {
-	return len(i.all)
+	return len(i.index)
 }
 
-func (i Index[K, V]) Clear() {
+func (i *Index[K, V]) Clear() {
 	clear(i.index)
-	i.all = make([]V, 0)
+	i.all = nil
 }
 
-func (i Index[K, V]) updateAllCache() {
+func (i *Index[K, V]) updateAllCache() {
 	i.all = make([]V, 0, len(i.index))
 
 	for v := range maps.Values(i.index) {

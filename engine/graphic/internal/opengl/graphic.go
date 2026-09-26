@@ -23,11 +23,13 @@ func NewGraphic(ctx context.Context) (*Graphic, error) {
 	repositories := grepository.Repositories{
 		Uniform: grepository.NewUniformBlockRepository(),
 		Shader:  grepository.NewShaderRepository(),
+		Image:   grepository.NewImageRepository(),
 	}
 
 	services := gservice.Services{}
 	services.Shader = oglservice.NewShader(repositories.Shader)
 	services.Uniform = oglservice.NewUniformBlock(repositories.Uniform)
+	services.Image = gservice.NewImage(repositories.Image)
 
 	renderer := oglrenderer.NewRenderer(ctx, services.Shader)
 
