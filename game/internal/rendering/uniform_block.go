@@ -37,7 +37,7 @@ func loadUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 func bindUniformBlocks(ctx context.Context, g graphic.Graphic) error {
 	logger.FromCtx(ctx).Info("binding uniform blocks")
 
-	for _, shader := range g.Repositories().Shader.All() {
+	for _, shader := range g.Services().Shader.All() {
 		err := g.Services().Uniform.BindBlocksFor(shader)
 		if err != nil {
 			return fmt.Errorf("bind uniform blocks for shader %q: %w", shader.Name, err)

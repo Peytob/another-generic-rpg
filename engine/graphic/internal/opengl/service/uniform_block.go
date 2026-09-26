@@ -72,3 +72,15 @@ func (u *UniformBlock) BindBlocksFor(shader gresource.Shader) error {
 
 	return nil
 }
+
+func (u *UniformBlock) GetByID(id uint32) (gresource.UniformBlock, bool) {
+	return u.uniformBlocks.ByID(id)
+}
+
+func (u *UniformBlock) GetByName(name string) (gresource.UniformBlock, bool) {
+	return u.uniformBlocks.ByName(name)
+}
+
+func (u *UniformBlock) All() []gresource.UniformBlock {
+	return u.uniformBlocks.All()
+}

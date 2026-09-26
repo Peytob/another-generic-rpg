@@ -21,8 +21,16 @@ type ShaderLoader interface {
 	Terminate(ctx context.Context)
 }
 
+type ShaderAccessor interface {
+	GetByID(id uint32) (gresource.Shader, bool)
+	GetByName(name string) (gresource.Shader, bool)
+	All() []gresource.Shader
+}
+
 // Shader service to interact with loaded shaders
 type Shader interface {
+	ShaderAccessor
+
 	NewShaderLoader() ShaderLoader
 	UniformTransform(sp gresource.Shader, variable string, transform math.Transform) error
 	UniformMat4(sp gresource.Shader, variable string, mat mgl32.Mat4) error

@@ -3,7 +3,6 @@ package graphic
 import (
 	"context"
 	"engine/graphic/renderer"
-	"engine/graphic/repository"
 	"engine/graphic/service"
 )
 
@@ -23,7 +22,6 @@ type Graphic interface {
 	NewCanvas() renderer.Canvas
 
 	Services() service.Services
-	Repositories() repository.Repositories
 
 	Telemetry() Telemetry
 	Terminate(ctx context.Context)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"engine/graphic"
 	grenderer "engine/graphic/renderer"
-	grepository "engine/graphic/repository"
 	gservice "engine/graphic/service"
 )
 
@@ -43,10 +42,6 @@ func (r rendering) NewCanvas() grenderer.Canvas {
 
 func (r rendering) Services() gservice.Services {
 	return r.graphic.Services()
-}
-
-func (r rendering) Repositories() grepository.Repositories {
-	return r.graphic.Repositories()
 }
 
 func (r rendering) Telemetry() graphic.Telemetry {

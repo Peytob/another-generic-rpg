@@ -162,6 +162,18 @@ func (s *Shader) NewShaderLoader() gservice.ShaderLoader {
 	return newShaderLoader(s.shaderRepository)
 }
 
+func (s *Shader) GetByID(id uint32) (gresource.Shader, bool) {
+	return s.shaderRepository.ByID(id)
+}
+
+func (s *Shader) GetByName(name string) (gresource.Shader, bool) {
+	return s.shaderRepository.ByName(name)
+}
+
+func (s *Shader) All() []gresource.Shader {
+	return s.shaderRepository.All()
+}
+
 func shaderStageToShaderType(stage gresource.ShaderStage) oglresource.ShaderType {
 	switch stage {
 	case gresource.VertexStage:

@@ -100,7 +100,7 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 func (c *Client) onWindowSizeChanged(width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
 
-	ub, ok := c.rendering.Repositories().Uniform.ByName(rendering.ProjViewUniformBlock)
+	ub, ok := c.rendering.Services().Uniform.GetByName(rendering.ProjViewUniformBlock)
 	if !ok {
 		// todo log error via contex
 		slog.Default().Error("failed to find uniform block", "name", rendering.ProjViewUniformBlock)
