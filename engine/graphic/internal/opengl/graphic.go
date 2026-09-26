@@ -9,6 +9,7 @@ import (
 	grepository "engine/graphic/repository"
 	gservice "engine/graphic/service"
 	"engine/utils/logger"
+	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -24,12 +25,14 @@ func NewGraphic(ctx context.Context) (*Graphic, error) {
 		Uniform: grepository.NewUniformBlockRepository(),
 		Shader:  grepository.NewShaderRepository(),
 		Image:   grepository.NewImageRepository(),
+		Texture: grepository.NewTextureRepository(),
 	}
 
 	services := gservice.Services{}
 	services.Shader = oglservice.NewShader(repositories.Shader)
 	services.Uniform = oglservice.NewUniformBlock(repositories.Uniform)
 	services.Image = gservice.NewImage(repositories.Image)
+	services.Texture = oglservice.NewTexture(repositories.Texture)
 
 	renderer := oglrenderer.NewRenderer(ctx, services.Shader)
 
@@ -67,7 +70,15 @@ func (g *Graphic) Telemetry() graphic.Telemetry {
 func (g *Graphic) Terminate(ctx context.Context) {
 	g.terminateShaders(ctx)
 	g.terminateUniformBlocks(ctx)
+	g.terminateTextures(ctx)
 	g.renderer.Terminate(ctx)
+}
+
+func (g *Graphic) terminateTextures(ctx context.Context) {
+	for _, texture := range g.repositories.Texture.All() {
+		logger.FromCtx(ctx).Info("deleting texture", slog.Uint64("id", uint64(texture.Id)))
+		gl.DeleteTextures(1, &texture.Id)
+	}
 }
 
 func (g *Graphic) terminateShaders(ctx context.Context) {

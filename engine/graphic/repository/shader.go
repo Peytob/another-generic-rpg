@@ -26,25 +26,25 @@ func (sr *ShaderRepository) ByName(name string) (gresource.Shader, bool) {
 }
 
 func (sr *ShaderRepository) Remove(id uint32) bool {
-	uniformBlock, ok := sr.idIndex.Get(id)
+	shader, ok := sr.idIndex.Get(id)
 	if !ok {
 		return false
 	}
 
-	sr.idIndex.Remove(uniformBlock.ID)
-	sr.nameIndex.Remove(uniformBlock.Name)
+	sr.idIndex.Remove(shader.ID)
+	sr.nameIndex.Remove(shader.Name)
 
 	return true
 }
 
-func (sr *ShaderRepository) Put(uniformBlock gresource.Shader) bool {
-	_, exists := sr.ByID(uniformBlock.ID)
+func (sr *ShaderRepository) Put(shader gresource.Shader) bool {
+	_, exists := sr.ByID(shader.ID)
 	if exists {
 		return false
 	}
 
-	sr.idIndex.Add(uniformBlock.ID, uniformBlock)
-	sr.nameIndex.Add(uniformBlock.Name, uniformBlock)
+	sr.idIndex.Add(shader.ID, shader)
+	sr.nameIndex.Add(shader.Name, shader)
 
 	return true
 }
