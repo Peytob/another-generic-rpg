@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	oglresource "engine/graphic/internal/opengl/resource"
-	grepository "engine/graphic/repository"
+	grepository "engine/graphic/internal/repository"
 	gresource "engine/graphic/resource"
 	gservice "engine/graphic/service"
 	"engine/math"

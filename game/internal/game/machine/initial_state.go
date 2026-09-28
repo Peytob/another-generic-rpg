@@ -27,5 +27,5 @@ func (s initialState) OnExit(_ context.Context, _ *state.State) error {
 }
 
 func (s initialState) Update(_ context.Context, _ *state.State, _ time.Duration) (state.Event, error) {
-	return state.NoEvent, nil
+	return state.InitializedEvent, nil
 }

@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"engine/utils/logger"
 	"fmt"
 	"game/internal/game/repositories"
 	"game/internal/game/state"
@@ -108,6 +109,11 @@ func (r *Runner) transition(ctx context.Context, ev state.Event) error {
 			return fmt.Errorf("state %q onEnter: %w", next.Identifier(), err)
 		}
 	}
+
+	logger.FromCtx(ctx).Info("transition performed",
+		"event_code", ev,
+		"old_state_identifier", current.Identifier(),
+		"new_state_identifier", r.machine.State().Identifier())
 
 	return nil
 }

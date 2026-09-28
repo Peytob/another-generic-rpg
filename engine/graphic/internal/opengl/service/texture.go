@@ -1,7 +1,7 @@
 package service
 
 import (
-	"engine/graphic/repository"
+	"engine/graphic/internal/repository"
 	gresource "engine/graphic/resource"
 	"fmt"
 

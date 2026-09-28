@@ -7,8 +7,9 @@ import (
 
 func NewMachine(client *Client) machine.Machine {
 	return machine.NewBuilder().
-		InitialState(machine.ResourcesLoadingStateIdentifier). // todo change to InitialState
+		InitialState(machine.InitialStateIdentifier). // todo change to InitialState
 		BuildState(machine.NewInitialState()).
+		Transition(state.InitializedEvent, machine.ResourcesLoadingStateIdentifier).
 		Build().
 		BuildState(machine.NewResourcesLoadingState()).
 		Transition(state.ResourcesLoadedEvent, machine.PlayingStateIdentifier).

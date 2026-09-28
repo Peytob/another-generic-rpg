@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"engine/graphic/internal/repository"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -12,7 +13,6 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"engine/graphic/repository"
 	gresource "engine/graphic/resource"
 )
 

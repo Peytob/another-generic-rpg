@@ -2,7 +2,7 @@ package service
 
 import (
 	oglresource "engine/graphic/internal/opengl/resource"
-	grepository "engine/graphic/repository"
+	grepository "engine/graphic/internal/repository"
 	gresource "engine/graphic/resource"
 	"fmt"
 

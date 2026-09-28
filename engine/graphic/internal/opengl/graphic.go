@@ -5,8 +5,8 @@ import (
 	"engine/graphic"
 	oglrenderer "engine/graphic/internal/opengl/renderer"
 	oglservice "engine/graphic/internal/opengl/service"
+	"engine/graphic/internal/repository"
 	grenderer "engine/graphic/renderer"
-	grepository "engine/graphic/repository"
 	gservice "engine/graphic/service"
 	"engine/utils/logger"
 	"log/slog"
@@ -17,15 +17,15 @@ import (
 type Graphic struct {
 	renderer     *oglrenderer.Renderer
 	services     gservice.Services
-	repositories grepository.Repositories
+	repositories repository.Repositories
 }
 
 func NewGraphic(ctx context.Context) (*Graphic, error) {
-	repositories := grepository.Repositories{
-		Uniform: grepository.NewUniformBlockRepository(),
-		Shader:  grepository.NewShaderRepository(),
-		Image:   grepository.NewImageRepository(),
-		Texture: grepository.NewTextureRepository(),
+	repositories := repository.Repositories{
+		Uniform: repository.NewUniformBlockRepository(),
+		Shader:  repository.NewShaderRepository(),
+		Image:   repository.NewImageRepository(),
+		Texture: repository.NewTextureRepository(),
 	}
 
 	services := gservice.Services{}
@@ -55,7 +55,7 @@ func (g *Graphic) Services() gservice.Services {
 	return g.services
 }
 
-func (g *Graphic) Repositories() grepository.Repositories {
+func (g *Graphic) Repositories() repository.Repositories {
 	return g.repositories
 }
 
