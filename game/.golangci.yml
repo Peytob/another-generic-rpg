@@ -62,8 +62,8 @@ linters:
     revive:
       rules:
         # Structural / naming / control-flow checks kept active.
-        - name: context-as-argument
-        - name: context-keys-type
+        - name: app-as-argument
+        - name: app-keys-type
         - name: dot-imports
         - name: error-return
         - name: error-strings
