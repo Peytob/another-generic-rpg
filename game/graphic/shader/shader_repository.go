@@ -7,7 +7,9 @@ type Repository struct {
 }
 
 func NewShaderRepository() *Repository {
-	return &Repository{}
+	return &Repository{
+		idIndex: repository.NewIndex[uint32, Shader](),
+	}
 }
 
 func (r *Repository) Put(shader Shader) bool {

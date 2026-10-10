@@ -23,11 +23,11 @@ type service struct {
 	programRepository *ProgramRepository
 }
 
-func NewShaderService(shaderRepository *Repository, programRepository *ProgramRepository) Service {
+func InitializeShaders(_ context.Context, shaderRepository *Repository, programRepository *ProgramRepository) (Service, error) {
 	return &service{
 		shaderRepository:  shaderRepository,
 		programRepository: programRepository,
-	}
+	}, nil
 }
 
 func (s *service) LoadGlslShader(ctx context.Context, code string, stage Stage) (Shader, error) {

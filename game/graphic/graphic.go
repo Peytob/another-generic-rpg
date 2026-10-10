@@ -2,6 +2,7 @@ package graphic
 
 import (
 	"context"
+	"fmt"
 	"game/graphic/shader"
 	"game/graphic/telemetry"
 	"game/graphic/uniform"
@@ -26,7 +27,9 @@ type Graphic struct {
 type Opts struct {
 }
 
-func Init(_ Opts) (*Graphic, error) {
+func Initialize(ctx context.Context, _ Opts) (*Graphic, error) {
+	ctx = logger.WithLogValue(ctx, slog.String("svc", "graphic_initialization"))
+	var err error
 	g := &Graphic{}
 
 	g.repositories = repositories{}
@@ -34,9 +37,20 @@ func Init(_ Opts) (*Graphic, error) {
 	g.repositories.program = shader.NewProgramRepository()
 	g.repositories.uniformBlock = uniform.NewUniformBlockRepository()
 
-	g.telemetry = telemetry.NewTelemetry()
-	g.shader = shader.NewShaderService(g.repositories.shader, g.repositories.program)
-	g.uniform = uniform.NewUniformService(g.repositories.uniformBlock)
+	g.telemetry, err = telemetry.InitializeTelemetry(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("telemetry initialize: %w", err)
+	}
+
+	g.shader, err = shader.InitializeShaders(ctx, g.repositories.shader, g.repositories.program)
+	if err != nil {
+		return nil, fmt.Errorf("shader initialization: %w", err)
+	}
+
+	g.uniform, err = uniform.InitializeUniforms(ctx, g.repositories.uniformBlock)
+	if err != nil {
+		return nil, fmt.Errorf("uniform initialization: %w", err)
+	}
 
 	return g, nil
 }

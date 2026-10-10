@@ -1,5 +1,12 @@
 package uniform
 
+import (
+	"fmt"
+
+	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
+)
+
 type Block struct {
 	ID           uint32
 	Name         string
@@ -18,7 +25,7 @@ type Variables struct {
 	variables map[string]Variable
 }
 
-func NewUniformVariables() *Variables {
+func newUniformVariables() *Variables {
 	return &Variables{variables: make(map[string]Variable)}
 }
 
@@ -51,4 +58,16 @@ func (uv *Variables) TotalSize() int {
 	}
 
 	return total
+}
+
+func setUniformVariableMat4(uniformBlock Block, variableName string, mat mgl32.Mat4) error {
+	variable, found := uniformBlock.Variables.Lookup(variableName)
+	if !found {
+		return fmt.Errorf("variable not found")
+	}
+
+	gl.BindBuffer(gl.UNIFORM_BUFFER, uniformBlock.ID)
+	gl.BufferSubData(gl.UNIFORM_BUFFER, variable.Offset, variable.Size, gl.Ptr(&mat[0]))
+
+	return nil
 }

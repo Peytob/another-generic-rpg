@@ -4,7 +4,7 @@ import "testing"
 
 func TestUniformVariables_SetAndLookup(t *testing.T) {
 	t.Run("should return variable after set", func(t *testing.T) {
-		uv := NewUniformVariables().Set("u_proj", 64, 0)
+		uv := newUniformVariables().Set("u_proj", 64, 0)
 
 		v, ok := uv.Lookup("u_proj")
 		if !ok {
@@ -16,13 +16,13 @@ func TestUniformVariables_SetAndLookup(t *testing.T) {
 	})
 
 	t.Run("should return false for missing variable", func(t *testing.T) {
-		if _, ok := NewUniformVariables().Lookup("missing"); ok {
+		if _, ok := newUniformVariables().Lookup("missing"); ok {
 			t.Error("expected missing variable to not be found")
 		}
 	})
 
 	t.Run("should allow chained set", func(t *testing.T) {
-		uv := NewUniformVariables().Set("a", 4, 0).Set("b", 16, 4)
+		uv := newUniformVariables().Set("a", 4, 0).Set("b", 16, 4)
 
 		if _, ok := uv.Lookup("a"); !ok {
 			t.Error("expected first variable after chaining")
@@ -35,7 +35,7 @@ func TestUniformVariables_SetAndLookup(t *testing.T) {
 
 func TestUniformVariables_TotalSize(t *testing.T) {
 	t.Run("should return max of size+offset across variables", func(t *testing.T) {
-		uv := NewUniformVariables().
+		uv := newUniformVariables().
 			Set("a", 4, 0).
 			Set("b", 16, 32).
 			Set("c", 8, 8)
@@ -46,7 +46,7 @@ func TestUniformVariables_TotalSize(t *testing.T) {
 	})
 
 	t.Run("should return 0 for empty variables", func(t *testing.T) {
-		if got := NewUniformVariables().TotalSize(); got != 0 {
+		if got := newUniformVariables().TotalSize(); got != 0 {
 			t.Errorf("TotalSize = %d, want 0", got)
 		}
 	})

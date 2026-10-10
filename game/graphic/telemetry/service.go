@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"context"
 	"sync"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -15,8 +16,8 @@ type telemetry struct {
 	aboutOnce sync.Once
 }
 
-func NewTelemetry() Telemetry {
-	return &telemetry{}
+func InitializeTelemetry(_ context.Context) (Telemetry, error) {
+	return &telemetry{}, nil
 }
 
 func (t *telemetry) About() About {

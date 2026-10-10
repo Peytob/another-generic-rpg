@@ -85,13 +85,13 @@ func run(ctx context.Context, cfg config.ClientConfiguration) error {
 		return fmt.Errorf("opengl init: %w", err)
 	}
 
-	openglGraphic, err := graphic.Init(graphic.Opts{})
+	openglGraphic, err := graphic.Initialize(ctx, graphic.Opts{})
 	if err != nil {
 		return fmt.Errorf("graphic init: %w", err)
 	}
 	defer func() {
 		if err := openglGraphic.Terminate(ctx); err != nil {
-			log.LogAttrs(ctx, slog.LevelInfo, "terminate opengl window", logger.Error(err))
+			log.LogAttrs(ctx, slog.LevelError, "terminate opengl window", logger.Error(err))
 		}
 	}()
 

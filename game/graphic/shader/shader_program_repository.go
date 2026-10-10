@@ -8,7 +8,10 @@ type ProgramRepository struct {
 }
 
 func NewProgramRepository() *ProgramRepository {
-	return &ProgramRepository{}
+	return &ProgramRepository{
+		idIndex:   repository.NewIndex[uint32, Program](),
+		nameIndex: repository.NewIndex[string, Program](),
+	}
 }
 
 func (r *ProgramRepository) Put(program Program) bool {

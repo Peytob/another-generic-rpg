@@ -8,7 +8,10 @@ type BlockRepository struct {
 }
 
 func NewUniformBlockRepository() *BlockRepository {
-	return &BlockRepository{}
+	return &BlockRepository{
+		idIndex:   repository.NewIndex[uint32, Block](),
+		nameIndex: repository.NewIndex[string, Block](),
+	}
 }
 
 func (r *BlockRepository) Put(block Block) bool {
