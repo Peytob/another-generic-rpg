@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"game/client"
+	"game/app/client"
 	"game/config"
 	"game/graphic"
 	"game/utils/logger"

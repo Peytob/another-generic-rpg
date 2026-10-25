@@ -1,6 +1,6 @@
 package world
 
-import "game/internal/gameplay/tilemap"
+import "game/gameplay/tilemap"
 
 type World struct {
 	Tilemap *tilemap.Tilemap

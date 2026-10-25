@@ -83,3 +83,7 @@ func (g *Graphic) Terminate(ctx context.Context) error {
 
 	return joinedErr
 }
+
+func (g *Graphic) Uniform() uniform.Service {
+	return g.uniform
+}
