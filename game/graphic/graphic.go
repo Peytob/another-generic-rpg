@@ -6,7 +6,7 @@ import (
 	"game/graphic/shader"
 	"game/graphic/telemetry"
 	"game/graphic/uniform"
-	"game/utils/logger"
+	"game/pkg/logger"
 	"log/slog"
 )
 

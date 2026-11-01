@@ -19,7 +19,7 @@ func runGen(t *testing.T, importPath string, sources map[string]string, typeName
 const healthSource = `package ecscomponent
 
 import (
-	"engine/utils/ecs"
+	"engine/pkg/ecs"
 )
 
 //go:generate go run typeid

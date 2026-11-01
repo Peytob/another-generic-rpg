@@ -2,7 +2,7 @@ package machine
 
 import (
 	"context"
-	"game/utils/fsm"
+	"game/pkg/fsm"
 )
 
 type StateIdentifier string

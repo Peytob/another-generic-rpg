@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"game/graphic/shader"
-	"game/utils/logger"
+	"game/pkg/logger"
 	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"

@@ -6,7 +6,7 @@ import (
 	"game/app/client"
 	"game/config"
 	"game/graphic"
-	"game/utils/logger"
+	"game/pkg/logger"
 	"game/window"
 	"log/slog"
 	"os"
@@ -95,13 +95,10 @@ func run(ctx context.Context, cfg config.ClientConfiguration) error {
 		}
 	}()
 
-	c, err := client.NewBuilder().
+	c := client.NewBuilder().
 		Window(glfwWindow).
 		Graphic(openglGraphic).
-		Build()
-	if err != nil {
-		return fmt.Errorf("client init: %w", err)
-	}
+		MustBuild()
 
 	err = c.Run(ctx)
 	if err != nil {

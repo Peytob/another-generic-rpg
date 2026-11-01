@@ -3,7 +3,7 @@ package shader
 import (
 	"context"
 	"fmt"
-	"game/utils/logger"
+	"game/pkg/logger"
 	"log/slog"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
