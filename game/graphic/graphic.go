@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"game/graphic/shader"
 	"game/graphic/telemetry"
+	"game/graphic/textures"
 	"game/graphic/uniform"
+	"game/pkg/files"
 	"game/pkg/logger"
 	"log/slog"
 )
@@ -14,6 +16,7 @@ type repositories struct {
 	shader       *shader.Repository
 	program      *shader.ProgramRepository
 	uniformBlock *uniform.BlockRepository
+	texture      *textures.Repository
 }
 
 type Graphic struct {
@@ -22,6 +25,7 @@ type Graphic struct {
 	telemetry telemetry.Telemetry
 	shader    shader.Service
 	uniform   uniform.Service
+	textures  textures.Service
 }
 
 type Opts struct {
@@ -36,6 +40,7 @@ func Initialize(ctx context.Context, _ Opts) (*Graphic, error) {
 	g.repositories.shader = shader.NewShaderRepository()
 	g.repositories.program = shader.NewProgramRepository()
 	g.repositories.uniformBlock = uniform.NewUniformBlockRepository()
+	g.repositories.texture = textures.NewTextureRepository()
 
 	g.telemetry, err = telemetry.InitializeTelemetry(ctx)
 	if err != nil {
@@ -50,6 +55,11 @@ func Initialize(ctx context.Context, _ Opts) (*Graphic, error) {
 	g.uniform, err = uniform.InitializeUniforms(ctx, g.repositories.uniformBlock)
 	if err != nil {
 		return nil, fmt.Errorf("uniform initialization: %w", err)
+	}
+
+	g.textures, err = textures.InitializeTextures(ctx, files.NewStubLoader(), g.repositories.texture)
+	if err != nil {
+		return nil, fmt.Errorf("textures initialization: %w", err)
 	}
 
 	return g, nil
@@ -81,9 +91,21 @@ func (g *Graphic) Terminate(ctx context.Context) error {
 		}
 	}
 
+	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "terminating textures")
+	for _, texture := range g.textures.TextureArray() {
+		err := g.textures.DeleteTexture(ctx, texture)
+		if err != nil {
+			logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "texture delete", logger.Error(err))
+		}
+	}
+
 	return joinedErr
 }
 
 func (g *Graphic) Uniform() uniform.Service {
 	return g.uniform
+}
+
+func (g *Graphic) Textures() textures.Service {
+	return g.textures
 }
