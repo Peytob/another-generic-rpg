@@ -124,12 +124,11 @@ func (s *service) BuildProgram(ctx context.Context, builder *ProgramBuilder, nam
 }
 
 func (s *service) DeleteProgram(ctx context.Context, program Program) error {
-	var err error
-
-	if gl.IsProgram(program.ID) {
-		gl.DeleteProgram(program.ID)
-		err = fmt.Errorf("program already deleted or id is not program")
+	if !gl.IsProgram(program.ID) {
+		return fmt.Errorf("program already deleted or id is not program")
 	}
+
+	gl.DeleteProgram(program.ID)
 
 	ok := s.programRepository.Delete(program)
 	if !ok {
@@ -137,23 +136,22 @@ func (s *service) DeleteProgram(ctx context.Context, program Program) error {
 	}
 
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "shader program deleted", logger.Uint32("program_id", program.ID))
-	return err
+	return nil
 }
 
 func (s *service) DeleteShader(ctx context.Context, shader Shader) error {
-	var err error
-
-	if gl.IsShader(shader.ID) {
-		gl.DeleteShader(shader.ID)
-		err = fmt.Errorf("shader already deleted or id is not shader")
+	if !gl.IsShader(shader.ID) {
+		return fmt.Errorf("shader already deleted or id is not shader")
 	}
+
+	gl.DeleteShader(shader.ID)
 
 	ok := s.shaderRepository.Delete(shader)
 	if !ok {
 		logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelWarn, "shader deleted from ogl but not found in repository")
 	}
 
-	return err
+	return nil
 }
 
 func (s *service) ProgramArray() []Program {

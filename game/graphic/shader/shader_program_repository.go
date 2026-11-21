@@ -34,8 +34,8 @@ func (r *ProgramRepository) GetById(id uint32) (Program, bool) {
 	return r.idIndex.Get(id)
 }
 
-func (r *ProgramRepository) GetByName(id uint32) (Program, bool) {
-	return r.idIndex.Get(id)
+func (r *ProgramRepository) GetByName(name string) (Program, bool) {
+	return r.nameIndex.Get(name)
 }
 
 func (r *ProgramRepository) Array() []Program {
