@@ -2,6 +2,7 @@ package graphic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"game/graphic/shader"
 	"game/graphic/telemetry"
@@ -80,6 +81,7 @@ func (g *Graphic) Terminate(ctx context.Context) error {
 		err := g.shader.DeleteProgram(ctx, program)
 		if err != nil {
 			logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "shader program delete", logger.Error(err))
+			joinedErr = errors.Join(joinedErr, err)
 		}
 	}
 
@@ -88,6 +90,16 @@ func (g *Graphic) Terminate(ctx context.Context) error {
 		err := g.shader.DeleteShader(ctx, shaderObj)
 		if err != nil {
 			logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "shader delete", logger.Error(err))
+			joinedErr = errors.Join(joinedErr, err)
+		}
+	}
+
+	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "terminating uniform blocks")
+	for _, block := range g.uniform.BlockArray() {
+		err := g.uniform.DeleteBlock(ctx, block)
+		if err != nil {
+			logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "uniform block delete", logger.Error(err))
+			joinedErr = errors.Join(joinedErr, err)
 		}
 	}
 
@@ -96,6 +108,7 @@ func (g *Graphic) Terminate(ctx context.Context) error {
 		err := g.textures.DeleteTexture(ctx, texture)
 		if err != nil {
 			logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "texture delete", logger.Error(err))
+			joinedErr = errors.Join(joinedErr, err)
 		}
 	}
 

@@ -15,8 +15,11 @@ func NewProgramRepository() *ProgramRepository {
 }
 
 func (r *ProgramRepository) Put(program Program) bool {
-	_, exists := r.idIndex.Get(program.ID)
-	if exists {
+	if _, exists := r.idIndex.Get(program.ID); exists {
+		return false
+	}
+
+	if _, exists := r.nameIndex.Get(program.Name); exists {
 		return false
 	}
 
@@ -27,10 +30,13 @@ func (r *ProgramRepository) Put(program Program) bool {
 }
 
 func (r *ProgramRepository) Delete(program Program) bool {
-	return r.idIndex.Remove(program.ID)
+	okID := r.idIndex.Remove(program.ID)
+	okName := r.nameIndex.Remove(program.Name)
+
+	return okID || okName
 }
 
-func (r *ProgramRepository) GetById(id uint32) (Program, bool) {
+func (r *ProgramRepository) GetByID(id uint32) (Program, bool) {
 	return r.idIndex.Get(id)
 }
 

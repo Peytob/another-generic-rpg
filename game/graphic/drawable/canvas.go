@@ -6,6 +6,11 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const (
+	defaultCanvasBufferSize = 1024
+	indicesPerVertexHint    = 3
+)
+
 // Canvas base low-level type to accumulate renderable objects into one buffer
 type Canvas struct {
 	// vertices count
@@ -22,13 +27,13 @@ type Canvas struct {
 }
 
 func NewCanvas() *Canvas {
-	return NewCanvasCustomBuffer(1024)
+	return NewCanvasCustomBuffer(defaultCanvasBufferSize)
 }
 
 func NewCanvasCustomBuffer(bufferSizeVertexes uint32) *Canvas {
 	return &Canvas{
 		vertices:           0,
-		elements:           make([]uint32, 0, bufferSizeVertexes*3),
+		elements:           make([]uint32, 0, bufferSizeVertexes*indicesPerVertexHint),
 		positions:          make([]mgl32.Vec2, 0, bufferSizeVertexes),
 		textureCoordinates: make([]mgl32.Vec2, 0, bufferSizeVertexes),
 	}

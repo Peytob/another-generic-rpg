@@ -22,7 +22,9 @@ func (i *Index[K, V]) Add(key K, value V) bool {
 	}
 
 	i.index[key] = value
-	i.all = append(i.all, value)
+	if i.all != nil {
+		i.all = append(i.all, value)
+	}
 
 	return true
 }

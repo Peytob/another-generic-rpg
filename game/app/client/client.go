@@ -24,8 +24,11 @@ type Client struct {
 
 func (c *Client) Run(ctx context.Context) error {
 	c.dumpRunningInfo(ctx)
-	c.window.OnSizeChanged(c.onWindowSizeChanged)
-	c.onWindowSizeChanged(c.window.Size()) // Initial window size update
+	c.window.OnSizeChanged(func(width int, height int) {
+		c.onWindowSizeChanged(ctx, width, height)
+	})
+	width, height := c.window.Size()
+	c.onWindowSizeChanged(ctx, width, height) // Initial window size update
 
 	var lastTime time.Time
 	for {
@@ -84,12 +87,10 @@ func (c *Client) dumpRunningInfo(ctx context.Context) {
 		slog.String("renderer", aboutGraphic.Renderer))
 }
 
-func (c *Client) onWindowSizeChanged(width int, height int) {
+func (c *Client) onWindowSizeChanged(ctx context.Context, width int, height int) {
 	proj := mgl32.Ortho2D(0, float32(width), float32(height), 0)
-	err := c.graphic.Uniform().Uniforms().ProjectionMatrix(proj)
-	if err != nil {
-		// todo use ctx
-		slog.LogAttrs(context.Background(), slog.LevelError, "failed to set uniform projection", logger.Error(err))
+	if err := c.graphic.Uniform().Uniforms().ProjectionMatrix(proj); err != nil {
+		logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelError, "failed to set uniform projection", logger.Error(err))
 	}
 }
 

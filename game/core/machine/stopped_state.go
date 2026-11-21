@@ -17,14 +17,14 @@ func (i StoppedState) Identifier() StateIdentifier {
 	return StoppedStateIdentifier
 }
 
-func (i StoppedState) OnEnter(ctx context.Context) error {
+func (i StoppedState) OnEnter(_ context.Context) error {
 	return nil
 }
 
-func (i StoppedState) OnExit(ctx context.Context) error {
+func (i StoppedState) OnExit(_ context.Context) error {
 	return nil
 }
 
-func (i StoppedState) Tick(ctx context.Context, frame Frame) (Event, error) {
+func (i StoppedState) Tick(_ context.Context, _ Frame) (Event, error) {
 	return 0, nil
 }

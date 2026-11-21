@@ -15,8 +15,11 @@ func NewUniformBlockRepository() *BlockRepository {
 }
 
 func (r *BlockRepository) Put(block Block) bool {
-	_, exists := r.idIndex.Get(block.ID)
-	if exists {
+	if _, exists := r.idIndex.Get(block.ID); exists {
+		return false
+	}
+
+	if _, exists := r.nameIndex.Get(block.Name); exists {
 		return false
 	}
 
@@ -27,9 +30,10 @@ func (r *BlockRepository) Put(block Block) bool {
 }
 
 func (r *BlockRepository) Delete(block Block) bool {
-	ok := r.idIndex.Remove(block.ID)
-	ok = ok || r.nameIndex.Remove(block.Name)
-	return ok
+	okID := r.idIndex.Remove(block.ID)
+	okName := r.nameIndex.Remove(block.Name)
+
+	return okID || okName
 }
 
 func (r *BlockRepository) GetByID(id uint32) (Block, bool) {

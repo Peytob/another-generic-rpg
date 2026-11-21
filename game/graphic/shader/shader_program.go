@@ -10,7 +10,7 @@ type ProgramBuilder struct {
 }
 
 func NewProgramBuilder() *ProgramBuilder {
-	return &ProgramBuilder{stages: make(map[Stage]Shader, 6)}
+	return &ProgramBuilder{stages: make(map[Stage]Shader)}
 }
 
 func (sb *ProgramBuilder) Set(shader Shader) *ProgramBuilder {

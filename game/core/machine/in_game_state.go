@@ -2,7 +2,6 @@ package machine
 
 import (
 	"context"
-	"fmt"
 	"game/gameplay/world"
 )
 
@@ -20,23 +19,20 @@ func (s *InGameState) Identifier() StateIdentifier {
 	return InGameStateIdentifier
 }
 
-func (s *InGameState) OnEnter(ctx context.Context) error {
-	if err := s.reset(ctx); err != nil {
-		return fmt.Errorf("reset: %w", err)
-	}
+func (s *InGameState) OnEnter(_ context.Context) error {
+	s.reset()
 
 	return nil
 }
 
-func (s *InGameState) OnExit(ctx context.Context) error {
+func (s *InGameState) OnExit(_ context.Context) error {
 	return nil
 }
 
-func (s *InGameState) Tick(ctx context.Context, frame Frame) (Event, error) {
+func (s *InGameState) Tick(_ context.Context, _ Frame) (Event, error) {
 	return 0, nil
 }
 
-func (s *InGameState) reset(_ context.Context) error {
+func (s *InGameState) reset() {
 	s.world = &world.World{}
-	return nil
 }

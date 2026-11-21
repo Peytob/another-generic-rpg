@@ -18,6 +18,11 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
+const (
+	glMajorVersion = 3
+	glMinorVersion = 3
+)
+
 func main() {
 	// Client main method should be executed in main application thread due
 	// to C libraries restrictions
@@ -49,7 +54,6 @@ func main() {
 }
 
 func run(ctx context.Context, cfg config.ClientConfiguration) error {
-	var err error
 	log := logger.FromCtx(ctx)
 
 	log.LogAttrs(ctx, slog.LevelInfo, "initializing glfw")
@@ -66,8 +70,8 @@ func run(ctx context.Context, cfg config.ClientConfiguration) error {
 		Width:   cfg.Window.Width,
 		Height:  cfg.Window.Height,
 		Title:   "window",
-		GLMajor: 3,
-		GLMinor: 3,
+		GLMajor: glMajorVersion,
+		GLMinor: glMinorVersion,
 		Visible: true,
 	})
 	if err != nil {
@@ -75,13 +79,12 @@ func run(ctx context.Context, cfg config.ClientConfiguration) error {
 	}
 	defer func() {
 		if err := glfwWindow.Terminate(ctx); err != nil {
-			log.LogAttrs(ctx, slog.LevelError, "terminate glfw", logger.Error(err))
+			log.LogAttrs(ctx, slog.LevelError, "terminate glfw window", logger.Error(err))
 		}
 	}()
 
 	log.LogAttrs(ctx, slog.LevelInfo, "initializing opengl")
-	err = gl.Init()
-	if err != nil {
+	if err := gl.Init(); err != nil {
 		return fmt.Errorf("opengl init: %w", err)
 	}
 
@@ -91,24 +94,30 @@ func run(ctx context.Context, cfg config.ClientConfiguration) error {
 	}
 	defer func() {
 		if err := openglGraphic.Terminate(ctx); err != nil {
-			log.LogAttrs(ctx, slog.LevelError, "terminate opengl window", logger.Error(err))
+			log.LogAttrs(ctx, slog.LevelError, "terminate graphic", logger.Error(err))
 		}
 	}()
+
+	return runClient(ctx, glfwWindow, openglGraphic)
+}
+
+func runClient(ctx context.Context, glfwWindow *window.Window, openglGraphic *graphic.Graphic) error {
+	log := logger.FromCtx(ctx)
 
 	c := client.NewBuilder().
 		Window(glfwWindow).
 		Graphic(openglGraphic).
 		MustBuild()
 
-	err = c.Run(ctx)
-	if err != nil {
-		return fmt.Errorf("client run: %w", err)
-	}
 	defer func() {
 		if err := c.Terminate(ctx); err != nil {
-			log.LogAttrs(ctx, slog.LevelInfo, "terminating client failed", slog.Any("err", err))
+			log.LogAttrs(ctx, slog.LevelError, "terminate client", logger.Error(err))
 		}
 	}()
+
+	if err := c.Run(ctx); err != nil {
+		return fmt.Errorf("client run: %w", err)
+	}
 
 	return nil
 }

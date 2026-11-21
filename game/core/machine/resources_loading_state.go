@@ -15,14 +15,14 @@ func (i ResourcesLoadingState) Identifier() StateIdentifier {
 	return ResourcesLoadingStateIdentifier
 }
 
-func (i ResourcesLoadingState) OnEnter(ctx context.Context) error {
+func (i ResourcesLoadingState) OnEnter(_ context.Context) error {
 	return nil
 }
 
-func (i ResourcesLoadingState) OnExit(ctx context.Context) error {
+func (i ResourcesLoadingState) OnExit(_ context.Context) error {
 	return nil
 }
 
-func (i ResourcesLoadingState) Tick(ctx context.Context, frame Frame) (Event, error) {
+func (i ResourcesLoadingState) Tick(_ context.Context, _ Frame) (Event, error) {
 	return ResourcesLoadedEvent, nil
 }

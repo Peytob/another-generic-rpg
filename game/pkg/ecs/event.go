@@ -55,7 +55,7 @@ type EventBus interface {
 //
 // Usage:
 //
-//	sub := ecs.Subscribe[*DamageEvent](world, func(ctx app.Context, e *DamageEvent) error {
+//	sub := ecs.Subscribe[*DamageEvent](world, func(ctx context.Context, e *DamageEvent) error {
 //	    // handle event
 //	    return nil
 //	})

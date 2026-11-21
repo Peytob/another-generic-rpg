@@ -2,7 +2,6 @@ package textures
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -35,12 +34,12 @@ func InitializeTextures(_ context.Context, loader files.Loader, textureRepositor
 
 func (s *service) CreateTexture(ctx context.Context, name string, width, height int32, pixels []byte) (Texture, error) {
 	if width <= 0 || height <= 0 {
-		return Texture{}, errors.New("texture size must be positive")
+		return Texture{}, ErrTextureSize
 	}
 
 	expected := int64(width) * int64(height) * int64(bytesPerPixel)
 	if expected != int64(len(pixels)) {
-		return Texture{}, fmt.Errorf("pixel data size does not match texture size: expected %d, got %d", expected, len(pixels))
+		return Texture{}, fmt.Errorf("%w: expected %d, got %d", ErrPixelDataSize, expected, len(pixels))
 	}
 
 	textureID := createGlTexture(width, height, pixels)
@@ -54,7 +53,7 @@ func (s *service) CreateTexture(ctx context.Context, name string, width, height 
 
 	if !s.textureRepository.Put(texture) {
 		gl.DeleteTextures(1, &textureID)
-		return Texture{}, fmt.Errorf("texture %s already registered", name)
+		return Texture{}, fmt.Errorf("%w: %s", ErrTextureAlreadyRegistered, name)
 	}
 
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "created texture",
@@ -77,7 +76,7 @@ func (s *service) LoadTexture(ctx context.Context, name string) (Texture, error)
 
 func (s *service) DeleteTexture(ctx context.Context, texture Texture) error {
 	if !gl.IsTexture(texture.ID) {
-		return errors.New("texture already deleted or id is not texture")
+		return ErrInvalidTexture
 	}
 
 	gl.DeleteTextures(1, &texture.ID)

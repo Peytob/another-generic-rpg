@@ -15,8 +15,11 @@ func NewTextureRepository() *Repository {
 }
 
 func (r *Repository) Put(texture Texture) bool {
-	_, exists := r.idIndex.Get(texture.ID)
-	if exists {
+	if _, exists := r.idIndex.Get(texture.ID); exists {
+		return false
+	}
+
+	if _, exists := r.nameIndex.Get(texture.Name); exists {
 		return false
 	}
 
@@ -27,10 +30,10 @@ func (r *Repository) Put(texture Texture) bool {
 }
 
 func (r *Repository) Delete(texture Texture) bool {
-	ok := r.idIndex.Remove(texture.ID)
-	ok = ok || r.nameIndex.Remove(texture.Name)
+	okID := r.idIndex.Remove(texture.ID)
+	okName := r.nameIndex.Remove(texture.Name)
 
-	return ok
+	return okID || okName
 }
 
 func (r *Repository) GetByID(id uint32) (Texture, bool) {

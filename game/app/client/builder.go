@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"game/core/machine"
 	"game/graphic"
 	"game/window"
@@ -30,12 +29,12 @@ func (b *Builder) Build() (*Client, error) {
 	client := &Client{}
 
 	if b.window == nil {
-		return nil, errors.New("window is nil")
+		return nil, ErrWindowIsNil
 	}
 	client.window = b.window
 
 	if b.graphic == nil {
-		return nil, errors.New("graphic is nil")
+		return nil, ErrGraphicIsNil
 	}
 	client.graphic = b.graphic
 

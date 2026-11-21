@@ -23,7 +23,11 @@ type service struct {
 	programRepository *ProgramRepository
 }
 
-func InitializeShaders(_ context.Context, shaderRepository *Repository, programRepository *ProgramRepository) (Service, error) {
+func InitializeShaders(
+	_ context.Context,
+	shaderRepository *Repository,
+	programRepository *ProgramRepository,
+) (Service, error) {
 	shaders := &service{}
 
 	shaders.shaderRepository = shaderRepository
@@ -51,7 +55,7 @@ func (s *service) LoadGlslShader(ctx context.Context, code string, stage Stage) 
 		gl.GetShaderInfoLog(shader, logLength, &actualLength, &log[0])
 
 		gl.DeleteShader(shader)
-		return Shader{}, fmt.Errorf("failed to compile shader: %s", string(log))
+		return Shader{}, fmt.Errorf("%w: %s", ErrShaderCompile, string(log))
 	}
 
 	shaderObj := Shader{
@@ -70,12 +74,12 @@ func (s *service) LoadGlslShader(ctx context.Context, code string, stage Stage) 
 func (s *service) BuildProgram(ctx context.Context, builder *ProgramBuilder, name string) (Program, error) {
 	vertex, ok := builder.Stage(VertexStage)
 	if !ok || vertex.ID <= 0 {
-		return Program{}, fmt.Errorf("vertex shader required to create shader program")
+		return Program{}, ErrVertexShaderRequired
 	}
 
 	fragment, ok := builder.Stage(FragmentStage)
 	if !ok || fragment.ID <= 0 {
-		return Program{}, fmt.Errorf("fragment shader required to create shader program")
+		return Program{}, ErrFragmentShaderRequired
 	}
 
 	geometry, _ := builder.Stage(GeometryStage)
@@ -100,7 +104,7 @@ func (s *service) BuildProgram(ctx context.Context, builder *ProgramBuilder, nam
 
 		gl.DeleteProgram(shaderProgram)
 
-		return Program{}, fmt.Errorf("failed to link shader program: %s", string(log))
+		return Program{}, fmt.Errorf("%w: %s", ErrProgramLink, string(log))
 	}
 
 	program := Program{
@@ -110,7 +114,7 @@ func (s *service) BuildProgram(ctx context.Context, builder *ProgramBuilder, nam
 
 	if !s.programRepository.Put(program) {
 		gl.DeleteProgram(shaderProgram)
-		return Program{}, fmt.Errorf("shader program %s already registered", name)
+		return Program{}, fmt.Errorf("%w: %s", ErrProgramAlreadyRegistered, name)
 	}
 
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo,
@@ -125,7 +129,7 @@ func (s *service) BuildProgram(ctx context.Context, builder *ProgramBuilder, nam
 
 func (s *service) DeleteProgram(ctx context.Context, program Program) error {
 	if !gl.IsProgram(program.ID) {
-		return fmt.Errorf("program already deleted or id is not program")
+		return ErrInvalidProgram
 	}
 
 	gl.DeleteProgram(program.ID)
@@ -141,7 +145,7 @@ func (s *service) DeleteProgram(ctx context.Context, program Program) error {
 
 func (s *service) DeleteShader(ctx context.Context, shader Shader) error {
 	if !gl.IsShader(shader.ID) {
-		return fmt.Errorf("shader already deleted or id is not shader")
+		return ErrInvalidShader
 	}
 
 	gl.DeleteShader(shader.ID)

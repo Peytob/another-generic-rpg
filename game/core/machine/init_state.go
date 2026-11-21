@@ -16,14 +16,14 @@ func (i InitState) Identifier() StateIdentifier {
 	return InitStateIdentifier
 }
 
-func (i InitState) OnEnter(ctx context.Context) error {
+func (i InitState) OnEnter(_ context.Context) error {
 	return nil
 }
 
-func (i InitState) OnExit(ctx context.Context) error {
+func (i InitState) OnExit(_ context.Context) error {
 	return nil
 }
 
-func (i InitState) Tick(ctx context.Context, frame Frame) (Event, error) {
+func (i InitState) Tick(_ context.Context, _ Frame) (Event, error) {
 	return InitializedEvent, nil
 }

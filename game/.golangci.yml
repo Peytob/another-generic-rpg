@@ -1,8 +1,7 @@
 # golangci-lint configuration (strict) — GAME module
 # Docs: https://golangci-lint.run/docs/configuration/file/
 #
-# This config governs the `game` module. The `game` module depends on the
-# `engine` module, so `engine` is in depguard's allow list.
+# This config governs the `game` module.
 version: "2"
 
 run:
@@ -51,7 +50,6 @@ linters:
         main:
           allow:
             - $gostd
-            - engine   # game depends on engine — allowed
             - game
             - github.com/deckarep/golang-set/v2
             - github.com/go-gl/gl/v3.3-core/gl
@@ -62,8 +60,8 @@ linters:
     revive:
       rules:
         # Structural / naming / control-flow checks kept active.
-        - name: app-as-argument
-        - name: app-keys-type
+        - name: context-as-argument
+        - name: context-keys-type
         - name: dot-imports
         - name: error-return
         - name: error-strings
@@ -111,7 +109,7 @@ linters:
       # Raw OpenGL/Glfw C bindings: relax style/opinion linters that fight the
       # inherent nature of C interop (magic numbers, short names, long and
       # complex call sequences). Bug-catching linters still apply.
-      - path: pkg/graphic/internal/opengl/|pkg/window/
+      - path: window/
         linters:
           - cyclop
           - err113

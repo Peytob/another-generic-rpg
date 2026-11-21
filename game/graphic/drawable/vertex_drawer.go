@@ -12,6 +12,6 @@ type DrawOpts struct {
 	Texture textures.Texture
 }
 
-func (d VertexDrawer) Draw(ctx context.Context, drawable Drawable, opts DrawOpts) {
+func (d VertexDrawer) Draw(_ context.Context, _ Drawable, _ DrawOpts) {
 
 }

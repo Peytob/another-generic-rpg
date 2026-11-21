@@ -15,6 +15,10 @@ import (
 const (
 	projViewUniformBlock = "ProjView"
 	projUniform          = "u_proj"
+
+	mat4FloatCount   = 16
+	float32SizeBytes = 4
+	mat4SizeBytes    = mat4FloatCount * float32SizeBytes
 )
 
 type Uniforms interface {
@@ -34,7 +38,7 @@ func newUniforms(blockRepository *BlockRepository) *uniforms {
 func (u *uniforms) ProjectionMatrix(proj mgl32.Mat4) error {
 	block, ok := u.blockRepository.GetByName(projViewUniformBlock)
 	if !ok {
-		return fmt.Errorf("block '%s' not found in repository", projViewUniformBlock)
+		return fmt.Errorf("%w: '%s'", ErrBlockNotFound, projViewUniformBlock)
 	}
 
 	return setUniformVariableMat4(block, projUniform, proj)
@@ -43,7 +47,7 @@ func (u *uniforms) ProjectionMatrix(proj mgl32.Mat4) error {
 func (u *uniforms) createUniformBlock(ctx context.Context, uniformBlock Block) (Block, error) {
 	_, exists := u.blockRepository.GetByName(uniformBlock.Name)
 	if exists {
-		return Block{}, fmt.Errorf("uniform block with given name already registered")
+		return Block{}, ErrBlockAlreadyRegistered
 	}
 
 	totalSize := uniformBlock.Variables.TotalSize()
@@ -58,7 +62,7 @@ func (u *uniforms) createUniformBlock(ctx context.Context, uniformBlock Block) (
 
 	if !u.blockRepository.Put(uniformBlock) {
 		gl.DeleteBuffers(1, &ubo)
-		return Block{}, fmt.Errorf("uniform block already registered")
+		return Block{}, ErrBlockAlreadyRegistered
 	}
 
 	logger.FromCtx(ctx).LogAttrs(ctx, slog.LevelInfo, "created uniform block",
@@ -76,7 +80,7 @@ func (u *uniforms) initializeUniformBlocks(ctx context.Context) error {
 		Name:         projViewUniformBlock,
 		BindingPoint: 0,
 		Variables: newUniformVariables().
-			Set(projUniform, 16*4, 0), // mat4 = 16 floats * 4 bytes,
+			Set(projUniform, mat4SizeBytes, 0),
 	})
 	creatingErrors = errors.Join(creatingErrors, err)
 
@@ -89,7 +93,7 @@ func (u *uniforms) bindBlocksFor(ctx context.Context, program shader.Program) er
 	var count int32
 	gl.GetProgramiv(program.ID, gl.ACTIVE_UNIFORM_BLOCKS, &count)
 
-	for i := uint32(0); i < uint32(count); i++ {
+	for i := range uint32(count) {
 		var nameLen int32
 		var nameBuf [256]byte
 		gl.GetActiveUniformBlockName(program.ID, i, int32(len(nameBuf)), &nameLen, &nameBuf[0])
@@ -97,8 +101,8 @@ func (u *uniforms) bindBlocksFor(ctx context.Context, program shader.Program) er
 
 		ub, ok := u.blockRepository.GetByName(name)
 		if !ok {
-			err = errors.Join(err, fmt.Errorf("uniform block %s from shader program %s not found in registered uniform blocks",
-				name, program.Name))
+			err = errors.Join(err, fmt.Errorf("%w: '%s' from shader program '%s'",
+				ErrBlockNotRegistered, name, program.Name))
 			continue
 		}
 

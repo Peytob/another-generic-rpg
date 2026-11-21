@@ -8,6 +8,8 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+const verticesPerSprite = 6
+
 // Sprite just textured rect with transformation
 type Sprite struct {
 	transformation *math.Transformation
@@ -53,7 +55,7 @@ func (s *Sprite) Vertices() drawable.VertexData {
 }
 
 func (s *Sprite) updateVertices() {
-	s.vertices = make([]drawable.Vertex, 6)
+	s.vertices = make([]drawable.Vertex, verticesPerSprite)
 
 	rectPoints := s.rect.GetPoints()
 	for i := range rectPoints {
