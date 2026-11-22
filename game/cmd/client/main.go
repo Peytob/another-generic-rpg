@@ -2,15 +2,12 @@ package main
 
 import (
 	"context"
-	"engine/hid"
-	hidbackend "engine/hid/backend"
-	"engine/utils/logger"
-	"engine/window"
 	"fmt"
-	"game/internal/app/client"
-	"game/internal/config"
-	"game/internal/game/repositories"
-	"game/internal/rendering"
+	"game/app/client"
+	"game/config"
+	"game/graphic"
+	"game/pkg/logger"
+	"game/window"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,13 +18,9 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-// Window and OpenGL context parameters.
 const (
-	windowWidth  = 800
-	windowHeight = 600
-	windowTitle  = "another-rpg"
-	glMajor      = 3
-	glMinor      = 3
+	glMajorVersion = 3
+	glMinorVersion = 3
 )
 
 func main() {
@@ -43,91 +36,88 @@ func main() {
 		panic(err)
 	}
 
-	l, err := initLogger(ctx, cfg)
-	if err != nil {
-		panic("failed to initialize logger: " + err.Error())
-	}
-	ctx = logger.ToCtx(ctx, l)
-
-	l.LogAttrs(ctx, slog.LevelInfo, "initializing client")
-
-	/* MachineModules */
-
-	repo := repositories.NewRepositories()
-
-	w, err := initWindow()
-	if err != nil {
-		panic("failed to initialize window module: " + err.Error())
-	}
-
-	h, err := initHid(w)
-	if err != nil {
-		panic("failed to initialize hid module: " + err.Error())
-	}
-
-	r, err := rendering.NewRendering(ctx)
-	if err != nil {
-		panic("failed to initialize graphic module: " + err.Error())
-	}
-
-	/* Client */
-
-	cl := client.NewBuilder().
-		Window(w).
-		Hid(h).
-		Rendering(r).
-		Repositories(repo).
-		MustBuild()
-
-	l.LogAttrs(ctx, slog.LevelInfo, "starting engine running")
-	if err = cl.Run(ctx); err != nil {
-		panic("failed engine cycle: " + err.Error())
-	}
-
-	if err = cl.Shutdown(ctx); err != nil {
-		panic("failed to stop client gracefully: " + err.Error())
-	}
-}
-
-func initLogger(ctx context.Context, cfg *config.ClientConfiguration) (*slog.Logger, error) {
-	l, err := config.ClientLogger(ctx, config.LoggerOpts{
+	log, err := config.ClientLogger(ctx, config.LoggerOpts{
 		Enabled: cfg.Log.Enabled,
 		Handler: slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: cfg.Log.Level,
 		}),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("init client logger: %w", err)
+		panic("failed to initialize logger: " + err.Error())
 	}
-	return l, nil
+	ctx = logger.ToCtx(ctx, log)
+
+	err = run(ctx, cfg)
+	if err != nil {
+		panic("failed while running game: " + err.Error())
+	}
 }
 
-// initWindow initializes GLFW, creates the window and loads the OpenGL
-// bindings; all C library calls must run on the locked main thread.
-func initWindow() (*window.Window, error) {
-	if err := glfw.Init(); err != nil {
-		return nil, fmt.Errorf("glfw init: %w", err)
-	}
+func run(ctx context.Context, cfg config.ClientConfiguration) error {
+	log := logger.FromCtx(ctx)
 
-	w, err := window.Init(window.Opts{
-		Width:   windowWidth,
-		Height:  windowHeight,
-		Title:   windowTitle,
-		GLMajor: glMajor,
-		GLMinor: glMinor,
+	log.LogAttrs(ctx, slog.LevelInfo, "initializing glfw")
+	if err := glfw.Init(); err != nil {
+		return fmt.Errorf("glfw init: %w", err)
+	}
+	defer func() {
+		log.LogAttrs(ctx, slog.LevelInfo, "terminating glfw")
+		glfw.Terminate()
+	}()
+
+	log.LogAttrs(ctx, slog.LevelInfo, "initializing window")
+	glfwWindow, err := window.Init(window.Opts{
+		Width:   cfg.Window.Width,
+		Height:  cfg.Window.Height,
+		Title:   "window",
+		GLMajor: glMajorVersion,
+		GLMinor: glMinorVersion,
 		Visible: true,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("window init: %w", err)
+		return fmt.Errorf("window init: %w", err)
 	}
+	defer func() {
+		if err := glfwWindow.Terminate(ctx); err != nil {
+			log.LogAttrs(ctx, slog.LevelError, "terminate glfw window", logger.Error(err))
+		}
+	}()
 
+	log.LogAttrs(ctx, slog.LevelInfo, "initializing opengl")
 	if err := gl.Init(); err != nil {
-		return nil, fmt.Errorf("opengl init: %w", err)
+		return fmt.Errorf("opengl init: %w", err)
 	}
 
-	return w, nil
+	openglGraphic, err := graphic.Initialize(ctx, graphic.Opts{})
+	if err != nil {
+		return fmt.Errorf("graphic init: %w", err)
+	}
+	defer func() {
+		if err := openglGraphic.Terminate(ctx); err != nil {
+			log.LogAttrs(ctx, slog.LevelError, "terminate graphic", logger.Error(err))
+		}
+	}()
+
+	return runClient(ctx, glfwWindow, openglGraphic)
 }
 
-func initHid(w *window.Window) (hid.Hid, error) {
-	return hidbackend.NewGlfwHid(w.Raw())
+func runClient(ctx context.Context, glfwWindow *window.Window, openglGraphic *graphic.Graphic) error {
+	log := logger.FromCtx(ctx)
+
+	c := client.NewBuilder().
+		Window(glfwWindow).
+		Graphic(openglGraphic).
+		MustBuild()
+
+	defer func() {
+		if err := c.Terminate(ctx); err != nil {
+			log.LogAttrs(ctx, slog.LevelError, "terminate client", logger.Error(err))
+		}
+	}()
+
+	if err := c.Run(ctx); err != nil {
+		return fmt.Errorf("client run: %w", err)
+	}
+
+	return nil
 }
